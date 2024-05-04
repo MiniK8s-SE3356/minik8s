@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/MiniK8s-SE3356/minik8s/pkg/apiserver/process"
-	"github.com/MiniK8s-SE3356/minik8s/pkg/apiserver/ty"
+	"github.com/MiniK8s-SE3356/minik8s/pkg/ty"
 
 	"github.com/gin-gonic/gin"
 )
