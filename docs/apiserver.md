@@ -1,0 +1,7 @@
+# apiserver
+
+用户首先输入命令行，完成对命令的解析和对yaml文件读取等操作后就可以转化为向apiserver发送的http请求。
+
+apiserver的结构模仿了springboot，handler、process相当于controller、service，handler负责接收工作比如解析post的json，然后process负责具体的处理。这两个名字可以是临时的，如果不合适可以再改。
+
+然后涉及yaml解析的部分，这里就是那些Desc结尾的struct，比如PodDesc，ServiceDesc等，这些东西从yaml中读取出来，发送的时候是转成json字符串再通过post请求发送。
