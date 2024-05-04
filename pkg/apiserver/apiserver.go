@@ -8,6 +8,14 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// handler、process相当于spring里面的controller、service，临时先用这个名字
+
+const (
+	version     = "v1"
+	getPodsURL  = "/api/" + version + "/getPods"
+	getNodesURL = "/api/" + version + "/getNodes"
+)
+
 func example(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"message": "pong",
