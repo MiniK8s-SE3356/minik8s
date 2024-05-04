@@ -1,9 +1,11 @@
 package cmdline
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 
+	"github.com/MiniK8s-SE3356/minik8s/pkg/apiserver/url"
 	"github.com/MiniK8s-SE3356/minik8s/pkg/ty"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v3"
@@ -65,7 +67,18 @@ func applyPod(b []byte) error {
 		return err
 	}
 
-	// PostRequest()
+	jsonData, err := json.Marshal(podDesc)
+	if err != nil {
+		fmt.Println("failed to translate into json")
+		return err
+	}
+	result, err := PostRequest(url.AddPodURL, jsonData)
+	if err != nil {
+		fmt.Println("error when post request")
+		return err
+	}
+
+	fmt.Println(result)
 
 	return nil
 }

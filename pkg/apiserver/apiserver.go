@@ -3,13 +3,9 @@ package main
 import (
 	"net/http"
 
+	"github.com/MiniK8s-SE3356/minik8s/pkg/apiserver/handler"
+	"github.com/MiniK8s-SE3356/minik8s/pkg/apiserver/url"
 	"github.com/gin-gonic/gin"
-)
-
-const (
-	version     = "v1"
-	getPodsURL  = "/api/" + version + "/getPods"
-	getNodesURL = "/api/" + version + "/getNodes"
 )
 
 func example(c *gin.Context) {
@@ -19,8 +15,9 @@ func example(c *gin.Context) {
 }
 
 func bind(r *gin.Engine) {
-	r.GET(getPodsURL, example)
-	r.GET(getNodesURL, example)
+	r.GET(url.AddPodURL, handler.AddPod)
+	r.GET(url.GetPodsURL, example)
+	r.GET(url.GetNodesURL, example)
 }
 
 func main() {
