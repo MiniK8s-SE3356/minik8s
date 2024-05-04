@@ -1,5 +1,9 @@
 package ty
 
+import dockerTypes "github.com/docker/docker/api/types"
+
+// 对应yaml和json
+
 type PodDesc struct {
 	ApiVersion string `json:"apiVersion" yaml:"apiVersion"`
 	Kind       string `json:"kind" yaml:"kind"`
@@ -31,4 +35,38 @@ type PortDesc struct {
 type ResourceDesc struct {
 	Memory string `json:"memory" yaml:"memory"`
 	CPU    string `json:"cpu" yaml:"cpu"`
+}
+
+// 对应etcd
+
+type PodStorage struct {
+	PodSpec_ PodSpec
+}
+
+type PodSpec struct {
+	Containers []Container
+}
+
+type Container struct {
+	Name      string
+	Image     string
+	Ports     []PortDesc
+	Resources struct {
+		Requests ResourceDesc
+		Limits   ResourceDesc
+	}
+}
+
+const (
+	PodPhasePending   = "Pending"
+	PodPhaseRunning   = "Running"
+	PodPhaseSucceeded = "Succeeded"
+	PodPhaseFailed    = "Failed"
+	PodUnknown        = "Unknown"
+)
+
+type PodStatus struct {
+	ClusterIP         string
+	Phase             string
+	ContainerStatuses []dockerTypes.ContainerState
 }
