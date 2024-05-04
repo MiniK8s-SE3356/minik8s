@@ -102,4 +102,31 @@ iptables -t nat -I POSTROUTING 1 -s 192.168.1.6 -j MASQUERADE
 iptables -t nat -L -nv --line-number
 ```
 
+## NodePort
+NodePort所有配置基于ClusterIP的配置
 
+### 暴露端口
+- 主机cloudos1
+  - service1 -- port 34211
+  - service2 -- port 34212 
+- 主机cloudos2
+  - service1 -- port 34211
+  - service2 -- port 34212
+
+### nat table配置
+``` sh
+# 创建新链KUBE-NODEPORTS
+iptables -t nat -N KUBE-NODEPORTS
+# KUBE-NODEPORTS插入KUBE-SERVICES最后一行,在所有的ClusterIP之后处理
+iptables -t nat -A KUBE-SERVICES -m addrtype --dst-type LOCAL -j KUBE-NODEPORTS
+# 在KUBE-NODEPORTS中添加规则以保证SNAT
+iptables -t nat -A KUBE-NODEPORTS -p tcp -m tcp --dport 34211 -j KUBE-MARK-MASQ
+iptables -t nat -A KUBE-NODEPORTS -p tcp -m tcp --dport 34212 -j KUBE-MARK-MASQ
+# 在KUBE-NODEPORTS中添加规则，引导不同的端口访问流向不同的服务链
+iptables -t nat -A KUBE-NODEPORTS -p tcp -m tcp --dport 34211 -j KUBE-SVC-1
+iptables -t nat -A KUBE-NODEPORTS -p tcp -m tcp --dport 34212 -j KUBE-SVC-2
+```
+``` sh
+# 查看配置规则
+iptables -t nat -L -nv --line-number
+```
