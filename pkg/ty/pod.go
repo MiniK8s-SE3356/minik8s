@@ -24,7 +24,7 @@ type ContainerDesc struct {
 	} `json:"resources" yaml:"resources"`
 }
 
-type PortDesc struct {
+type ContainerPortDesc struct {
 	ContainerPort int    `json:"containerPort" yaml:"containerPort"`
 	HostPort      int    `json:"hostPort" yaml:"hostPort"`
 	Protocol      string `json:"protocol" yaml:"protocol"`
