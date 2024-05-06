@@ -1,25 +1,63 @@
 package ty
 
 type ServiceDesc struct {
-	ApiVersion string `json:"apiVersion" yaml:"apiVersion"`
-	Kind       string `json:"kind" yaml:"kind"`
+	ApiVersion string `yaml:"apiVersion" json:"apiVersion"`
+	Kind       string `yaml:"kind" json:"kind"`
 	Metadata   struct {
-		Name   string            `json:"name" yaml:"name"`
-		Labels map[string]string `json:"labels" yaml:"labels"`
-	} `json:"metadata" yaml:"metadata"`
+		Name   string            `yaml:"name" json:"name"`
+		Labels map[string]string `yaml:"labels" json:"labels"`
+	} `yaml:"metadata" json:"metadata"`
+
+	// 这里因为spec的具体格式和service的type有关，所以这里是map[string]string的类型
+	// 使用的时候先访问Spec["type"]获取类型，然后使用相应的类型再次进行解析
+	Spec map[string]string `yaml:"spec" json:"spec"`
 }
 
-type ServiceSpec struct {
-	Selector  map[string]string `json:"selector" yaml:"selector"`
-	Ports     []ServicePortDesc `json:"ports" yaml:"ports"`
-	Type      string            `json:"type" yaml:"type"`
-	ClusterIP string            `json:"clusterIP" yaml:"clusterIP"`
+type ServiceClusterIPDesc struct {
+	ApiVersion string `yaml:"apiVersion" json:"apiVersion"`
+	Kind       string `yaml:"kind" json:"kind"`
+	Metadata   struct {
+		Name   string            `yaml:"name" json:"name"`
+		Labels map[string]string `yaml:"labels" json:"labels"`
+	} `yaml:"metadata" json:"metadata"`
+
+	Spec ServiceClusterIPSpec `yaml:"spec" json:"spec"`
 }
 
-type ServicePortDesc struct {
-	Name       string `json:"name" yaml:"name"`
-	Port       int    `json:"port" yaml:"port"`
-	NodePort   int    `json:"nodePort" yaml:"nodePort"`
-	TargetPort int    `json:"targetPort" yaml:"targetPort"`
-	Protocol   string `json:"protocol" yaml:"protocol"`
+type ServiceNodePortDesc struct {
+	ApiVersion string `yaml:"apiVersion" json:"apiVersion"`
+	Kind       string `yaml:"kind" json:"kind"`
+	Metadata   struct {
+		Name   string            `yaml:"name" json:"name"`
+		Labels map[string]string `yaml:"labels" json:"labels"`
+	} `yaml:"metadata" json:"metadata"`
+
+	Spec ServiceNodePortSpec `yaml:"spec" json:"spec"`
+}
+
+type ServiceClusterIPSpec struct {
+	Type string `yaml:"type" json:"type"`
+
+	Selector map[string]string `yaml:"selector" json:"selector"`
+	Ports    []struct {
+		Name       string `yaml:"name" json:"name"`
+		Port       int    `yaml:"port" json:"port"`
+		TargetPort int    `yaml:"targetPort" json:"targetPort"`
+		Protocol   string `yaml:"protocol" json:"protocol"`
+	} `yaml:"ports" json:"ports"`
+	ClusterIP string `yaml:"clusterIP" json:"clusterIP"`
+}
+
+type ServiceNodePortSpec struct {
+	Type string `yaml:"type" json:"type"`
+
+	Selector map[string]string `yaml:"selector" json:"selector"`
+	Ports    []struct {
+		Name       string `yaml:"name" json:"name"`
+		Port       int    `yaml:"port" json:"port"`
+		NodePort   int    `yaml:"nodePort" json:"nodePort"`
+		TargetPort int    `yaml:"targetPort" json:"targetPort"`
+		Protocol   string `yaml:"protocol" json:"protocol"`
+	} `yaml:"ports" json:"ports"`
+	ClusterIP string `yaml:"clusterIP" json:"clusterIP"`
 }

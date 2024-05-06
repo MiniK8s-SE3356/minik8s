@@ -1,72 +1,43 @@
 package ty
 
-import dockerTypes "github.com/docker/docker/api/types"
-
-// 对应yaml和json
-
+// for pod yaml
 type PodDesc struct {
-	ApiVersion string `json:"apiVersion" yaml:"apiVersion"`
-	Kind       string `json:"kind" yaml:"kind"`
+	ApiVersion string `yaml:"apiVersion" json:"apiVersion"`
+	Kind       string `yaml:"kind" json:"kind"`
 	Metadata   struct {
-		Name   string            `json:"name" yaml:"name"`
-		Labels map[string]string `json:"labels" yaml:"labels"`
-	} `json:"metadata" yaml:"metadata"`
-	Spec []ContainerDesc `json:"spec" yaml:"spec"`
+		Name   string            `yaml:"name" json:"name"`
+		Labels map[string]string `yaml:"labels" json:"labels"`
+	} `yaml:"metadata" json:"metadata"`
+	Spec []ContainerDesc `yaml:"spec" json:"spec"`
 }
 
 type ContainerDesc struct {
-	Name      string     `json:"name" yaml:"name"`
-	Image     string     `json:"image" yaml:"image"`
-	Ports     []PortDesc `json:"ports" yaml:"ports"`
+	Name      string     `yaml:"name" json:"name"`
+	Image     string     `yaml:"image" json:"image"`
+	Ports     []PortDesc `yaml:"ports" json:"ports"`
 	Resources struct {
-		Requests ResourceDesc `json:"requests" yaml:"requests"`
-		Limits   ResourceDesc `json:"limits" yaml:"limits"`
-	} `json:"resources" yaml:"resources"`
+		Requests ResourceDesc `yaml:"requests" json:"requests"`
+		Limits   ResourceDesc `yaml:"limits" json:"limits"`
+	} `yaml:"resources" json:"resources"`
+}
+
+type PortDesc struct {
+	ContainerPort int    `yaml:"containerPort" json:"containerPort"`
+	HostPort      int    `yaml:"hostPort" json:"hostPort"`
+	Protocol      string `yaml:"protocol" json:"protocol"`
+	Name          string `yaml:"name" json:"name"`
+	HostIP        string `yaml:"hostIP" json:"hostIP"`
 }
 
 type ContainerPortDesc struct {
-	ContainerPort int    `json:"containerPort" yaml:"containerPort"`
-	HostPort      int    `json:"hostPort" yaml:"hostPort"`
-	Protocol      string `json:"protocol" yaml:"protocol"`
-	Name          string `json:"name" yaml:"name"`
-	HostIP        string `json:"hostIP" yaml:"hostIP"`
+	ContainerPort int    `yaml:"containerPort" json:"containerPort"`
+	HostPort      int    `yaml:"hostPort" json:"hostPort"`
+	Protocol      string `yaml:"protocol" json:"protocol"`
+	Name          string `yaml:"name" json:"name"`
+	HostIP        string `yaml:"hostIP" json:"hostIP"`
 }
 
 type ResourceDesc struct {
-	Memory string `json:"memory" yaml:"memory"`
-	CPU    string `json:"cpu" yaml:"cpu"`
-}
-
-// 对应etcd
-
-type PodStorage struct {
-	PodSpec_ PodSpec
-}
-
-type PodSpec struct {
-	Containers []Container
-}
-
-type Container struct {
-	Name      string
-	Image     string
-	Ports     []PortDesc
-	Resources struct {
-		Requests ResourceDesc
-		Limits   ResourceDesc
-	}
-}
-
-const (
-	PodPhasePending   = "Pending"
-	PodPhaseRunning   = "Running"
-	PodPhaseSucceeded = "Succeeded"
-	PodPhaseFailed    = "Failed"
-	PodUnknown        = "Unknown"
-)
-
-type PodStatus struct {
-	ClusterIP         string
-	Phase             string
-	ContainerStatuses []dockerTypes.ContainerState
+	Memory string `yaml:"memory" json:"memory"`
+	CPU    string `yaml:"cpu" json:"cpu"`
 }
