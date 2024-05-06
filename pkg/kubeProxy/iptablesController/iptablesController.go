@@ -153,29 +153,29 @@ func (ic *IptablesController) SyncConfig() {
 	// TODO: 设计并完成SyncConfig
 	fmt.Printf("IptablesController sync config ...\n")
 
-	// HACK: 一个简单的测试用例子，写入静态配置数据
-	eid1_1ID := "os1_my1"
-	eid1_2ID := "os1_my2"
-	eid2_1ID := "os2_my1"
-	eid2_2ID := "os2_my2"
-	service1ID := "1"
-	service2ID := "2"
-	service1_nodeport := 34211
-	service2_nodeport := 34212
+	// 	// HACK: 一个简单的测试用例子，写入静态配置数据
+	// 	eid1_1ID := "os1_my1"
+	// 	eid1_2ID := "os1_my2"
+	// 	eid2_1ID := "os2_my1"
+	// 	eid2_2ID := "os2_my2"
+	// 	service1ID := "1"
+	// 	service2ID := "2"
+	// 	service1_nodeport := 34211
+	// 	service2_nodeport := 34212
 
-	ic.eid2emeta[eid1_1ID] = metadata{ip: "10.5.75.2", protocol: "tcp", port: 3000}
-	ic.eid2emeta[eid1_2ID] = metadata{ip: "10.5.75.3", protocol: "tcp", port: 3000}
-	ic.eid2emeta[eid2_1ID] = metadata{ip: "10.5.88.2", protocol: "tcp", port: 3000}
-	ic.eid2emeta[eid2_2ID] = metadata{ip: "10.5.88.3", protocol: "tcp", port: 3000}
+	// 	ic.eid2emeta[eid1_1ID] = metadata{ip: "10.5.75.2", protocol: "tcp", port: 3000}
+	// 	ic.eid2emeta[eid1_2ID] = metadata{ip: "10.5.75.3", protocol: "tcp", port: 3000}
+	// 	ic.eid2emeta[eid2_1ID] = metadata{ip: "10.5.88.2", protocol: "tcp", port: 3000}
+	// 	ic.eid2emeta[eid2_2ID] = metadata{ip: "10.5.88.3", protocol: "tcp", port: 3000}
 
-	ic.sid2eid[service1ID] = []string{eid1_1ID, eid2_1ID}
-	ic.sid2eid[service2ID] = []string{eid1_2ID, eid2_2ID}
+	// 	ic.sid2eid[service1ID] = []string{eid1_1ID, eid2_1ID}
+	// 	ic.sid2eid[service2ID] = []string{eid1_2ID, eid2_2ID}
 
-	ic.sid2smeta[service1ID] = metadata{ip: "10.100.100.1", protocol: "tcp", port: 7070}
-	ic.sid2smeta[service2ID] = metadata{ip: "10.100.100.2", protocol: "tcp", port: 6060}
+	// 	ic.sid2smeta[service1ID] = metadata{ip: "10.100.100.1", protocol: "tcp", port: 7070}
+	// 	ic.sid2smeta[service2ID] = metadata{ip: "10.100.100.2", protocol: "tcp", port: 6060}
 
-	ic.nodeport2sid[service1_nodeport] = service1ID
-	ic.nodeport2sid[service2_nodeport] = service2ID
+	// ic.nodeport2sid[service1_nodeport] = service1ID
+	// ic.nodeport2sid[service2_nodeport] = service2ID
 }
 
 // SyncIptables 根据本地IptablesController的数据同步iptables规则
