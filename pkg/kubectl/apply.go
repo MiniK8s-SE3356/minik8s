@@ -15,6 +15,7 @@ var table = map[string]func(b []byte) error{
 	"Pod":        applyPod,
 	"Service":    applyService,
 	"ReplicaSet": applyReplicaSet,
+	"Namespace":  applyNamespace,
 }
 
 func ApplyCmdHandler(cmd *cobra.Command, args []string) {
@@ -88,6 +89,31 @@ func applyService(b []byte) error {
 }
 
 func applyReplicaSet(b []byte) error {
+	return nil
+}
+
+func applyNamespace(b []byte) error {
+	var namespaceDesc ty.NamespaceDesc
+
+	err := yaml.Unmarshal(b, &namespaceDesc)
+	if err != nil {
+		fmt.Println("failed to unmarshal pod yaml")
+		return err
+	}
+
+	jsonData, err := json.Marshal(namespaceDesc)
+	if err != nil {
+		fmt.Println("failed to translate into json")
+		return err
+	}
+	result, err := PostRequest(url.AddPodURL, jsonData)
+	if err != nil {
+		fmt.Println("error when post request")
+		return err
+	}
+
+	fmt.Println(result)
+
 	return nil
 }
 
