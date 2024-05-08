@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	neturl "net/url"
 )
 
 func GetRequest(url string) (string, error) {
@@ -20,6 +21,24 @@ func GetRequest(url string) (string, error) {
 		panic(err)
 	}
 	return string(body), nil
+}
+
+func GetRequestWithParams(url string, params map[string]string) (string, error) {
+	parseURL, err := neturl.Parse(url)
+	if err != nil {
+		fmt.Println(err.Error())
+		return "", err
+	}
+
+	p := neturl.Values{}
+	for k, v := range params {
+		p.Set(k, v)
+	}
+
+	parseURL.RawQuery = p.Encode()
+	urlWithParams := parseURL.String()
+
+	return GetRequest(urlWithParams)
 }
 
 func PostRequest(url string, jsonData []byte) (string, error) {

@@ -6,14 +6,22 @@ func AddPod(desc *ty.PodDesc) (string, error) {
 	return "", nil
 }
 
-func RemovePod() error {
-	return nil
+func RemovePod(namespace string, name string) (string, error) {
+	return "", nil
 }
 
-func ModifyPod() error {
-	return nil
+func ModifyPod() (string, error) {
+	return "", nil
 }
 
-func GetPod() (string, error) {
+func GetPod(namespace string, name string) (string, error) {
+	return "", nil
+}
+
+func GetPods(namespace string) (string, error) {
+	return "", nil
+}
+
+func GetAllPods() (string, error) {
 	return "", nil
 }

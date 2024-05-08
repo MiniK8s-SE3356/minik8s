@@ -47,7 +47,6 @@ func RemoveNamespace(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, result)
-
 }
 
 // GET 无参数

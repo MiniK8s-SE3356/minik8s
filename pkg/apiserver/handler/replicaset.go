@@ -21,8 +21,23 @@ func AddReplicaSet(c *gin.Context) {
 }
 
 func RemoveReplicaSet(c *gin.Context) {
-	var namespace string
-	var name string
+	var param map[string]string
+	if err := c.ShouldBindJSON(&param); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	namespace, ok := param["namespace"]
+	if !ok {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "no field 'namespace'"})
+		return
+	}
+
+	name, ok := param["name"]
+	if !ok {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "no field 'name'"})
+		return
+	}
 
 	err := process.RemoveReplicaSet(namespace, name)
 	if err != nil {
@@ -30,19 +45,34 @@ func RemoveReplicaSet(c *gin.Context) {
 	}
 }
 
-func ModifyReplicaSet(c *gin.Context) {
-	var namespace string
-	var name string
+// func ModifyReplicaSet(c *gin.Context) {
+// 	var namespace string
+// 	var name string
 
-	err := process.ModifyReplicaSet(namespace, name)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-	}
-}
+// 	err := process.ModifyReplicaSet(namespace, name)
+// 	if err != nil {
+// 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+// 	}
+// }
 
 func GetReplicaSet(c *gin.Context) {
-	var namespace string
-	var name string
+	var param map[string]string
+	if err := c.ShouldBindJSON(&param); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	namespace, ok := param["namespace"]
+	if !ok {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "no field 'namespace'"})
+		return
+	}
+
+	name, ok := param["name"]
+	if !ok {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "no field 'name'"})
+		return
+	}
 
 	result, err := process.GetReplicaSet(namespace, name)
 	if err != nil {

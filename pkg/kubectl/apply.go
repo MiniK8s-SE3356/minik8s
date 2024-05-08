@@ -11,7 +11,7 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-var table = map[string]func(b []byte) error{
+var applyFuncTable = map[string]func(b []byte) error{
 	"Pod":        applyPod,
 	"Service":    applyService,
 	"ReplicaSet": applyReplicaSet,
@@ -47,13 +47,14 @@ func ApplyCmdHandler(cmd *cobra.Command, args []string) {
 	}
 
 	kind := tmp["kind"].(string)
-	if table[kind] == nil {
+	targetFunc, ok := applyFuncTable[kind]
+	if !ok {
 		fmt.Println("kind not supported")
 		return
 	}
 
 	// 根据kind跳转到相应的处理函数，相当于switch
-	err = table[kind](data)
+	err = targetFunc(data)
 	if err != nil {
 		fmt.Println(err)
 	}

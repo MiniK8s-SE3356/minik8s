@@ -6,6 +6,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
+const defaultNamespace = "Default"
+
 var rootCmd = &cobra.Command{
 	Use:   "rootcmd",
 	Short: "rootcmd",
