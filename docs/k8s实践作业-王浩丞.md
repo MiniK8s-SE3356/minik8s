@@ -1,6 +1,6 @@
 # K8s实践作业
 
-> author: 王浩丞
+> author: 王浩丞  
 > version: 1.0
 
 ## 实验机器
@@ -194,8 +194,9 @@ spec:
 ```
 
 ## Q5: 请在worker节点上，在部署Pod的前后分别采⽤ crictl ps 查看所有运⾏中的容器并对⽐两者的区别。请将创建该Pod所创建的全部新容器列举出来，并⼀⼀解释其作⽤
-创建后pod如下：
+创建后pod如下：  
 ![alt text](../assets/minik8s_practice_whc/image-5.png)  
+
 Worker Node上执行crictl ps变化如下：  
 ![alt text](../assets/minik8s_practice_whc/image-6.png)    
 可以看到，容器中新增了创建的fileserver和downloader  
@@ -245,7 +246,7 @@ spec:
         - name: share-volume
           emptyDir: {}
 ```
-deployment创建后，pod和deployment部分如下：
+deployment创建后，pod和deployment部分如下：  
 ![alt text](../assets/minik8s_practice_whc/image-19.png)  
 ![alt text](../assets/minik8s_practice_whc/image-10.png)  
 可以看到，deployment成功创建，且对应要求的pod也被真正拉起  
@@ -272,7 +273,7 @@ spec:
 ```
 创建后service展示如下，集群内`curl`请求虚拟IP服务效果如下：  
 ![alt text](../assets/minik8s_practice_whc/image-11.png)  
-![alt text](../assets/minik8s_practice_whc/image-15.png) 
+![alt text](../assets/minik8s_practice_whc/image-15.png)   
 可以看到均符合预期  
 
 ## Q10: 请在master节点中使⽤ iptables-save 指令输出所有的iptables规则，将其中与Service访问相关的iptable规则记录在实践⽂档中，并解释⽹络流量是如何采⽤基于iptables的⽅式被从对Service的clusterIP的访问定向到实际的Pod中的，⼜是如何实现负载均衡到三个pod的。
@@ -555,7 +556,7 @@ int main() {
     	return 0;
 }
 ```
-执行结果：
+执行结果：  
 ![alt text](../assets/minik8s_practice_whc/image-16.png)   
 可以看到负载是有变动的，但是受限于所创建虚拟机的配置，无论是使单个压测程序fork更多次，还是同时开多个压测程序，都不能更密集的发送请求  
 
