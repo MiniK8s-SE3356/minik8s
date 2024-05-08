@@ -20,7 +20,7 @@ const (
 
 	AddNamespaceURL      = prefix + "/addNamespace"
 	RemoveNamespaceURL   = prefix + "/removeNamespace"
-	GetNamespacesURL     = prefix + "/getNamespaces"
+	GetNamespaceURL      = prefix + "/getNamespace"
 	DescribeNamespaceURL = prefix + "/describeNamespace"
 
 	AddReplicasetURL      = prefix + "/addReplicaset"

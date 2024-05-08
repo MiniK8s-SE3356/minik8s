@@ -17,9 +17,28 @@ func example(c *gin.Context) {
 }
 
 func bind(r *gin.Engine) {
-	r.GET(url.AddPodURL, handler.AddPod)
-	r.GET(url.GetPodURL, example)
+	// Pod
+	r.POST(url.AddPodURL, handler.AddPod)
+	r.GET(url.GetPodURL, handler.GetPod)
+	r.POST(url.RemovePodURL, handler.RemovePod)
+	r.GET(url.DescribePodURL, handler.DescribePod)
+
+	r.POST(url.AddNamespaceURL, handler.AddNamespace)
+	r.GET(url.GetNamespaceURL, handler.GetNamespace)
+	r.POST(url.RemoveNamespaceURL, handler.RemoveNamespace)
+	r.GET(url.DescribeNamespaceURL, handler.DescribeNamespace)
+
 	r.GET(url.GetNodesURL, example)
+
+	r.POST(url.AddNamespaceURL, handler.AddNamespace)
+	r.GET(url.GetNamespaceURL, handler.GetNamespace)
+	r.POST(url.RemoveNamespaceURL, handler.RemoveNamespace)
+	r.GET(url.DescribeNamespaceURL, handler.DescribeNamespace)
+
+	r.POST(url.AddServiceURL, handler.AddService)
+	r.GET(url.GetServiceURL, handler.GetService)
+	r.POST(url.RemoveServiceURL, handler.RemoveService)
+	r.GET(url.DescribeServiceURL, handler.DescribeService)
 }
 
 func main() {

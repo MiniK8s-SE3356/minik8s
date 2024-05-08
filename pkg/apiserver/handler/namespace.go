@@ -26,7 +26,7 @@ func AddNamespace(c *gin.Context) {
 	c.JSON(http.StatusOK, result)
 }
 
-// DELETE 参数类型 {name: "xxx"}
+// POST 参数类型 {name: "xxx"}
 func RemoveNamespace(c *gin.Context) {
 	var param map[string]string
 	if err := c.ShouldBindJSON(&param); err != nil {
@@ -49,9 +49,28 @@ func RemoveNamespace(c *gin.Context) {
 	c.JSON(http.StatusOK, result)
 }
 
-// GET 无参数
-func GetNamespaces(c *gin.Context) {
-	result, err := process.GetNamespaces()
+func GetNamespace(c *gin.Context) {
+	namespace := c.Query("namespace")
+	if namespace == "" {
+		namespace = "Default"
+	}
+
+	result, err := process.GetNamespace(namespace)
+	if err != nil {
+		fmt.Println("error in process.GetNamespace ", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	}
+
+	c.JSON(http.StatusOK, result)
+}
+
+func DescribeNamespace(c *gin.Context) {
+	namespace := c.Query("namespace")
+	if namespace == "" {
+		namespace = "Default"
+	}
+
+	result, err := process.RemoveNamespace(namespace)
 	if err != nil {
 		fmt.Println("error in process.GetNamespace ", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})

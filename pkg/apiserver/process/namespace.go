@@ -12,6 +12,10 @@ func RemoveNamespace(name string) (string, error) {
 	return "", nil
 }
 
+func GetNamespace(name string) (string, error) {
+	return "", nil
+}
+
 func GetNamespaces() (string, error) {
 	return "", nil
 }

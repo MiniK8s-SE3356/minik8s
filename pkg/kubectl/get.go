@@ -118,7 +118,7 @@ func getNamespace(namespace string, name string) (string, error) {
 		// "name":      name,
 	}
 
-	result, err := GetRequestWithParams(url.GetNamespacesURL, params)
+	result, err := GetRequestWithParams(url.GetNamespaceURL, params)
 	if err != nil {
 		fmt.Println("error in get namespace ", err.Error())
 		return "", err

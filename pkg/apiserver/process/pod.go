@@ -25,3 +25,15 @@ func GetPods(namespace string) (string, error) {
 func GetAllPods() (string, error) {
 	return "", nil
 }
+
+func DescribePod(namespace string, name string) (string, error) {
+	return "", nil
+}
+
+func DescribePods(namespace string) (string, error) {
+	return "", nil
+}
+
+func DescribeAllPods() (string, error) {
+	return "", nil
+}

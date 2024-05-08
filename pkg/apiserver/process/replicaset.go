@@ -23,7 +23,25 @@ func ModifyReplicaSet(namespace string, name string) error {
 }
 
 func GetReplicaSet(namespace string, name string) (string, error) {
-	// 这里需要传回哪些东西，用什么格式？
+	return "", nil
+}
 
+func GetReplicaSets(namespace string) (string, error) {
+	return "", nil
+}
+
+func GetAllReplicaSets() (string, error) {
+	return "", nil
+}
+
+func DescribeReplicaSet(namespace string, name string) (string, error) {
+	return "", nil
+}
+
+func DescribeReplicaSets(namespace string) (string, error) {
+	return "", nil
+}
+
+func DescribeAllReplicaSets() (string, error) {
 	return "", nil
 }
