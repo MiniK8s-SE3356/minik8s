@@ -6,12 +6,25 @@ const (
 	rootURL = "http://localhost:9000"
 	prefix  = rootURL + "/api/" + version
 
-	AddPodURL  = prefix + "/addPod"
-	GetPodsURL = prefix + "/getPods"
+	AddPodURL      = prefix + "/addPod"
+	RemovePodURL   = prefix + "/removePod"
+	GetPodURL      = prefix + "/getPod"
+	DescribePodURL = prefix + "/describePod"
+
+	AddServiceURL      = prefix + "/addService"
+	RemoveServiceURL   = prefix + "/removeService"
+	GetServiceURL      = prefix + "/getService"
+	DescribeServiceURL = prefix + "/describeService"
 
 	GetNodesURL = prefix + "/getNodes"
 
-	AddNamespace    = prefix + "/addNamespace"
-	RemoveNamespace = prefix + "/removeNamespace"
-	GetNamespaces   = prefix + "/getNamespaces"
+	AddNamespaceURL      = prefix + "/addNamespace"
+	RemoveNamespaceURL   = prefix + "/removeNamespace"
+	GetNamespacesURL     = prefix + "/getNamespaces"
+	DescribeNamespaceURL = prefix + "/describeNamespace"
+
+	AddReplicasetURL      = prefix + "/addReplicaset"
+	RemoveReplicasetURL   = prefix + "/removeReplicaset"
+	GetReplicasetURL      = prefix + "/getReplicaset"
+	DescribeReplicasetURL = prefix + "/describeReplicaset"
 )

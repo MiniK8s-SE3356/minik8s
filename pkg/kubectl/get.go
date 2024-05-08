@@ -72,7 +72,7 @@ func getPod(namespace string, name string) (string, error) {
 		"name":      name,
 	}
 
-	result, err := GetRequestWithParams(url.GetPodsURL, params)
+	result, err := GetRequestWithParams(url.GetPodURL, params)
 	if err != nil {
 		fmt.Println("error in get pod ", err.Error())
 		return "", err
@@ -82,13 +82,47 @@ func getPod(namespace string, name string) (string, error) {
 }
 
 func getService(namespace string, name string) (string, error) {
-	return "", nil
+	params := map[string]string{
+		"namespace": namespace,
+		"name":      name,
+	}
+
+	result, err := GetRequestWithParams(url.GetServiceURL, params)
+	if err != nil {
+		fmt.Println("error in get service ", err.Error())
+		return "", err
+	}
+
+	return result, nil
 }
 
 func getReplicaSet(namespace string, name string) (string, error) {
-	return "", nil
+	params := map[string]string{
+		"namespace": namespace,
+		"name":      name,
+	}
+
+	result, err := GetRequestWithParams(url.GetReplicasetURL, params)
+	if err != nil {
+		fmt.Println("error in get replicaset ", err.Error())
+		return "", err
+	}
+
+	return result, nil
 }
 
 func getNamespace(namespace string, name string) (string, error) {
-	return "", nil
+	// 这里用namespace传
+	params := map[string]string{
+		"namespace": namespace,
+		// "name":      name,
+	}
+
+	result, err := GetRequestWithParams(url.GetNamespacesURL, params)
+	if err != nil {
+		fmt.Println("error in get namespace ", err.Error())
+		return "", err
+	}
+
+	return result, nil
 }

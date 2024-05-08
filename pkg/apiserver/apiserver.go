@@ -10,12 +10,6 @@ import (
 
 // handler、process相当于spring里面的controller、service，临时先用这个名字
 
-const (
-	version     = "v1"
-	getPodsURL  = "/api/" + version + "/getPods"
-	getNodesURL = "/api/" + version + "/getNodes"
-)
-
 func example(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"message": "pong",
@@ -24,7 +18,7 @@ func example(c *gin.Context) {
 
 func bind(r *gin.Engine) {
 	r.GET(url.AddPodURL, handler.AddPod)
-	r.GET(url.GetPodsURL, example)
+	r.GET(url.GetPodURL, example)
 	r.GET(url.GetNodesURL, example)
 }
 

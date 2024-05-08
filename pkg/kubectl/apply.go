@@ -86,10 +86,83 @@ func applyPod(b []byte) error {
 }
 
 func applyService(b []byte) error {
+	var ServiceDesc ty.ServiceDesc
+
+	err := yaml.Unmarshal(b, &ServiceDesc)
+	if err != nil {
+		fmt.Println("failed to unmarshal service yaml")
+		return err
+	}
+
+	// 这里要区分service下面的子类型
+	serviceType, ok := ServiceDesc.Spec["type"]
+	if !ok {
+		// 默认是ClusterIP
+		serviceType = "ClusterIP"
+	}
+
+	var jsonData []byte
+	if serviceType == "ClusterIP" {
+		var desc ty.ServiceClusterIPDesc
+		err := yaml.Unmarshal(b, &desc)
+		if err != nil {
+			fmt.Println("failed to unmarshal clusterIP service ", err.Error())
+			return err
+		}
+
+		jsonData, err = json.Marshal(desc)
+		if err != nil {
+			fmt.Println("failed to marshal clusterIP service", err.Error())
+			return err
+		}
+	} else if serviceType == "NodePort" {
+		var desc ty.ServiceNodePortDesc
+		err := yaml.Unmarshal(b, &desc)
+		if err != nil {
+			fmt.Println("failed to unmarshal NodePort service ", err.Error())
+			return err
+		}
+
+		jsonData, err = json.Marshal(desc)
+		if err != nil {
+			fmt.Println("failed to marshal NodePort service", err.Error())
+			return err
+		}
+	}
+
+	result, err := PostRequest(url.AddServiceURL, jsonData)
+	if err != nil {
+		fmt.Println("error when post request ", err.Error())
+		return err
+	}
+
+	fmt.Println(result)
+
 	return nil
 }
 
 func applyReplicaSet(b []byte) error {
+	var replicaSetDesc ty.ReplicaSetDesc
+
+	err := yaml.Unmarshal(b, &replicaSetDesc)
+	if err != nil {
+		fmt.Println("failed to unmarshal replicaset yaml ", err.Error())
+		return err
+	}
+
+	jsonData, err := json.Marshal(replicaSetDesc)
+	if err != nil {
+		fmt.Println("failed to translate into json ", err.Error())
+		return err
+	}
+	result, err := PostRequest(url.AddReplicasetURL, jsonData)
+	if err != nil {
+		fmt.Println("error when post request ", err.Error())
+		return err
+	}
+
+	fmt.Println(result)
+
 	return nil
 }
 
@@ -98,7 +171,7 @@ func applyNamespace(b []byte) error {
 
 	err := yaml.Unmarshal(b, &namespaceDesc)
 	if err != nil {
-		fmt.Println("failed to unmarshal pod yaml")
+		fmt.Println("failed to unmarshal namespace yaml")
 		return err
 	}
 
