@@ -1,7 +1,7 @@
 # K8s实践作业
 
 > author: 王浩丞  
-> version: 1.0
+> version: 1.0  
 
 ## 实验机器
 在本地Vmware中创建的两个ubuntu虚拟机，IP分别为`192.168.157.132`和`192.168.157.133`,均在超级用户下执行命令
@@ -200,6 +200,7 @@ spec:
 Worker Node上执行crictl ps变化如下：  
 ![alt text](../assets/minik8s_practice_whc/image-6.png)    
 可以看到，容器中新增了创建的fileserver和downloader  
+> 实际上应该还有创建的pause容器，但是crictl ps并不会列出
 
 ## Q6: 请结合博客 https://blog.51cto.com/u_15069443/4043930 的内容，将容器中的veth与host机器上的veth匹配起来，并采⽤ ip link 和 ip addr 指令找到位于host机器中的所有⽹络设备及其之间的关系。结合两者的输出，试绘制出worker节点中涉及新部署Pod的所有⽹络设备和其⽹络结构，并在图中标注出从master节点中使⽤pod ip访问位于worker节点中的Pod的⽹络路径
 downloader容器中：    
@@ -208,6 +209,17 @@ fileserver容器中：
 ![alt text](../assets/minik8s_practice_whc/image-8.png)  
 worker node宿主机中：    
 ![alt text](../assets/minik8s_practice_whc/image-9.png)    
+
+参考[https://dustinspecker.com/posts/how-do-kubernetes-and-docker-create-ip-addresses/](https://dustinspecker.com/posts/how-do-kubernetes-and-docker-create-ip-addresses/),linux采取创建并绑定virtual ethernet devices对的方式，建立不同network namespce之间的信息通道，宿主机上的veth将由虚拟网桥设备整合，如下图所示：  
+![alt text](../assets/minik8s_practice_whc/image-20.png)    
+因为上述两个容器所属同一个pod,也即其加入了同一个pause容器的network namespace中，根据上述绑定关系，容器和宿主机network namespace之间的veth对应关系为：  
+容器中`2: eth0@if6`对应宿主机中`6： vethe358f9b7@if2`  
+
+在宿主机中还可以看到一个新的虚拟网络接口设备`flannel.1`，并为其分配ip route规则，使得集群pod之间能够不使用nat技术进行通信，参考[https://www.zhihu.com/tardis/zm/art/140711132?source_id=1003](https://www.zhihu.com/tardis/zm/art/140711132?source_id=1003),其网络结构如下：  
+![alt text](../assets/minik8s_practice_whc/image-21.png)  
+
+从master节点中使用pod ip访问位于worker节点中的Pod的网络路径如下：  
+![alt text](../assets/minik8s_practice_whc/image-22.png)  
 
 
 ## Q7: 请采⽤声明式接⼝对Deployment进⾏部署，并将Deployment所需要的yaml⽂件记录在⽂档中
@@ -249,9 +261,14 @@ spec:
 deployment创建后，pod和deployment部分如下：  
 ![alt text](../assets/minik8s_practice_whc/image-19.png)  
 ![alt text](../assets/minik8s_practice_whc/image-10.png)  
-可以看到，deployment成功创建，且对应要求的pod也被真正拉起  
+可以看到，deployment成功创建，且对应要求的pod也被真正拉起3份副本  
 
 ## Q8: 在该使⽤Deployment的部署⽅式下，不同Pod之间的⽂件是否共享？该情况会在实际使⽤⽂件下载与共享服务时产⽣怎样的实际效果与问题？应如何解决这⼀问题？
+该deployment配置下，卷只能在同一个节点上的同一pod的不同容器之间共享，并且当pod终止时，该卷上的所有数据都将被删除，这种情况会导致：
+1. 共享/下载的文件不能真正持久化存储，会随着pod的终止而被删除
+2. 不同pod功能一致，理论上应该作为一个整体对外暴露服务，但是在volume不共享的设置下，如果两次请求被负载到不同的pod，可能会出现用户视角的不一致问题（如下载了一个文件在某个pod,而查看下载文件时负载到了另一个pod导致未找到刚才下载的文件）
+
+基于上述问题，我们可以采取使用PV和PVC对象的方式来解决问题，PV和PVC作为k8s中的一种存储抽象，不属于任何一个Namespace，逻辑和实现上均具备共享性质  
 
 ## Q9: 请采⽤声明式接⼝对Service进⾏部署，并将部署所需的yaml⽂件记录在实践⽂档中
 创建service的yaml文件如下，可以通过`kubectl apply -f <filename>`应用:   
@@ -446,16 +463,30 @@ COMMIT
 COMMIT
 # Completed on Thu May  9 00:31:58 2024
 ```
+Cluster创建的虚拟IP只在集群内有效。从iptables来看，即机器只有针对这些虚拟IP配置好本地iptables的转发规则，才能实现访问服务时的流量转发   
+k8s的iptables比较复杂，这里只解释有关网络包destination重定向的部分规则，主要集中在`nat`表中：
+1. 在原装链PREROUTING和OUTPUT中加入一条规则，使得所有的网络包需要进入子链KUBE-SERVICE并经过其中的一系列规则
+2. KUBE-SERVICES中有多条规则，分别匹配不同的service上的虚拟IP+虚拟port,并在匹配成功后跳转至其下子链KUBE-SVC-XXX，每条KUBE-SVC-XXX链对应一个service开放的一个端口，即一种服务
+3. KUBE-SVC-XXX下集合了多条KUBE-SEP-XXX链，每条KUBE-SEP-XXX链对应一个endpoint  
+   KUBE-SVC-XXX还具备负载均衡方法，具体采用了iptables-external中的statistic模式，其支持random和round-robin两种负载模式，以上述存档为例，通过指定负载模式为random,并指定概率即可。注意，这个负载均衡策略只需要在每条KUBE-SVC-XXX的第一条规则中指定，其会应用到该链后续的所有规则中（如果有后续规则重写负载策略，将会在后续的规则中覆盖更早的负载均衡策略）
+4. KUBE-SEP-XXX是实际DNAT的链，会直接修改包的destination（前面的规则已经筛选过了）
+
+这样，对ClusterIP的服务请求先进入PREROUTING中，在匹配到对应的ip+port后跳转进入对应的KUBE-SVC-XXX链中，然后在其中负载均衡，转到一个KUBE-SEP-XXX中，并在其中被修改destination,以重定向到此service下的一个endponit中  
 
 ## Q11: kube-proxy组件在整个service的定义与实现过程中起到了什么作⽤？请⾃⾏查找资料，并解释在iptables模式下，kube-proxy的功能
+在k8s的视角中，kube-proxy实际控制了所属node的流量转发规则。而实际上，其又是通过netfilter的前端之一 —— iptables来实现的   
+
+参考[https://www.bookstack.cn/read/source-code-reading-notes/kubernetes-kube_proxy_process.md](https://www.bookstack.cn/read/source-code-reading-notes/kubernetes-kube_proxy_process.md),kube-proxy会以轮询或者被唤醒的机制，请求etcd里的service和对应的endpoint数据，并利用这些数据不断更新本地防火墙规则,以实现流量转发
+
+
 
 ## Q12&Q13: 请在上⾯部署的Deployment的基础上为其配置HPA，并将部署所需的yaml⽂件记录在实践⽂档中，如果对上⾯的Deployment配置有修改也请在⽂档中说明。具体参数为最⼤副本数为6，最⼩副本数为3，⽬标cpu平均利⽤率为40% & ⼩明发现，hpa缩容过快在负载抖动的情况下会引起pod被不必要地删除和再次创建，因此他决定限制缩容的速率，请为hpa配置缩容的速率限制为每分钟 10%，并将部署所需的yaml⽂件记录在实践⽂档中
 ### 安装metrics-server
 metrics-server是本任务引入的新的k8s插件，但是基于默认配置无法正常创建，需要进行自定义配置，具体方法参考文章[https://cloud.tencent.com/developer/article/1818865](https://cloud.tencent.com/developer/article/1818865)： 
 1. 执行`wget https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/high-availability-1.21+.yaml`，将配置文件拉至本地
 2. 针对metrics-server官方镜像源不可访问的问题，首先在拉下的默认配置文件中找到image版本（我的是v0.7.1），随后在docker hub上搜索`metrics-server:v0.7.1`，找到了一个fork的镜像[https://hub.docker.com/r/bishoyanwar24/metrics-server/tags](https://hub.docker.com/r/bishoyanwar24/metrics-server/tags)，将配置中的镜像源替换为新找到的源
-3. 修改其他部分
-4. 运行`kubectl apply -f`发现有一个metrics-server是Pending状态，另一个已经正常runing，参考[https://blog.csdn.net/qq_18287147/article/details/105179898](https://blog.csdn.net/qq_18287147/article/details/105179898)，为控制平面删除traint后，恢复正常  
+3. 按照文章修改其他部分
+4. 运行`kubectl apply -f`发现有一个metrics-server是pending状态，另一个已经正常runing，参考[https://blog.csdn.net/qq_18287147/article/details/105179898](https://blog.csdn.net/qq_18287147/article/details/105179898)，为控制平面删除traint后，恢复正常  
 
 最后安装效果如下：    
 ![alt text](../assets/minik8s_practice_whc/image-13.png)    
@@ -566,9 +597,9 @@ int main() {
 
 
 
-## 最后
+<!-- ## 最后
 首先，为配了半天的虚拟机留个纪念！  
 ![alt text](../assets/minik8s_practice_whc/image-18.png)
 配k8s是一个不能糊弄，也异常艰难的过程。特别是在实体机性能不算强，VMware各种崩的情况下。基本上每隔几个小时，VMware的网络就会全部崩溃，无法连接公网，只能重启一次，然后从头再配。甚至还出现了一次虚拟机crash导致windows一并carsh的情况    
 而换源不成功、网络请求不稳定、插件文档缺失、各模块版本不兼容、k8s官方文档过于繁杂、没有清晰的检测配置错误的思路等等问题也是令人头疼不已   
-不过最后还是成功拉起了k8s的小型集群，还是收获满满的！  
+不过最后还是成功拉起了k8s的小型集群，还是收获满满的！   -->
