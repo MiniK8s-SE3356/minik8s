@@ -6,6 +6,7 @@ import (
 
 	"github.com/MiniK8s-SE3356/minik8s/pkg/runtime/docker"
 	"github.com/MiniK8s-SE3356/minik8s/pkg/runtime/image"
+	minik8sTypes "github.com/MiniK8s-SE3356/minik8s/pkg/types"
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/filters"
@@ -67,7 +68,7 @@ func (cm *ContainerManager) ListAllContainers() ([]types.Container, error) {
 	return containers, nil
 }
 
-func (cm *ContainerManager) CreateContainer(name string, config *container.Config) (string, error) {
+func (cm *ContainerManager) CreateContainer(name string, config *minik8sTypes.CreateContainerConfig) (string, error) {
 	// Create a new container
 
 	// First, check image exists otherwise pull image to local
@@ -79,8 +80,28 @@ func (cm *ContainerManager) CreateContainer(name string, config *container.Confi
 
 	response, err := docker.DockerClient.ContainerCreate(
 		context.Background(),
-		config,
-		nil,
+		&container.Config{
+			Image:        config.Image,
+			Volumes:      config.Volumes,
+			WorkingDir:   config.WorkingDir,
+			Env:          config.Env,
+			Entrypoint:   config.Entrypoint,
+			Cmd:          config.Cmd,
+			ExposedPorts: config.ExposedPorts,
+			Labels:       config.Labels,
+		},
+		&container.HostConfig{
+			Binds:        config.Binds,
+			PortBindings: config.PortBindings,
+			NetworkMode:  container.NetworkMode(config.NetworkMode),
+			IpcMode:      container.IpcMode(config.IpcMode),
+			PidMode:      container.PidMode(config.PidMode),
+			VolumesFrom:  config.VolumesFrom,
+			Resources: container.Resources{
+				NanoCPUs: config.CPU,
+				Memory:   config.Memory,
+			},
+		},
 		nil,
 		nil,
 		name,

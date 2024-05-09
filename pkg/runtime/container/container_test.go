@@ -4,13 +4,12 @@ import (
 	"testing"
 
 	runtime_container "github.com/MiniK8s-SE3356/minik8s/pkg/runtime/container"
-	"github.com/docker/docker/api/types/container"
+	"github.com/MiniK8s-SE3356/minik8s/pkg/types"
 )
 
 func TestMain(m *testing.M) {
 	containerManager := &runtime_container.ContainerManager{}
-	// Test create container
-	config := &container.Config{
+	config := &types.CreateContainerConfig{
 		Image: "nginx:alpine",
 	}
 	id, err := containerManager.CreateContainer(
