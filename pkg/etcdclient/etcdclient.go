@@ -107,3 +107,32 @@ func (c *EtcdClient) GetWithPrefix(keyPrefix string) ([]KVPair, error) {
 
 	return result, nil
 }
+
+func (c *EtcdClient) Ls(dir string) ([]KVPair, error) {
+	// gpt说是可以这么写，但是get出来的dir和file分别是什么格式还不清楚
+	response, err := c.cl.Get(context.TODO(), dir)
+	if err != nil {
+		fmt.Println("failed to get with prefix ", err.Error())
+		return []KVPair{}, err
+	}
+
+	var result []KVPair
+	for _, kvp := range response.Kvs {
+		result = append(result, KVPair{Key: string(kvp.Key), Value: string(kvp.Value)})
+	}
+
+	return result, nil
+}
+
+func (c *EtcdClient) Mkdir(dirPath string) error {
+	// 虽然etcd提供了ls mkdir这样的命令，但是实际上这只是对prefix的一种等效处理
+	// 并不存在真正的创建
+	// 所以put的时候不需要先mkdir再put，put进去就直接“创建完成”了
+	// 不过这里还是提供了一个mkdir方法
+	if _, err := c.cl.Put(context.TODO(), dirPath, ""); err != nil {
+		fmt.Println("failed to put to etcd ", err.Error())
+		return err
+	}
+
+	return nil
+}
