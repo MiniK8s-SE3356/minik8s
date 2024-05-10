@@ -40,3 +40,6 @@ type CreateContainerConfig struct {
 	// 3.NetworkingConfig:
 	// TODO: There is no need to modify NetworkingConfig for now, maybe add in the future
 }
+
+type KubeletConfiguration struct {
+}
