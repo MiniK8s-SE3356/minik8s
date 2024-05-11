@@ -3,6 +3,7 @@ module github.com/MiniK8s-SE3356/minik8s
 go 1.22.2
 
 require (
+	github.com/coreos/go-iptables v0.7.0
 	github.com/gin-gonic/gin v1.9.1
 	github.com/spf13/cobra v1.8.0
 	go.etcd.io/etcd/client/v3 v3.5.13
