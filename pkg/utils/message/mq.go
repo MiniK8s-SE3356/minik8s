@@ -132,6 +132,8 @@ func (mq *MQConnection) Publish(exchange string, routingKey string, contentType 
 }
 
 // Subscribe starts listening on a queue and calls the callback function when a message is received
+// This function will be blocked util 'done' channel receives a message or closed.
+// You should prepare a 'chan bool' outside the function and send a message to it when you want to stop listening.
 func (mq *MQConnection) Subscribe(queue string, callback func(amqp.Delivery), done <-chan bool) error {
 	ch, err := mq.Conn.Channel()
 	if err != nil {
@@ -156,20 +158,20 @@ func (mq *MQConnection) Subscribe(queue string, callback func(amqp.Delivery), do
 
 	// Start a goroutine to handle messages
 	go func() {
-		// for {
-		// 	select {
-		// 	case msg := <-msgChannel:
-		// 		callback(msg)
-		// 	case <-done:
-		// 		fmt.Println("Unsubscribing from queue: ", queue)
-		// 		return
-		// 	}
-		// }
-		for msg := range msgChannel {
+		for {
+			msg, ok := <-msgChannel
+			if !ok {
+				fmt.Println("Subscribe message channel closed")
+				return
+			}
+			fmt.Println("Received message")
 			callback(msg)
 		}
 	}()
+
 	fmt.Println("Subscribed to queue: ", queue)
+
+	<-done
 
 	return nil
 }
