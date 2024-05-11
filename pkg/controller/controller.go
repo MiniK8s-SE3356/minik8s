@@ -9,7 +9,7 @@ import (
 func StartController() {
 
 	fmt.Printf("Hello Controller!\n")
-	kube_proxy := app.NewController()
-	kube_proxy.Init()
-	kube_proxy.Run()
+	controller := app.NewController()
+	controller.Init()
+	controller.Run()
 }
