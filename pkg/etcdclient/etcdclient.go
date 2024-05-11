@@ -18,8 +18,8 @@ type KVPair struct {
 }
 
 const (
-	etcdURL = ""
-	timeout = 5 * 1000 * 1000
+	EtcdURL = ""
+	Timeout = 5 * 1000 * 1000
 )
 
 func Connect(endpoints []string, dialTimeout time.Duration) (*EtcdClient, error) {
@@ -33,7 +33,7 @@ func Connect(endpoints []string, dialTimeout time.Duration) (*EtcdClient, error)
 		return nil, err
 	}
 
-	timeoutContext, cancel := context.WithTimeout(context.Background(), timeout)
+	timeoutContext, cancel := context.WithTimeout(context.Background(), Timeout)
 	defer cancel()
 	_, err = cli.Status(timeoutContext, endpoints[0])
 	if err != nil {

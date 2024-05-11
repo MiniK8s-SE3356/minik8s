@@ -1,10 +1,13 @@
-package main
+package server
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/MiniK8s-SE3356/minik8s/pkg/apiserver/handler"
+	"github.com/MiniK8s-SE3356/minik8s/pkg/apiserver/process"
 	"github.com/MiniK8s-SE3356/minik8s/pkg/apiserver/url"
+	"github.com/MiniK8s-SE3356/minik8s/pkg/etcdclient"
 	"github.com/gin-gonic/gin"
 )
 
@@ -41,7 +44,14 @@ func bind(r *gin.Engine) {
 	r.GET(url.DescribeServiceURL, handler.DescribeService)
 }
 
-func main() {
+func Start() {
+	var err error
+	process.EtcdCli, err = etcdclient.Connect([]string{etcdclient.EtcdURL}, etcdclient.Timeout)
+	if err != nil {
+		fmt.Println("failed to connect to etcd ", err.Error())
+		return
+	}
+
 	r := gin.Default()
 	bind(r)
 	r.Run() // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
