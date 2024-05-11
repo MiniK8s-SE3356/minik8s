@@ -12,6 +12,13 @@ type RuntimeManager struct {
 	imageManager     *image.ImageManager
 }
 
+func NewRuntimeManager() *RuntimeManager {
+	return &RuntimeManager{
+		containerManager: &runtime_container.ContainerManager{},
+		imageManager:     &image.ImageManager{},
+	}
+}
+
 func (rm *RuntimeManager) CreatePod(pod *apiobject.Pod) (string, error) {
 	pauseContainerId, err := rm.CreateAndStartPauseContainer(pod)
 	if err != nil {
