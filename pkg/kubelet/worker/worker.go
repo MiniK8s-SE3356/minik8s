@@ -33,8 +33,9 @@ func NewPodWorker() *PodWorker {
 	}
 }
 
-func (p *PodWorker) AddTask(task *Task) {
+func (p *PodWorker) AddTask(task *Task) error {
 	p.TaskQueue <- task
+	return nil
 }
 
 func (p *PodWorker) Run() {

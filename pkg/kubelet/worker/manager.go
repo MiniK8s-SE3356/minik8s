@@ -1,6 +1,8 @@
 package worker
 
 import (
+	"fmt"
+
 	apiobject "github.com/MiniK8s-SE3356/minik8s/pkg/apiObject"
 )
 
@@ -17,17 +19,43 @@ type PodManager interface {
 // podManager is the default implementation of PodManager.
 type podManager struct {
 	// podWorkers is a map of pod workers indexed by pod UID.
-	PodWorkers map[string]PodWorker
+	PodWorkers map[string]*PodWorker
 }
 
 func NewPodManager() PodManager {
 	return &podManager{
-		PodWorkers: make(map[string]PodWorker),
+		PodWorkers: make(map[string]*PodWorker),
 	}
 }
 
 func (pm *podManager) AddPod(pod *apiobject.Pod) error {
-	// TODO: Implement this method
+	fmt.Println(pod.Metadata.Name + " is added to the pod manager.")
+	UID := pod.Metadata.UUID
+
+	// Check if the pod worker already exists
+	if _, ok := pm.PodWorkers[UID]; ok {
+		return fmt.Errorf("pod worker with UID %s already exists", UID)
+	}
+
+	// Create a new pod worker
+	podWorker := NewPodWorker()
+	pm.PodWorkers[UID] = podWorker
+
+	// Create a go routine to run the pod worker
+	go podWorker.Run()
+
+	// Create add task for the pod worker
+	addTask := &Task{
+		Type: Task_Add,
+		Pod:  pod,
+	}
+
+	// Add the task to the pod worker's queue
+	err := podWorker.AddTask(addTask)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
