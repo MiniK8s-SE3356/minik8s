@@ -4,14 +4,14 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/MiniK8s-SE3356/minik8s/pkg/apiObject/yaml"
 	"github.com/MiniK8s-SE3356/minik8s/pkg/apiserver/process"
-	"github.com/MiniK8s-SE3356/minik8s/pkg/ty"
 	"github.com/gin-gonic/gin"
 )
 
 // POST 参数类型NamespaceDesc
 func AddNamespace(c *gin.Context) {
-	var desc ty.NamespaceDesc
+	var desc yaml.NamespaceDesc
 	if err := c.ShouldBindJSON(&desc); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return

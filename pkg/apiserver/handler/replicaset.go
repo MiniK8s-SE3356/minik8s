@@ -4,15 +4,15 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/MiniK8s-SE3356/minik8s/pkg/apiObject/yaml"
 	"github.com/MiniK8s-SE3356/minik8s/pkg/apiserver/process"
-	"github.com/MiniK8s-SE3356/minik8s/pkg/ty"
 
 	"github.com/gin-gonic/gin"
 )
 
 // gin server的 /api/v1/addReplicaSet对应的方法
 func AddReplicaSet(c *gin.Context) {
-	var desc ty.ReplicaSetDesc
+	var desc yaml.ReplicaSetDesc
 	if err := c.ShouldBindJSON(&desc); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return

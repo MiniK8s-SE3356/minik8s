@@ -6,7 +6,7 @@ import (
 
 	"github.com/MiniK8s-SE3356/minik8s/pkg/runtime/docker"
 	"github.com/MiniK8s-SE3356/minik8s/pkg/runtime/image"
-	minik8sTypes "github.com/MiniK8s-SE3356/minik8s/pkg/types"
+	minik8s_container "github.com/MiniK8s-SE3356/minik8s/pkg/types/container"
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/filters"
@@ -68,7 +68,7 @@ func (cm *ContainerManager) ListAllContainers() ([]types.Container, error) {
 	return containers, nil
 }
 
-func (cm *ContainerManager) CreateContainer(name string, config *minik8sTypes.CreateContainerConfig) (string, error) {
+func (cm *ContainerManager) CreateContainer(name string, config *minik8s_container.CreateContainerConfig) (string, error) {
 	// Create a new container
 
 	// First, check image exists otherwise pull image to local

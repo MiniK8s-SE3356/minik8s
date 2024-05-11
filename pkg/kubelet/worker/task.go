@@ -1,6 +1,6 @@
 package worker
 
-import apiobject "github.com/MiniK8s-SE3356/minik8s/pkg/apiObject"
+import apiobject_pod "github.com/MiniK8s-SE3356/minik8s/pkg/apiObject/pod"
 
 type TaskType string
 
@@ -13,5 +13,5 @@ const (
 
 type Task struct {
 	Type TaskType
-	Pod  *apiobject.Pod
+	Pod  *apiobject_pod.Pod
 }

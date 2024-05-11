@@ -1,10 +1,10 @@
 package process
 
 import (
-	"github.com/MiniK8s-SE3356/minik8s/pkg/ty"
+	"github.com/MiniK8s-SE3356/minik8s/pkg/apiObject/yaml"
 )
 
-func AddPod(desc *ty.PodDesc) (string, error) {
+func AddPod(desc *yaml.PodDesc) (string, error) {
 	return "", nil
 }
 

@@ -1,4 +1,4 @@
-package ty
+package yaml
 
 // for pod yaml
 type PodDesc struct {

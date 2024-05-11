@@ -1,4 +1,4 @@
-package ty
+package yaml
 
 type ReplicaSetDesc struct {
 	ApiVersion string `yaml:"apiVersion" json:"apiVersion"`

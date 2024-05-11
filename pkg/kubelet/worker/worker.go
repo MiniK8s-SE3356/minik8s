@@ -1,7 +1,7 @@
 package worker
 
 import (
-	apiobject "github.com/MiniK8s-SE3356/minik8s/pkg/apiObject"
+	apiobject_pod "github.com/MiniK8s-SE3356/minik8s/pkg/apiObject/pod"
 	minik8s_runtime "github.com/MiniK8s-SE3356/minik8s/pkg/runtime"
 )
 
@@ -19,10 +19,10 @@ type PodWorker struct {
 	// Queue of tasks to be executed of one pod.
 	TaskQueue chan *Task
 
-	AddTaskHandler func(*apiobject.Pod) (string, error)
+	AddTaskHandler func(*apiobject_pod.Pod) (string, error)
 	// TODO: Implement the following handlers
-	UpdateTaskHandler func(*apiobject.Pod) error
-	RemoveTaskHandler func(*apiobject.Pod) error
+	UpdateTaskHandler func(*apiobject_pod.Pod) error
+	RemoveTaskHandler func(*apiobject_pod.Pod) error
 }
 
 func NewPodWorker() *PodWorker {

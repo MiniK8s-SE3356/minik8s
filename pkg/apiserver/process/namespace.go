@@ -1,10 +1,10 @@
 package process
 
-import "github.com/MiniK8s-SE3356/minik8s/pkg/ty"
+import "github.com/MiniK8s-SE3356/minik8s/pkg/apiObject/yaml"
 
 // TODO
 
-func AddNamespace(desc *ty.NamespaceDesc) (string, error) {
+func AddNamespace(desc *yaml.NamespaceDesc) (string, error) {
 	return "", nil
 }
 

@@ -3,17 +3,17 @@ package worker
 import (
 	"fmt"
 
-	apiobject "github.com/MiniK8s-SE3356/minik8s/pkg/apiObject"
+	apiobject_pod "github.com/MiniK8s-SE3356/minik8s/pkg/apiObject/pod"
 )
 
 // PodManager will receive pod requests from the kubelet and manage pod workers to handle them.
 type PodManager interface {
-	AddPod(pod *apiobject.Pod) error
-	UpdatePod(pod *apiobject.Pod) error
-	RemovePod(pod *apiobject.Pod) error
-	GetPods() ([]*apiobject.Pod, error)
-	GetPodByUID(uid string) (*apiobject.Pod, error)
-	GetPodByName(namespace, name string) (*apiobject.Pod, error)
+	AddPod(pod *apiobject_pod.Pod) error
+	UpdatePod(pod *apiobject_pod.Pod) error
+	RemovePod(pod *apiobject_pod.Pod) error
+	GetPods() ([]*apiobject_pod.Pod, error)
+	GetPodByUID(uid string) (*apiobject_pod.Pod, error)
+	GetPodByName(namespace, name string) (*apiobject_pod.Pod, error)
 }
 
 // podManager is the default implementation of PodManager.
@@ -28,7 +28,7 @@ func NewPodManager() PodManager {
 	}
 }
 
-func (pm *podManager) AddPod(pod *apiobject.Pod) error {
+func (pm *podManager) AddPod(pod *apiobject_pod.Pod) error {
 	fmt.Println(pod.Metadata.Name + " is added to the pod manager.")
 	UID := pod.Metadata.UUID
 
@@ -59,22 +59,22 @@ func (pm *podManager) AddPod(pod *apiobject.Pod) error {
 	return nil
 }
 
-func (pm *podManager) UpdatePod(pod *apiobject.Pod) error {
+func (pm *podManager) UpdatePod(pod *apiobject_pod.Pod) error {
 	return nil
 }
 
-func (pm *podManager) RemovePod(pod *apiobject.Pod) error {
+func (pm *podManager) RemovePod(pod *apiobject_pod.Pod) error {
 	return nil
 }
 
-func (pm *podManager) GetPods() ([]*apiobject.Pod, error) {
+func (pm *podManager) GetPods() ([]*apiobject_pod.Pod, error) {
 	return nil, nil
 }
 
-func (pm *podManager) GetPodByUID(uid string) (*apiobject.Pod, error) {
+func (pm *podManager) GetPodByUID(uid string) (*apiobject_pod.Pod, error) {
 	return nil, nil
 }
 
-func (pm *podManager) GetPodByName(namespace, name string) (*apiobject.Pod, error) {
+func (pm *podManager) GetPodByName(namespace, name string) (*apiobject_pod.Pod, error) {
 	return nil, nil
 }

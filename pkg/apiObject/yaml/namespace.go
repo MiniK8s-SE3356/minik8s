@@ -1,4 +1,4 @@
-package ty
+package yaml
 
 // for namespace yaml
 type NamespaceDesc struct {

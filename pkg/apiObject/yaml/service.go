@@ -1,4 +1,4 @@
-package ty
+package yaml
 
 type ServiceDesc struct {
 	ApiVersion string `yaml:"apiVersion" json:"apiVersion"`

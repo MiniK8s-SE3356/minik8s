@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"os"
 
+	minik8s_yaml "github.com/MiniK8s-SE3356/minik8s/pkg/apiObject/yaml"
 	"github.com/MiniK8s-SE3356/minik8s/pkg/apiserver/url"
-	"github.com/MiniK8s-SE3356/minik8s/pkg/ty"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v3"
 )
@@ -61,7 +61,7 @@ func ApplyCmdHandler(cmd *cobra.Command, args []string) {
 }
 
 func applyPod(b []byte) error {
-	var podDesc ty.PodDesc
+	var podDesc minik8s_yaml.PodDesc
 
 	err := yaml.Unmarshal(b, &podDesc)
 	if err != nil {
@@ -86,7 +86,7 @@ func applyPod(b []byte) error {
 }
 
 func applyService(b []byte) error {
-	var ServiceDesc ty.ServiceDesc
+	var ServiceDesc minik8s_yaml.ServiceDesc
 
 	err := yaml.Unmarshal(b, &ServiceDesc)
 	if err != nil {
@@ -103,7 +103,7 @@ func applyService(b []byte) error {
 
 	var jsonData []byte
 	if serviceType == "ClusterIP" {
-		var desc ty.ServiceClusterIPDesc
+		var desc minik8s_yaml.ServiceClusterIPDesc
 		err := yaml.Unmarshal(b, &desc)
 		if err != nil {
 			fmt.Println("failed to unmarshal clusterIP service ", err.Error())
@@ -116,7 +116,7 @@ func applyService(b []byte) error {
 			return err
 		}
 	} else if serviceType == "NodePort" {
-		var desc ty.ServiceNodePortDesc
+		var desc minik8s_yaml.ServiceNodePortDesc
 		err := yaml.Unmarshal(b, &desc)
 		if err != nil {
 			fmt.Println("failed to unmarshal NodePort service ", err.Error())
@@ -142,7 +142,7 @@ func applyService(b []byte) error {
 }
 
 func applyReplicaSet(b []byte) error {
-	var replicaSetDesc ty.ReplicaSetDesc
+	var replicaSetDesc minik8s_yaml.ReplicaSetDesc
 
 	err := yaml.Unmarshal(b, &replicaSetDesc)
 	if err != nil {
@@ -167,7 +167,7 @@ func applyReplicaSet(b []byte) error {
 }
 
 func applyNamespace(b []byte) error {
-	var namespaceDesc ty.NamespaceDesc
+	var namespaceDesc minik8s_yaml.NamespaceDesc
 
 	err := yaml.Unmarshal(b, &namespaceDesc)
 	if err != nil {

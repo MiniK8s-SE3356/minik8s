@@ -1,10 +1,10 @@
 package process
 
-import "github.com/MiniK8s-SE3356/minik8s/pkg/ty"
+import "github.com/MiniK8s-SE3356/minik8s/pkg/apiObject/yaml"
 
 // 增删改查
 
-func AddReplicaSet(desc *ty.ReplicaSetDesc) error {
+func AddReplicaSet(desc *yaml.ReplicaSetDesc) error {
 	// 检查是否已经存在
 
 	// 写入etcd

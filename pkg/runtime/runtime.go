@@ -1,10 +1,10 @@
 package runtime
 
 import (
-	apiobject "github.com/MiniK8s-SE3356/minik8s/pkg/apiObject"
+	minik8s_pod "github.com/MiniK8s-SE3356/minik8s/pkg/apiObject/pod"
 	runtime_container "github.com/MiniK8s-SE3356/minik8s/pkg/runtime/container"
 	"github.com/MiniK8s-SE3356/minik8s/pkg/runtime/image"
-	"github.com/MiniK8s-SE3356/minik8s/pkg/types"
+	minik8s_container "github.com/MiniK8s-SE3356/minik8s/pkg/types/container"
 )
 
 type RuntimeManager struct {
@@ -19,7 +19,7 @@ func NewRuntimeManager() *RuntimeManager {
 	}
 }
 
-func (rm *RuntimeManager) CreatePod(pod *apiobject.Pod) (string, error) {
+func (rm *RuntimeManager) CreatePod(pod *minik8s_pod.Pod) (string, error) {
 	pauseContainerId, err := rm.CreateAndStartPauseContainer(pod)
 	if err != nil {
 		return "", err
@@ -27,7 +27,7 @@ func (rm *RuntimeManager) CreatePod(pod *apiobject.Pod) (string, error) {
 
 	// Create containers for the pod
 	for _, container := range pod.Spec.Containers {
-		containerConfig := &types.CreateContainerConfig{
+		containerConfig := &minik8s_container.CreateContainerConfig{
 			Image:       container.Image,
 			NetworkMode: "container:" + pauseContainerId,
 			IpcMode:     "container:" + pauseContainerId,
@@ -47,7 +47,7 @@ func (rm *RuntimeManager) CreatePod(pod *apiobject.Pod) (string, error) {
 	return pod.Metadata.UUID, nil
 }
 
-func (rm *RuntimeManager) CreateAndStartPauseContainer(pod *apiobject.Pod) (string, error) {
+func (rm *RuntimeManager) CreateAndStartPauseContainer(pod *minik8s_pod.Pod) (string, error) {
 	// First, try to pull pause container's image
 	_, err := rm.imageManager.PullImage("registry.aliyuncs.com/google_containers/pause:3.9")
 	if err != nil {
@@ -59,7 +59,7 @@ func (rm *RuntimeManager) CreateAndStartPauseContainer(pod *apiobject.Pod) (stri
 
 	// Create a container for pause
 	// TODO: Set the pause container's network
-	pauseContainerId, err := rm.containerManager.CreateContainer(pauseName, &types.CreateContainerConfig{
+	pauseContainerId, err := rm.containerManager.CreateContainer(pauseName, &minik8s_container.CreateContainerConfig{
 		Image:   "registry.aliyuncs.com/google_containers/pause:3.9",
 		IpcMode: "shareable",
 	})

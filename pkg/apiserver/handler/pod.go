@@ -4,14 +4,14 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/MiniK8s-SE3356/minik8s/pkg/apiObject/yaml"
 	"github.com/MiniK8s-SE3356/minik8s/pkg/apiserver/process"
-	"github.com/MiniK8s-SE3356/minik8s/pkg/ty"
 
 	"github.com/gin-gonic/gin"
 )
 
 func AddPod(c *gin.Context) {
-	var desc ty.PodDesc
+	var desc yaml.PodDesc
 	if err := c.ShouldBindJSON(&desc); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return

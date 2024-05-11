@@ -1,8 +1,8 @@
 package process
 
-import "github.com/MiniK8s-SE3356/minik8s/pkg/ty"
+import "github.com/MiniK8s-SE3356/minik8s/pkg/apiObject/yaml"
 
-func AddService(desc *ty.ServiceDesc) (string, error) {
+func AddService(desc *yaml.ServiceDesc) (string, error) {
 	return "", nil
 }
 

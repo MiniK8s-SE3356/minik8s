@@ -1,4 +1,4 @@
-package types
+package container
 
 type VolumeMount struct {
 	Name      string `yaml:"name" json:"name"`
@@ -104,50 +104,3 @@ const (
 	// ContainerStateWaiting means the container is waiting to run.
 	ContainerStateWaiting ContainerState = "Waiting"
 )
-
-type PodPhase string
-
-// These are the valid statuses of pods.
-const (
-	// PodPending means the pod has been accepted by the system, but one or more of the containers
-	// has not been started. This includes time before being bound to a node, as well as time spent
-	// pulling images onto the host.
-	PodPending PodPhase = "Pending"
-	// PodRunning means the pod has been bound to a node and all of the containers have been started.
-	// At least one container is still running or is in the process of being restarted.
-	PodRunning PodPhase = "Running"
-	// PodSucceeded means that all containers in the pod have voluntarily terminated
-	// with a container exit code of 0, and the system is not going to restart any of these containers.
-	PodSucceeded PodPhase = "Succeeded"
-	// PodFailed means that all containers in the pod have terminated, and at least one container has
-	// terminated in a failure (exited with a non-zero exit code or was stopped by the system).
-	PodFailed PodPhase = "Failed"
-	// PodUnknown means that for some reason the state of the pod could not be obtained, typically due
-	// to an error in communicating with the host of the pod.
-	// Deprecated: It isn't being set since 2015 (74da3b14b0c0f658b3bb8d2def5094686d0e9095)
-	PodUnknown PodPhase = "Unknown"
-)
-
-type ContainerStatus struct {
-	Name string `yaml:"name" json:"name"`
-
-	State ContainerState `yaml:"state" json:"state"`
-
-	Ready bool `yaml:"ready" json:"ready"`
-
-	Started string `yaml:"started" json:"started"`
-
-	Finished string `yaml:"finished" json:"finished"`
-}
-
-type PodStatus struct {
-	Phase PodPhase `yaml:"phase" json:"phase"`
-
-	PodIP string `yaml:"podIP" json:"podIP"`
-
-	ContainerStatuses []ContainerStatus `yaml:"containerStatuses" json:"containerStatuses"`
-
-	CPUUsage float64 `yaml:"cpuUsage" json:"cpuUsage"`
-
-	MemoryUsage float64 `yaml:"memoryUsage" json:"memoryUsage"`
-}

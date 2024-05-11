@@ -1,15 +1,16 @@
 package container_test
 
 import (
+	"fmt"
 	"testing"
 
 	runtime_container "github.com/MiniK8s-SE3356/minik8s/pkg/runtime/container"
-	"github.com/MiniK8s-SE3356/minik8s/pkg/types"
+	minik8s_container "github.com/MiniK8s-SE3356/minik8s/pkg/types/container"
 )
 
 func TestMain(m *testing.M) {
 	containerManager := &runtime_container.ContainerManager{}
-	config := &types.CreateContainerConfig{
+	config := &minik8s_container.CreateContainerConfig{
 		Image: "nginx:alpine",
 	}
 	id, err := containerManager.CreateContainer(
@@ -41,4 +42,6 @@ func TestMain(m *testing.M) {
 		println("Error removing container")
 		panic(err)
 	}
+
+	fmt.Println(id)
 }
