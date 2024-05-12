@@ -8,8 +8,11 @@ import (
 )
 
 func TestMain(m *testing.M) {
-	a := idgenerate.GenerateID()
-	b := idgenerate.GenerateID()
+	a, err1 := idgenerate.GenerateID()
+	b, err2 := idgenerate.GenerateID()
+	if err1 != nil || err2 != nil {
+		panic("error in generating")
+	}
 	fmt.Println(a, b)
 	if a == b {
 		panic("not random")
