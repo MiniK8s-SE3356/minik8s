@@ -49,14 +49,25 @@ func RemoveNamespace(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"result": result})
 }
 
-func GetNamespaces(c *gin.Context) {
-	result, err := process.GetNamespaces()
-	if err != nil {
-		fmt.Println("error in process.GetNamespaces")
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-	}
+func GetNamespace(c *gin.Context) {
+	name := c.Query("namespace")
+	if name == "" {
+		result, err := process.GetNamespaces()
+		if err != nil {
+			fmt.Println("error in process.GetNamespaces")
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		}
 
-	c.JSON(http.StatusOK, gin.H{"result": result})
+		c.JSON(http.StatusOK, gin.H{"result": result})
+	} else {
+		result, err := process.GetNamespace(name)
+		if err != nil {
+			fmt.Println("error in process.GetNamespace")
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		}
+
+		c.JSON(http.StatusOK, gin.H{"result": result})
+	}
 }
 
 // func DescribeNamespace(c *gin.Context) {
