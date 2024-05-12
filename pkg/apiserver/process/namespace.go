@@ -45,7 +45,39 @@ func AddNamespace(desc *yaml.NamespaceDesc) (string, error) {
 }
 
 func RemoveNamespace(name string) (string, error) {
-	return "", nil
+	pairs, err := EtcdCli.GetWithPrefix(namespacePrefix)
+	if err != nil {
+		fmt.Println("failed to get from etcd")
+		return "", err
+	}
+
+	var target string
+	for _, p := range pairs {
+		var tmp namespace.Namespace
+		err := json.Unmarshal([]byte(p.Value), &tmp)
+		if err != nil {
+			fmt.Println("failed to unmarshal namespace")
+			return "", err
+		}
+
+		if tmp.Metadata.Name == name {
+			target = p.Key
+			break
+		}
+	}
+
+	if target == "" {
+		fmt.Println("namespace not found")
+		return "namespace not found", nil
+	}
+
+	err = EtcdCli.Del(target)
+	if err != nil {
+		fmt.Println("failed to del in etcd")
+		return "failed to del in etcd", err
+	}
+
+	return "del successfully", nil
 }
 
 // func GetNamespace(name string) (string, error) {

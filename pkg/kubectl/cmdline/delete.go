@@ -1,6 +1,7 @@
 package cmdline
 
 import (
+	"encoding/json"
 	"fmt"
 
 	"github.com/MiniK8s-SE3356/minik8s/pkg/apiserver/url"
@@ -43,6 +44,11 @@ func DeleteCmdHandler(cmd *cobra.Command, args []string) {
 	name := ""
 	if len(args) >= 2 {
 		name = args[1]
+	}
+
+	if kind == "Namespace" && name == "" {
+		fmt.Println("name of the namespace not found")
+		return
 	}
 
 	result, err := deleteFunc(namespace, name)
@@ -101,11 +107,15 @@ func deleteReplicaSet(namespace string, name string) (string, error) {
 
 func deleteNamespace(namespace string, name string) (string, error) {
 	params := map[string]string{
-		"namespace": namespace,
-		// "name":      name,
+		"namespace": name,
+	}
+	jsonData, err := json.Marshal(params)
+	if err != nil {
+		fmt.Println("failed to translate into json")
+		return "", err
 	}
 
-	result, err := GetRequestWithParams(url.RemoveNamespaceURL, params)
+	result, err := PostRequest(url.RemoveNamespaceURL, jsonData)
 	if err != nil {
 		fmt.Println("error in delete namespace ", err.Error())
 		return "", err

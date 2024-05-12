@@ -34,7 +34,7 @@ func RemoveNamespace(c *gin.Context) {
 		return
 	}
 
-	name, ok := param["name"]
+	name, ok := param["namespace"]
 	if !ok {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "no field 'name'"})
 		return
