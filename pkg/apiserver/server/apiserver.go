@@ -31,7 +31,9 @@ func bind(r *gin.Engine) {
 	r.POST(url.RemoveNamespace, handler.RemoveNamespace)
 	// r.GET(url.DescribeNamespace, handler.DescribeNamespace)
 
-	// r.GET(url.GetNodes, example)
+	r.POST(url.AddNode, handler.AddNode)
+	r.GET(url.GetNode, handler.GetNode)
+	r.POST(url.RemoveNode, handler.RemoveNode)
 
 	// r.POST(url.AddReplicaset, handler.AddReplicaSet)
 	// r.GET(url.GetReplicaset, handler.GetReplicaSet)

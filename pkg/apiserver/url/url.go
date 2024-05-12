@@ -16,7 +16,9 @@ const (
 	GetService      = prefix + "/getService"
 	DescribeService = prefix + "/describeService"
 
-	GetNodes = prefix + "/getNodes"
+	AddNode    = prefix + "/addNode"
+	GetNode    = prefix + "/getNode"
+	RemoveNode = prefix + "/removeNode"
 
 	AddNamespace      = prefix + "/addNamespace"
 	RemoveNamespace   = prefix + "/removeNamespace"
