@@ -22,4 +22,4 @@ sudo rabbitmqctl set_user_tags admin administrator
 sudo rabbitmqctl set_permissions -p / admin ".*" ".*" ".*"
 ```
 
-访问 `http://(IP):156720` 即可进入rabbitmq控制面板 ，用户名和密码都是 `admin`
+访问 `http://(IP):15672` 即可进入rabbitmq控制面板 ，用户名和密码都是 `admin`
