@@ -8,14 +8,6 @@ import (
 
 const defaultNamespace = "Default"
 
-var rootCmd = &cobra.Command{
-	Use:   "rootcmd",
-	Short: "rootcmd",
-	Long:  `rootcmd`,
-	Run: func(cmd *cobra.Command, args []string) {
-	},
-}
-
 var kubectlCmd = &cobra.Command{
 	Use:   "kubectl",
 	Short: "kubectl",
@@ -57,12 +49,10 @@ func init() {
 	kubectlCmd.AddCommand(getCmd)
 	kubectlCmd.AddCommand(deleteCmd)
 	kubectlCmd.AddCommand(describeCmd)
-
-	rootCmd.AddCommand(kubectlCmd)
 }
 
 func Exec() {
-	if err := rootCmd.Execute(); err != nil {
+	if err := kubectlCmd.Execute(); err != nil {
 		fmt.Println(err)
 	}
 }

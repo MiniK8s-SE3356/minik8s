@@ -13,12 +13,12 @@ type EtcdClient struct {
 }
 
 type KVPair struct {
-	Key   string
-	Value string
+	Key   string `json:"key"`
+	Value string `json:"value"`
 }
 
 const (
-	EtcdURL = ""
+	EtcdURL = "http://127.0.0.1:2379"
 	Timeout = 5 * 1000 * 1000
 )
 

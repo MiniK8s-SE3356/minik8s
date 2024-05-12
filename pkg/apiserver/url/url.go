@@ -3,28 +3,54 @@ package url
 const (
 	version = "v1"
 	// 这里暂时是localhost
-	rootURL = "http://localhost:9000"
-	prefix  = rootURL + "/api/" + version
+	rootURL = "http://localhost:8080"
+	prefix  = "/api/" + version
 
-	AddPodURL      = prefix + "/addPod"
-	RemovePodURL   = prefix + "/removePod"
-	GetPodURL      = prefix + "/getPod"
-	DescribePodURL = prefix + "/describePod"
+	AddPod      = prefix + "/addPod"
+	RemovePod   = prefix + "/removePod"
+	GetPod      = prefix + "/getPod"
+	DescribePod = prefix + "/describePod"
 
-	AddServiceURL      = prefix + "/addService"
-	RemoveServiceURL   = prefix + "/removeService"
-	GetServiceURL      = prefix + "/getService"
-	DescribeServiceURL = prefix + "/describeService"
+	AddService      = prefix + "/addService"
+	RemoveService   = prefix + "/removeService"
+	GetService      = prefix + "/getService"
+	DescribeService = prefix + "/describeService"
 
-	GetNodesURL = prefix + "/getNodes"
+	GetNodes = prefix + "/getNodes"
 
-	AddNamespaceURL      = prefix + "/addNamespace"
-	RemoveNamespaceURL   = prefix + "/removeNamespace"
-	GetNamespaceURL      = prefix + "/getNamespace"
-	DescribeNamespaceURL = prefix + "/describeNamespace"
+	AddNamespace      = prefix + "/addNamespace"
+	RemoveNamespace   = prefix + "/removeNamespace"
+	GetNamespace      = prefix + "/getNamespace"
+	DescribeNamespace = prefix + "/describeNamespace"
 
-	AddReplicasetURL      = prefix + "/addReplicaset"
-	RemoveReplicasetURL   = prefix + "/removeReplicaset"
-	GetReplicasetURL      = prefix + "/getReplicaset"
-	DescribeReplicasetURL = prefix + "/describeReplicaset"
+	AddReplicaset      = prefix + "/addReplicaset"
+	RemoveReplicaset   = prefix + "/removeReplicaset"
+	GetReplicaset      = prefix + "/getReplicaset"
+	DescribeReplicaset = prefix + "/describeReplicaset"
+
+	AddPodURL      = rootURL + prefix + "/addPod"
+	RemovePodURL   = rootURL + prefix + "/removePod"
+	GetPodURL      = rootURL + prefix + "/getPod"
+	DescribePodURL = rootURL + prefix + "/describePod"
+
+	AddServiceURL      = rootURL + prefix + "/addService"
+	RemoveServiceURL   = rootURL + prefix + "/removeService"
+	GetServiceURL      = rootURL + prefix + "/getService"
+	DescribeServiceURL = rootURL + prefix + "/describeService"
+
+	GetNodesURL = rootURL + prefix + "/getNodes"
+
+	AddNamespaceURL      = rootURL + prefix + "/addNamespace"
+	RemoveNamespaceURL   = rootURL + prefix + "/removeNamespace"
+	GetNamespaceURL      = rootURL + prefix + "/getNamespace"
+	DescribeNamespaceURL = rootURL + prefix + "/describeNamespace"
+
+	AddReplicasetURL      = rootURL + prefix + "/addReplicaset"
+	RemoveReplicasetURL   = rootURL + prefix + "/removeReplicaset"
+	GetReplicasetURL      = rootURL + prefix + "/getReplicaset"
+	DescribeReplicasetURL = rootURL + prefix + "/describeReplicaset"
 )
+
+func getURL(path string) string {
+	return rootURL + path
+}

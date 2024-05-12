@@ -21,27 +21,27 @@ func example(c *gin.Context) {
 
 func bind(r *gin.Engine) {
 	// Pod
-	r.POST(url.AddPodURL, handler.AddPod)
-	r.GET(url.GetPodURL, handler.GetPod)
-	r.POST(url.RemovePodURL, handler.RemovePod)
-	r.GET(url.DescribePodURL, handler.DescribePod)
+	// r.POST(url.AddPod, handler.AddPod)
+	// r.GET(url.GetPod, handler.GetPod)
+	// r.POST(url.RemovePod, handler.RemovePod)
+	// r.GET(url.DescribePod, handler.DescribePod)
 
-	r.POST(url.AddNamespaceURL, handler.AddNamespace)
-	r.GET(url.GetNamespaceURL, handler.GetNamespace)
-	r.POST(url.RemoveNamespaceURL, handler.RemoveNamespace)
-	r.GET(url.DescribeNamespaceURL, handler.DescribeNamespace)
+	r.POST(url.AddNamespace, handler.AddNamespace)
+	r.GET(url.GetNamespace, handler.GetNamespaces)
+	r.POST(url.RemoveNamespace, handler.RemoveNamespace)
+	// r.GET(url.DescribeNamespace, handler.DescribeNamespace)
 
-	r.GET(url.GetNodesURL, example)
+	// r.GET(url.GetNodes, example)
 
-	r.POST(url.AddNamespaceURL, handler.AddNamespace)
-	r.GET(url.GetNamespaceURL, handler.GetNamespace)
-	r.POST(url.RemoveNamespaceURL, handler.RemoveNamespace)
-	r.GET(url.DescribeNamespaceURL, handler.DescribeNamespace)
+	// r.POST(url.AddReplicaset, handler.AddReplicaSet)
+	// r.GET(url.GetReplicaset, handler.GetReplicaSet)
+	// r.POST(url.RemoveReplicaset, handler.RemoveReplicaSet)
+	// r.GET(url.DescribeReplicaset, handler.DescribeReplicaSet)
 
-	r.POST(url.AddServiceURL, handler.AddService)
-	r.GET(url.GetServiceURL, handler.GetService)
-	r.POST(url.RemoveServiceURL, handler.RemoveService)
-	r.GET(url.DescribeServiceURL, handler.DescribeService)
+	// r.POST(url.AddService, handler.AddService)
+	// r.GET(url.GetService, handler.GetService)
+	// r.POST(url.RemoveService, handler.RemoveService)
+	// r.GET(url.DescribeService, handler.DescribeService)
 }
 
 func Start() {

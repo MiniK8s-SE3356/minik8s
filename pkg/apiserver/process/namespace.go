@@ -1,21 +1,66 @@
 package process
 
-import "github.com/MiniK8s-SE3356/minik8s/pkg/apiObject/yaml"
+import (
+	"encoding/json"
+	"fmt"
+
+	"github.com/MiniK8s-SE3356/minik8s/pkg/apiObject/namespace"
+	"github.com/MiniK8s-SE3356/minik8s/pkg/apiObject/yaml"
+	"github.com/google/uuid"
+)
 
 // TODO
 
 func AddNamespace(desc *yaml.NamespaceDesc) (string, error) {
-	return "", nil
+	id, err := uuid.NewUUID()
+	if err != nil {
+		fmt.Println("failed to generate uuid")
+		return "failed to generate uuid", err
+	}
+
+	// 构建然后转json
+	namespace := &namespace.Namespace{}
+	namespace.ApiVersion = desc.ApiVersion
+	namespace.Kind = desc.Kind
+	namespace.Metadata.Name = desc.Metadata.Name
+	namespace.Metadata.Id = id.String()
+	namespace.Metadata.Labels = desc.Metadata.Labels
+
+	value, err := json.Marshal(namespace)
+	if err != nil {
+		fmt.Println("failed to translate into json ", err.Error())
+		return "failed to translate into json ", err
+	}
+
+	// 然后存入etcd
+	err = EtcdCli.Put(namespacePrefix+id.String(), string(value))
+	if err != nil {
+		fmt.Println("failed to write to etcd ", err.Error())
+		return "failed to write to etcd", err
+	}
+
+	return "add namespace to minik8s", nil
 }
 
 func RemoveNamespace(name string) (string, error) {
 	return "", nil
 }
 
-func GetNamespace(name string) (string, error) {
-	return "", nil
-}
+// func GetNamespace(name string) (string, error) {
+// 	return "", nil
+// }
 
 func GetNamespaces() (string, error) {
-	return "", nil
+	pairs, err := EtcdCli.GetWithPrefix(namespacePrefix)
+	if err != nil {
+		fmt.Println("failed to get from etcd")
+		return "", err
+	}
+
+	jsonData, err := json.Marshal(pairs)
+	if err != nil {
+		fmt.Println("failed to translate into json")
+		return "", err
+	}
+	return string(jsonData), nil
 }

@@ -23,7 +23,7 @@ func AddNamespace(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 	}
 
-	c.JSON(http.StatusOK, result)
+	c.JSON(http.StatusOK, gin.H{"result": result})
 }
 
 // POST 参数类型 {name: "xxx"}
@@ -46,35 +46,30 @@ func RemoveNamespace(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 	}
 
-	c.JSON(http.StatusOK, result)
+	c.JSON(http.StatusOK, gin.H{"result": result})
 }
 
-func GetNamespace(c *gin.Context) {
-	namespace := c.Query("namespace")
-	if namespace == "" {
-		namespace = "Default"
-	}
-
-	result, err := process.GetNamespace(namespace)
+func GetNamespaces(c *gin.Context) {
+	result, err := process.GetNamespaces()
 	if err != nil {
-		fmt.Println("error in process.GetNamespace ", err)
+		fmt.Println("error in process.GetNamespaces")
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 	}
 
-	c.JSON(http.StatusOK, result)
+	c.JSON(http.StatusOK, gin.H{"result": result})
 }
 
-func DescribeNamespace(c *gin.Context) {
-	namespace := c.Query("namespace")
-	if namespace == "" {
-		namespace = "Default"
-	}
+// func DescribeNamespace(c *gin.Context) {
+// 	namespace := c.Query("namespace")
+// 	if namespace == "" {
+// 		namespace = "Default"
+// 	}
 
-	result, err := process.RemoveNamespace(namespace)
-	if err != nil {
-		fmt.Println("error in process.GetNamespace ", err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-	}
+// 	result, err := process.GetNamespaces()
+// 	if err != nil {
+// 		fmt.Println("error in process.GetNamespace ", err)
+// 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+// 	}
 
-	c.JSON(http.StatusOK, result)
-}
+// 	c.JSON(http.StatusOK, gin.H{"result": result})
+// }

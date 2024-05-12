@@ -22,6 +22,7 @@ func ApplyCmdHandler(cmd *cobra.Command, args []string) {
 	// 先看一下参数是不是文件路径
 	result := checkFilePath(args)
 	if !result {
+		fmt.Println("not a file")
 		cmd.Usage()
 		return
 	}
@@ -180,7 +181,7 @@ func applyNamespace(b []byte) error {
 		fmt.Println("failed to translate into json")
 		return err
 	}
-	result, err := PostRequest(url.AddPodURL, jsonData)
+	result, err := PostRequest(url.AddNamespaceURL, jsonData)
 	if err != nil {
 		fmt.Println("error when post request")
 		return err
