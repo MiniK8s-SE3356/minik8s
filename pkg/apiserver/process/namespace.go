@@ -6,24 +6,26 @@ import (
 
 	"github.com/MiniK8s-SE3356/minik8s/pkg/apiObject/namespace"
 	"github.com/MiniK8s-SE3356/minik8s/pkg/apiObject/yaml"
-	"github.com/google/uuid"
+	"github.com/MiniK8s-SE3356/minik8s/pkg/utils/idgenerate"
 )
 
 // TODO
 
 func AddNamespace(desc *yaml.NamespaceDesc) (string, error) {
-	id, err := uuid.NewUUID()
+	id, err := idgenerate.GenerateID()
 	if err != nil {
 		fmt.Println("failed to generate uuid")
 		return "failed to generate uuid", err
 	}
+
+	id = idgenerate.NamespacePrefix + id
 
 	// 构建然后转json
 	namespace := &namespace.Namespace{}
 	namespace.ApiVersion = desc.ApiVersion
 	namespace.Kind = desc.Kind
 	namespace.Metadata.Name = desc.Metadata.Name
-	namespace.Metadata.Id = id.String()
+	namespace.Metadata.Id = id
 	namespace.Metadata.Labels = desc.Metadata.Labels
 
 	value, err := json.Marshal(namespace)
@@ -33,7 +35,7 @@ func AddNamespace(desc *yaml.NamespaceDesc) (string, error) {
 	}
 
 	// 然后存入etcd
-	err = EtcdCli.Put(namespacePrefix+id.String(), string(value))
+	err = EtcdCli.Put(namespacePrefix+id, string(value))
 	if err != nil {
 		fmt.Println("failed to write to etcd ", err.Error())
 		return "failed to write to etcd", err
