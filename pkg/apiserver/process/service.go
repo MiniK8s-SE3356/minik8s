@@ -7,7 +7,6 @@ import (
 
 	"github.com/MiniK8s-SE3356/minik8s/pkg/apiObject/service"
 	"github.com/MiniK8s-SE3356/minik8s/pkg/apiObject/yaml"
-	"github.com/MiniK8s-SE3356/minik8s/pkg/etcdclient"
 	"github.com/MiniK8s-SE3356/minik8s/pkg/utils/idgenerate"
 )
 
@@ -140,16 +139,16 @@ func GetServices(namespace string) (string, error) {
 	return "", nil
 }
 
-func GetAllService() (string, error) {
+func GetAllService() (map[string][]interface{}, error) {
+	result := make(map[string][]interface{}, 2)
 	pairs, err := EtcdCli.GetWithPrefix(servicePrefix)
 	if err != nil {
 		fmt.Println("failed to get from etcd")
-		return "", err
+		return result, err
 	}
 
-	result := make(map[string][]etcdclient.KVPair, 2)
-	clusterIPArray := []etcdclient.KVPair{}
-	nodePortArray := []etcdclient.KVPair{}
+	clusterIPArray := []interface{}{}
+	nodePortArray := []interface{}{}
 	for _, p := range pairs {
 		// 先解析一下
 		var tmp map[string]interface{}
@@ -160,9 +159,21 @@ func GetAllService() (string, error) {
 
 		spec := tmp["spec"].(map[string]interface{})
 		if spec["type"].(string) == "ClusterIP" {
-			clusterIPArray = append(clusterIPArray, p)
+			var tmp service.ClusterIP
+			err := json.Unmarshal([]byte(p.Value), &tmp)
+			if err != nil {
+				fmt.Println("failed to unmarshal")
+			} else {
+				clusterIPArray = append(clusterIPArray, tmp)
+			}
 		} else if spec["type"].(string) == "NodePort" {
-			nodePortArray = append(nodePortArray, p)
+			var tmp service.NodePort
+			err := json.Unmarshal([]byte(p.Value), &tmp)
+			if err != nil {
+				fmt.Println("failed to unmarshal")
+			} else {
+				clusterIPArray = append(clusterIPArray, tmp)
+			}
 		} else {
 			fmt.Println("invalid service type")
 		}
@@ -176,9 +187,9 @@ func GetAllService() (string, error) {
 	fmt.Println(string(jsonData))
 	if err != nil {
 		fmt.Println("failed to translate into json")
-		return "", err
+		return result, err
 	}
-	return string(jsonData), nil
+	return result, nil
 }
 
 func DescribeService(namespace string, name string) (string, error) {

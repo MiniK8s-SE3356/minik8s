@@ -29,20 +29,20 @@ func GetCmdHandler(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	// 再获取namespace和name
+	name := ""
+	if len(args) >= 2 {
+		name = args[1]
+	}
+
+	// 再获取namespace
 	namespace, _ := cmd.Flags().GetString("namespace")
 	if namespace == "" {
 		namespace, _ = cmd.Flags().GetString("ns")
 	}
 
 	// 没有指定namespace，使用default
-	if namespace == "" {
+	if name != "" && namespace == "" {
 		namespace = defaultNamespace
-	}
-
-	name := ""
-	if len(args) >= 2 {
-		name = args[1]
 	}
 
 	result, err := getFunc(namespace, name)
