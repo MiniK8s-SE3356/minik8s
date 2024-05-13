@@ -12,13 +12,26 @@ import (
 // TODO
 
 func AddNamespace(desc *yaml.NamespaceDesc) (string, error) {
+	// 检查name是否为空
+	if desc.Metadata.Name == "" {
+		return "empty name is not allowed", nil
+	}
+
+	// 检查是否已经存在
+	existed, err := EtcdCli.Exist(namespacePrefix + desc.Metadata.Name)
+	if err != nil {
+		return "failed to check existence in etcd", err
+	}
+
+	if existed {
+		return "namespace has existed", nil
+	}
+
 	id, err := idgenerate.GenerateID()
 	if err != nil {
 		fmt.Println("failed to generate uuid")
 		return "failed to generate uuid", err
 	}
-
-	id = idgenerate.NamespacePrefix + id
 
 	// 构建然后转json
 	namespace := &namespace.Namespace{}
@@ -35,7 +48,7 @@ func AddNamespace(desc *yaml.NamespaceDesc) (string, error) {
 	}
 
 	// 然后存入etcd
-	err = EtcdCli.Put(namespacePrefix+id, string(value))
+	err = EtcdCli.Put(namespacePrefix+namespace.Metadata.Name, string(value))
 	if err != nil {
 		fmt.Println("failed to write to etcd ", err.Error())
 		return "failed to write to etcd", err
@@ -45,33 +58,16 @@ func AddNamespace(desc *yaml.NamespaceDesc) (string, error) {
 }
 
 func RemoveNamespace(name string) (string, error) {
-	pairs, err := EtcdCli.GetWithPrefix(namespacePrefix)
+	// TODO: 删除namespace下的其他资源
+	existed, err := EtcdCli.Exist(namespacePrefix + name)
 	if err != nil {
-		fmt.Println("failed to get from etcd")
-		return "", err
+		return "failed to check existence in etcd", err
 	}
-
-	var target string
-	for _, p := range pairs {
-		var tmp namespace.Namespace
-		err := json.Unmarshal([]byte(p.Value), &tmp)
-		if err != nil {
-			fmt.Println("failed to unmarshal namespace")
-			return "", err
-		}
-
-		if tmp.Metadata.Name == name {
-			target = p.Key
-			break
-		}
-	}
-
-	if target == "" {
-		fmt.Println("namespace not found")
+	if !existed {
 		return "namespace not found", nil
 	}
 
-	err = EtcdCli.Del(target)
+	err = EtcdCli.Del(namespacePrefix + name)
 	if err != nil {
 		fmt.Println("failed to del in etcd")
 		return "failed to del in etcd", err
@@ -81,33 +77,13 @@ func RemoveNamespace(name string) (string, error) {
 }
 
 func GetNamespace(name string) (string, error) {
-	pairs, err := EtcdCli.GetWithPrefix(namespacePrefix)
+	result, err := EtcdCli.Get(namespacePrefix + name)
 	if err != nil {
-		fmt.Println("failed to get from etcd")
+		fmt.Println("failed to get namespace from etcd")
 		return "", err
 	}
 
-	var target string
-	for _, p := range pairs {
-		var tmp namespace.Namespace
-		err := json.Unmarshal([]byte(p.Value), &tmp)
-		if err != nil {
-			fmt.Println("failed to unmarshal namespace")
-			return "", err
-		}
-
-		if tmp.Metadata.Name == name {
-			target = p.Value
-			break
-		}
-	}
-
-	if target == "" {
-		fmt.Println("namespace not found")
-		return "namespace not found", nil
-	}
-
-	return target, nil
+	return string(result), nil
 }
 
 func GetNamespaces() (string, error) {

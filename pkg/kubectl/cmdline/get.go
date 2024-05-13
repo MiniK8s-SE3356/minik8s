@@ -112,10 +112,10 @@ func getReplicaSet(namespace string, name string) (string, error) {
 }
 
 func getNamespace(namespace string, name string) (string, error) {
-	// 这里用namespace传
+	// 这里用name传
 	params := map[string]string{
-		"namespace": namespace,
-		// "name":      name,
+		// "namespace": namespace,
+		"name": name,
 	}
 
 	result, err := GetRequestWithParams(url.GetNamespaceURL, params)

@@ -5,19 +5,23 @@ import (
 	"fmt"
 
 	"github.com/MiniK8s-SE3356/minik8s/pkg/types/node"
-	"github.com/MiniK8s-SE3356/minik8s/pkg/utils/idgenerate"
 )
 
 func AddNode(desc *node.Node) (string, error) {
-	id, err := idgenerate.GenerateID()
-	if err != nil {
-		fmt.Println("failed to generate uuid")
-		return "failed to generate uuid", err
+	// 检查name是否为空
+	if desc.Metadata.Name == "" {
+		return "empty name is not allowed", nil
 	}
 
-	id = node.NODE_PREFIX + id
+	// 检查是否已经存在
+	existed, err := EtcdCli.Exist(nodePrefix + desc.Metadata.Name)
+	if err != nil {
+		return "failed to check existence in etcd", err
+	}
 
-	desc.Metadata.Id = id
+	if existed {
+		return "node has existed", nil
+	}
 
 	value, err := json.Marshal(desc)
 	if err != nil {
@@ -26,7 +30,8 @@ func AddNode(desc *node.Node) (string, error) {
 	}
 
 	// 然后存入etcd
-	err = EtcdCli.Put(nodePrefix+id, string(value))
+	// TODO node的name还需要处理
+	err = EtcdCli.Put(nodePrefix+desc.Metadata.Name, string(value))
 	if err != nil {
 		fmt.Println("failed to write to etcd ", err.Error())
 		return "failed to write to etcd", err
@@ -36,40 +41,21 @@ func AddNode(desc *node.Node) (string, error) {
 }
 
 func RemoveNode(name string) (string, error) {
-	pairs, err := EtcdCli.GetWithPrefix(nodePrefix)
+	existed, err := EtcdCli.Exist(nodePrefix + name)
 	if err != nil {
-		fmt.Println("failed to get from etcd")
-		return "", err
+		return "failed to check existence in etcd", err
 	}
-
-	var target string
-	for _, p := range pairs {
-		var tmp node.Node
-		err := json.Unmarshal([]byte(p.Value), &tmp)
-		if err != nil {
-			fmt.Println("failed to unmarshal node")
-			return "", err
-		}
-
-		if tmp.Metadata.Name == name {
-			target = p.Key
-			break
-		}
-	}
-
-	if target == "" {
-		fmt.Println("node not found")
+	if !existed {
 		return "node not found", nil
 	}
 
-	err = EtcdCli.Del(target)
+	err = EtcdCli.Del(nodePrefix + name)
 	if err != nil {
 		fmt.Println("failed to del in etcd")
 		return "failed to del in etcd", err
 	}
 
 	return "del successfully", nil
-
 }
 
 func ModifyNode() (string, error) {
@@ -77,33 +63,21 @@ func ModifyNode() (string, error) {
 }
 
 func GetNode(name string) (string, error) {
-	pairs, err := EtcdCli.GetWithPrefix(nodePrefix)
+	existed, err := EtcdCli.Exist(nodePrefix + name)
 	if err != nil {
-		fmt.Println("failed to get from etcd")
-		return "", err
+		return "failed to check existence in etcd", err
 	}
-
-	var target string
-	for _, p := range pairs {
-		var tmp node.Node
-		err := json.Unmarshal([]byte(p.Value), &tmp)
-		if err != nil {
-			fmt.Println("failed to unmarshal node")
-			return "", err
-		}
-
-		if tmp.Metadata.Name == name {
-			target = p.Value
-			break
-		}
-	}
-
-	if target == "" {
-		fmt.Println("node not found")
+	if !existed {
 		return "node not found", nil
 	}
 
-	return target, nil
+	err = EtcdCli.Del(nodePrefix + name)
+	if err != nil {
+		fmt.Println("failed to del in etcd")
+		return "failed to del in etcd", err
+	}
+
+	return "del successfully", nil
 }
 
 func GetNodes() (string, error) {

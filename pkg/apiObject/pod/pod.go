@@ -1,4 +1,4 @@
-package apiobject
+package pod
 
 import (
 	minik8s_apiobject "github.com/MiniK8s-SE3356/minik8s/pkg/apiObject"

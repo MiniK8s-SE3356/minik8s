@@ -47,7 +47,7 @@ func (c *EtcdClient) Get(key string) ([]byte, error) {
 	resp, err := c.cl.Get(context.TODO(), key)
 	if err != nil {
 		fmt.Println("failed to get from etcd")
-		return []byte{}, nil
+		return []byte{}, err
 	}
 	// 理论上Get到是唯一的
 
@@ -135,4 +135,19 @@ func (c *EtcdClient) Mkdir(dirPath string) error {
 	}
 
 	return nil
+}
+
+func (c *EtcdClient) Exist(key string) (bool, error) {
+	resp, err := c.cl.Get(context.TODO(), key)
+	if err != nil {
+		fmt.Println("failed to get from etcd")
+		return false, err
+	}
+
+	if len(resp.Kvs) == 0 {
+		return false, nil
+	}
+
+	return true, nil
+
 }

@@ -63,5 +63,5 @@ func PostRequest(url string, jsonData []byte) (string, error) {
 
 	fmt.Printf("%s", body)
 
-	return "", nil
+	return string(body), nil
 }

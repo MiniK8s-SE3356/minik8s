@@ -29,14 +29,6 @@ type PortDesc struct {
 	HostIP        string `yaml:"hostIP" json:"hostIP"`
 }
 
-type ContainerPortDesc struct {
-	ContainerPort int    `yaml:"containerPort" json:"containerPort"`
-	HostPort      int    `yaml:"hostPort" json:"hostPort"`
-	Protocol      string `yaml:"protocol" json:"protocol"`
-	Name          string `yaml:"name" json:"name"`
-	HostIP        string `yaml:"hostIP" json:"hostIP"`
-}
-
 type ResourceDesc struct {
 	Memory string `yaml:"memory" json:"memory"`
 	CPU    string `yaml:"cpu" json:"cpu"`
