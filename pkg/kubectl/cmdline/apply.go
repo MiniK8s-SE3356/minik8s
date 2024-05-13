@@ -11,7 +11,7 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-var applyFuncTable = map[string]func(b []byte) error{
+var applyFuncTable = map[string]func(namespace string, b []byte) error{
 	"Pod":        applyPod,
 	"Service":    applyService,
 	"ReplicaSet": applyReplicaSet,
@@ -54,14 +54,25 @@ func ApplyCmdHandler(cmd *cobra.Command, args []string) {
 		return
 	}
 
+	// 再获取namespace
+	namespace, _ := cmd.Flags().GetString("namespace")
+	if namespace == "" {
+		namespace, _ = cmd.Flags().GetString("ns")
+	}
+
+	// 没有指定namespace，使用default
+	if namespace == "" {
+		namespace = defaultNamespace
+	}
+
 	// 根据kind跳转到相应的处理函数，相当于switch
-	err = targetFunc(data)
+	err = targetFunc(namespace, data)
 	if err != nil {
 		fmt.Println(err)
 	}
 }
 
-func applyPod(b []byte) error {
+func applyPod(namespace string, b []byte) error {
 	var podDesc minik8s_yaml.PodDesc
 
 	err := yaml.Unmarshal(b, &podDesc)
@@ -86,7 +97,7 @@ func applyPod(b []byte) error {
 	return nil
 }
 
-func applyService(b []byte) error {
+func applyService(namespace string, b []byte) error {
 	var ServiceDesc minik8s_yaml.ServiceDesc
 
 	err := yaml.Unmarshal(b, &ServiceDesc)
@@ -96,7 +107,8 @@ func applyService(b []byte) error {
 	}
 
 	// 这里要区分service下面的子类型
-	serviceType, ok := ServiceDesc.Spec["type"]
+	serviceType, ok := ServiceDesc.Spec["type"].(string)
+	fmt.Println(serviceType)
 	if !ok {
 		// 默认是ClusterIP
 		serviceType = "ClusterIP"
@@ -104,6 +116,11 @@ func applyService(b []byte) error {
 
 	var jsonData []byte
 	if serviceType == "ClusterIP" {
+		var requestMsg struct {
+			Namespace string
+			Desc      minik8s_yaml.ServiceClusterIPDesc
+		}
+
 		var desc minik8s_yaml.ServiceClusterIPDesc
 		err := yaml.Unmarshal(b, &desc)
 		if err != nil {
@@ -111,12 +128,20 @@ func applyService(b []byte) error {
 			return err
 		}
 
-		jsonData, err = json.Marshal(desc)
+		requestMsg.Desc = desc
+		requestMsg.Namespace = namespace
+
+		jsonData, err = json.Marshal(requestMsg)
 		if err != nil {
 			fmt.Println("failed to marshal clusterIP service", err.Error())
 			return err
 		}
 	} else if serviceType == "NodePort" {
+		var requestMsg struct {
+			Namespace string
+			Desc      minik8s_yaml.ServiceNodePortDesc
+		}
+
 		var desc minik8s_yaml.ServiceNodePortDesc
 		err := yaml.Unmarshal(b, &desc)
 		if err != nil {
@@ -124,7 +149,10 @@ func applyService(b []byte) error {
 			return err
 		}
 
-		jsonData, err = json.Marshal(desc)
+		requestMsg.Desc = desc
+		requestMsg.Namespace = namespace
+
+		jsonData, err = json.Marshal(requestMsg)
 		if err != nil {
 			fmt.Println("failed to marshal NodePort service", err.Error())
 			return err
@@ -142,7 +170,7 @@ func applyService(b []byte) error {
 	return nil
 }
 
-func applyReplicaSet(b []byte) error {
+func applyReplicaSet(namespace string, b []byte) error {
 	var replicaSetDesc minik8s_yaml.ReplicaSetDesc
 
 	err := yaml.Unmarshal(b, &replicaSetDesc)
@@ -167,7 +195,7 @@ func applyReplicaSet(b []byte) error {
 	return nil
 }
 
-func applyNamespace(b []byte) error {
+func applyNamespace(namespace string, b []byte) error {
 	var namespaceDesc minik8s_yaml.NamespaceDesc
 
 	err := yaml.Unmarshal(b, &namespaceDesc)

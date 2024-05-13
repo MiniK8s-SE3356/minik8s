@@ -6,53 +6,56 @@ const (
 	rootURL = "http://localhost:8080"
 	prefix  = "/api/" + version
 
-	AddPod      = prefix + "/addPod"
-	RemovePod   = prefix + "/removePod"
-	GetPod      = prefix + "/getPod"
-	DescribePod = prefix + "/describePod"
+	AddPod      = prefix + "/AddPod"
+	RemovePod   = prefix + "/RemovePod"
+	GetPod      = prefix + "/GetPod"
+	DescribePod = prefix + "/DescribePod"
 
-	AddService      = prefix + "/addService"
-	RemoveService   = prefix + "/removeService"
-	GetService      = prefix + "/getService"
-	DescribeService = prefix + "/describeService"
+	AddService         = prefix + "/AddService"
+	RemoveService      = prefix + "/RemoveService"
+	GetService         = prefix + "/GetService"
+	GetAllService      = prefix + "/GetAllService"
+	GetFilteredService = prefix + "/GetFilteredService"
+	UpdateService      = prefix + "/UpdateService"
+	DescribeService    = prefix + "/DescribeService"
 
-	AddNode    = prefix + "/addNode"
-	GetNode    = prefix + "/getNode"
-	RemoveNode = prefix + "/removeNode"
+	AddNode    = prefix + "/AddNode"
+	GetNode    = prefix + "/GetNode"
+	RemoveNode = prefix + "/RemoveNode"
 
-	AddNamespace      = prefix + "/addNamespace"
-	RemoveNamespace   = prefix + "/removeNamespace"
-	GetNamespace      = prefix + "/getNamespace"
-	DescribeNamespace = prefix + "/describeNamespace"
+	AddNamespace      = prefix + "/AddNamespace"
+	RemoveNamespace   = prefix + "/RemoveNamespace"
+	GetNamespace      = prefix + "/GetNamespace"
+	DescribeNamespace = prefix + "/DescribeNamespace"
 
-	AddReplicaset      = prefix + "/addReplicaset"
-	RemoveReplicaset   = prefix + "/removeReplicaset"
-	GetReplicaset      = prefix + "/getReplicaset"
-	DescribeReplicaset = prefix + "/describeReplicaset"
+	AddReplicaset      = prefix + "/AddReplicaset"
+	RemoveReplicaset   = prefix + "/RemoveReplicaset"
+	GetReplicaset      = prefix + "/GetReplicaset"
+	DescribeReplicaset = prefix + "/DescribeReplicaset"
 
-	AddPodURL      = rootURL + prefix + "/addPod"
-	RemovePodURL   = rootURL + prefix + "/removePod"
-	GetPodURL      = rootURL + prefix + "/getPod"
-	DescribePodURL = rootURL + prefix + "/describePod"
+	AddPodURL      = rootURL + prefix + "/AddPod"
+	RemovePodURL   = rootURL + prefix + "/RemovePod"
+	GetPodURL      = rootURL + prefix + "/GetPod"
+	DescribePodURL = rootURL + prefix + "/DescribePod"
 
-	AddServiceURL      = rootURL + prefix + "/addService"
-	RemoveServiceURL   = rootURL + prefix + "/removeService"
-	GetServiceURL      = rootURL + prefix + "/getService"
-	DescribeServiceURL = rootURL + prefix + "/describeService"
+	AddServiceURL      = rootURL + prefix + "/AddService"
+	RemoveServiceURL   = rootURL + prefix + "/RemoveService"
+	GetServiceURL      = rootURL + prefix + "/GetService"
+	DescribeServiceURL = rootURL + prefix + "/DescribeService"
 
-	GetNodesURL = rootURL + prefix + "/getNodes"
+	GetNodesURL = rootURL + prefix + "/GetNodes"
 
-	AddNamespaceURL      = rootURL + prefix + "/addNamespace"
-	RemoveNamespaceURL   = rootURL + prefix + "/removeNamespace"
-	GetNamespaceURL      = rootURL + prefix + "/getNamespace"
-	DescribeNamespaceURL = rootURL + prefix + "/describeNamespace"
+	AddNamespaceURL      = rootURL + prefix + "/AddNamespace"
+	RemoveNamespaceURL   = rootURL + prefix + "/RemoveNamespace"
+	GetNamespaceURL      = rootURL + prefix + "/GetNamespace"
+	DescribeNamespaceURL = rootURL + prefix + "/DescribeNamespace"
 
-	AddReplicasetURL      = rootURL + prefix + "/addReplicaset"
-	RemoveReplicasetURL   = rootURL + prefix + "/removeReplicaset"
-	GetReplicasetURL      = rootURL + prefix + "/getReplicaset"
-	DescribeReplicasetURL = rootURL + prefix + "/describeReplicaset"
+	AddReplicasetURL      = rootURL + prefix + "/AddReplicaset"
+	RemoveReplicasetURL   = rootURL + prefix + "/RemoveReplicaset"
+	GetReplicasetURL      = rootURL + prefix + "/GetReplicaset"
+	DescribeReplicasetURL = rootURL + prefix + "/DescribeReplicaset"
 )
 
-func getURL(path string) string {
+func GetURL(path string) string {
 	return rootURL + path
 }

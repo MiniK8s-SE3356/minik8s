@@ -10,7 +10,7 @@ type ServiceDesc struct {
 
 	// 这里因为spec的具体格式和service的type有关，所以这里是map[string]string的类型
 	// 使用的时候先访问Spec["type"]获取类型，然后使用相应的类型再次进行解析
-	Spec map[string]string `yaml:"spec" json:"spec"`
+	Spec map[string]interface{} `yaml:"spec" json:"spec"`
 }
 
 type ServiceClusterIPDesc struct {

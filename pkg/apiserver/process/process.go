@@ -7,6 +7,7 @@ const (
 	namespacePrefix = prefix + "/namespace/"
 	nodePrefix      = prefix + "/node/"
 	podPrefix       = prefix + "/pod/"
+	servicePrefix   = prefix + "/service/"
 )
 
 var EtcdCli *etcdclient.EtcdClient

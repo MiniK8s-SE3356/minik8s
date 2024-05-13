@@ -2,7 +2,6 @@ package server
 
 import (
 	"fmt"
-	"net/http"
 
 	"github.com/MiniK8s-SE3356/minik8s/pkg/apiserver/handler"
 	"github.com/MiniK8s-SE3356/minik8s/pkg/apiserver/process"
@@ -13,11 +12,11 @@ import (
 
 // handler、process相当于spring里面的controller、service，临时先用这个名字
 
-func example(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{
-		"message": "pong",
-	})
-}
+// func example(c *gin.Context) {
+// 	c.JSON(http.StatusOK, gin.H{
+// 		"message": "pong",
+// 	})
+// }
 
 func bind(r *gin.Engine) {
 	// Pod
@@ -40,8 +39,11 @@ func bind(r *gin.Engine) {
 	// r.POST(url.RemoveReplicaset, handler.RemoveReplicaSet)
 	// r.GET(url.DescribeReplicaset, handler.DescribeReplicaSet)
 
-	// r.POST(url.AddService, handler.AddService)
-	// r.GET(url.GetService, handler.GetService)
+	r.POST(url.AddService, handler.AddService)
+	r.GET(url.GetAllService, handler.GetAllService)
+	r.GET(url.GetService, handler.GetService)
+	r.GET(url.GetFilteredService, handler.GetFilteredService)
+	r.POST(url.UpdateService, handler.UpdateService)
 	// r.POST(url.RemoveService, handler.RemoveService)
 	// r.GET(url.DescribeService, handler.DescribeService)
 }

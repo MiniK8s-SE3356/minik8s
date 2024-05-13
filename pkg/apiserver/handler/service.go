@@ -11,13 +11,16 @@ import (
 
 // POST 参数类型ServiceDesc
 func AddService(c *gin.Context) {
-	var desc yaml.ServiceDesc
-	if err := c.ShouldBindJSON(&desc); err != nil {
+	var requestMsg struct {
+		Namespace string
+		Desc      yaml.ServiceDesc
+	}
+	if err := c.ShouldBindJSON(&requestMsg); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	result, err := process.AddService(&desc)
+	result, err := process.AddService(requestMsg.Namespace, &requestMsg.Desc)
 	if err != nil {
 		fmt.Println("error in process.AddService ", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -54,6 +57,21 @@ func RemoveService(c *gin.Context) {
 	c.JSON(http.StatusOK, result)
 }
 
+func GetFilteredService(c *gin.Context) {
+	c.JSON(http.StatusOK, gin.H{"result": "hello"})
+}
+
+func GetAllService(c *gin.Context) {
+	result, err := process.GetAllService()
+
+	if err != nil {
+		fmt.Println("error in process.GetAllService ", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	}
+
+	c.JSON(http.StatusOK, result)
+}
+
 func GetService(c *gin.Context) {
 	var param map[string]string
 	if err := c.ShouldBindJSON(&param); err != nil {
@@ -62,7 +80,6 @@ func GetService(c *gin.Context) {
 	}
 
 	namespace := c.Query("namespace")
-
 	name := c.Query("name")
 
 	var result string
@@ -70,7 +87,7 @@ func GetService(c *gin.Context) {
 	// 四种情况
 	// 1. namespace name均为空 获取全部service
 	if namespace == "" && name == "" {
-		result, err = process.GetAllServices()
+		result, err = process.GetAllService()
 	}
 	// 2. namespace为空，name不为空 获取Default下的service
 	if namespace == "" && name != "" {
@@ -87,11 +104,36 @@ func GetService(c *gin.Context) {
 	}
 
 	if err != nil {
-		fmt.Println("error in process.GetService ", err)
+		fmt.Println("error in handler.GetService ", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 	}
 
 	c.JSON(http.StatusOK, result)
+}
+
+func UpdateService(c *gin.Context) {
+	var param map[string]string
+	if err := c.ShouldBindJSON(&param); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	var arr []string
+	for k, v := range param {
+		_, err := process.UpdateService("Default", k, v)
+		if err != nil {
+			fmt.Println("failed to update", k)
+		} else {
+			arr = append(arr, k)
+		}
+	}
+
+	// if err != nil {
+	// 	fmt.Println("error in process.UpdateService ", err)
+	// 	c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	// }
+
+	c.JSON(http.StatusOK, gin.H{"result": arr})
 }
 
 func DescribeService(c *gin.Context) {
@@ -127,7 +169,7 @@ func DescribeService(c *gin.Context) {
 	}
 
 	if err != nil {
-		fmt.Println("error in process.DescribeService ", err.Error())
+		fmt.Println("error in handler.DescribeService ", err.Error())
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 	}
 
