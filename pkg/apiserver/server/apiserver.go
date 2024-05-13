@@ -44,7 +44,7 @@ func bind(r *gin.Engine) {
 	r.GET(url.GetService, handler.GetService)
 	r.GET(url.GetFilteredService, handler.GetFilteredService)
 	r.POST(url.UpdateService, handler.UpdateService)
-	// r.POST(url.RemoveService, handler.RemoveService)
+	r.POST(url.RemoveService, handler.RemoveService)
 	// r.GET(url.DescribeService, handler.DescribeService)
 }
 

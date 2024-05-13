@@ -110,7 +110,21 @@ func AddService(namespace string, desc *yaml.ServiceDesc) (string, error) {
 }
 
 func RemoveService(namespace string, name string) (string, error) {
-	return "", nil
+	existed, err := EtcdCli.Exist(servicePrefix + namespace + "/" + name)
+	if err != nil {
+		return "failed to check existence in etcd", err
+	}
+	if !existed {
+		return "service not found", nil
+	}
+
+	err = EtcdCli.Del(servicePrefix + namespace + "/" + name)
+	if err != nil {
+		fmt.Println("failed to del in etcd")
+		return "failed to del in etcd", err
+	}
+
+	return "del successfully", nil
 }
 
 func UpdateService(namespace string, name string, value string) (string, error) {
@@ -119,7 +133,7 @@ func UpdateService(namespace string, name string, value string) (string, error) 
 		return "failed to check existence in etcd", err
 	}
 	if !existed {
-		return "namespace not found", errors.New("namespace not found")
+		return "service not found", errors.New("service not found")
 	}
 
 	err = EtcdCli.Put(servicePrefix+namespace+"/"+name, value)
@@ -182,13 +196,11 @@ func GetAllService() (map[string][]interface{}, error) {
 	result["clusterIP"] = clusterIPArray
 	result["nodePort"] = nodePortArray
 
-	jsonData, err := json.Marshal(result)
-	fmt.Println(jsonData)
-	fmt.Println(string(jsonData))
-	if err != nil {
-		fmt.Println("failed to translate into json")
-		return result, err
-	}
+	// jsonData, err := json.Marshal(result)
+	// if err != nil {
+	// 	fmt.Println("failed to translate into json")
+	// 	return result, err
+	// }
 	return result, nil
 }
 
