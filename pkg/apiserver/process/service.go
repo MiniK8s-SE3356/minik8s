@@ -11,6 +11,8 @@ import (
 )
 
 func AddService(namespace string, desc *yaml.ServiceDesc) (string, error) {
+	mu.Lock()
+	defer mu.Unlock()
 	// serviceType, ok := desc.Spec["type"].(string)
 	// fmt.Println(serviceType)
 	// if !ok {
@@ -110,6 +112,8 @@ func AddService(namespace string, desc *yaml.ServiceDesc) (string, error) {
 }
 
 func RemoveService(namespace string, name string) (string, error) {
+	mu.Lock()
+	defer mu.Unlock()
 	existed, err := EtcdCli.Exist(servicePrefix + namespace + "/" + name)
 	if err != nil {
 		return "failed to check existence in etcd", err
@@ -128,6 +132,8 @@ func RemoveService(namespace string, name string) (string, error) {
 }
 
 func UpdateService(namespace string, name string, value string) (string, error) {
+	mu.Lock()
+	defer mu.Unlock()
 	existed, err := EtcdCli.Exist(servicePrefix + namespace + "/" + name)
 	if err != nil {
 		return "failed to check existence in etcd", err
@@ -146,14 +152,20 @@ func UpdateService(namespace string, name string, value string) (string, error) 
 }
 
 func GetService(namespace string, name string) (string, error) {
+	mu.RLock()
+	defer mu.RUnlock()
 	return "", nil
 }
 
 func GetServices(namespace string) (string, error) {
+	mu.RLock()
+	defer mu.RUnlock()
 	return "", nil
 }
 
 func GetAllService() (map[string][]interface{}, error) {
+	mu.RLock()
+	defer mu.RUnlock()
 	result := make(map[string][]interface{}, 2)
 	pairs, err := EtcdCli.GetWithPrefix(servicePrefix)
 	if err != nil {

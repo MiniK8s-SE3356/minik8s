@@ -40,6 +40,6 @@ type ClusterIPPortInfo struct {
 }
 
 type ClusterIPStatus struct {
-	Phase          string           `json:"phase" yaml:"phase"` /*只允许此文件上述的和状态有关的const常量，可参考飞书《Service设计方案》*/
-	ServicesStatus map[int16]string `json:"servicesStatus" yaml:"servicesStatus"`
+	Phase          string             `json:"phase" yaml:"phase"` /*只允许此文件上述的和状态有关的const常量，可参考飞书《Service设计方案》*/
+	ServicesStatus map[int16][]string `json:"servicesStatus" yaml:"servicesStatus"`
 }

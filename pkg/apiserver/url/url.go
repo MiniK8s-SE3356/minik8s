@@ -33,6 +33,9 @@ const (
 	GetReplicaset      = prefix + "/GetReplicaset"
 	DescribeReplicaset = prefix + "/DescribeReplicaset"
 
+	GetAllEndpoint      = prefix + "/AddAllEndpoint"
+	UpdateEndpointBatch = prefix + "/UpdateEndpointBatch"
+
 	AddPodURL      = rootURL + prefix + "/AddPod"
 	RemovePodURL   = rootURL + prefix + "/RemovePod"
 	GetPodURL      = rootURL + prefix + "/GetPod"
@@ -54,6 +57,9 @@ const (
 	RemoveReplicasetURL   = rootURL + prefix + "/RemoveReplicaset"
 	GetReplicasetURL      = rootURL + prefix + "/GetReplicaset"
 	DescribeReplicasetURL = rootURL + prefix + "/DescribeReplicaset"
+
+	GetAllEndpointURL      = rootURL + GetAllEndpoint
+	UpdateEndpointBatchURL = rootURL + UpdateEndpointBatch
 )
 
 func GetURL(path string) string {

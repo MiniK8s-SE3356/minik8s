@@ -8,6 +8,8 @@ import (
 )
 
 func AddNode(desc *node.Node) (string, error) {
+	mu.Lock()
+	defer mu.Unlock()
 	// 检查name是否为空
 	if desc.Metadata.Name == "" {
 		return "empty name is not allowed", nil
@@ -41,6 +43,8 @@ func AddNode(desc *node.Node) (string, error) {
 }
 
 func RemoveNode(name string) (string, error) {
+	mu.Lock()
+	defer mu.Unlock()
 	existed, err := EtcdCli.Exist(nodePrefix + name)
 	if err != nil {
 		return "failed to check existence in etcd", err
@@ -59,10 +63,14 @@ func RemoveNode(name string) (string, error) {
 }
 
 func ModifyNode() (string, error) {
+	mu.Lock()
+	defer mu.Unlock()
 	return "", nil
 }
 
 func GetNode(name string) (string, error) {
+	mu.RLock()
+	defer mu.RUnlock()
 	existed, err := EtcdCli.Exist(nodePrefix + name)
 	if err != nil {
 		return "failed to check existence in etcd", err
@@ -81,6 +89,8 @@ func GetNode(name string) (string, error) {
 }
 
 func GetNodes() (string, error) {
+	mu.RLock()
+	defer mu.RUnlock()
 	pairs, err := EtcdCli.GetWithPrefix(nodePrefix)
 	if err != nil {
 		fmt.Println("failed to get from etcd")

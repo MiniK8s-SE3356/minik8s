@@ -12,6 +12,8 @@ import (
 // TODO
 
 func AddNamespace(desc *yaml.NamespaceDesc) (string, error) {
+	mu.Lock()
+	defer mu.Unlock()
 	// 检查name是否为空
 	if desc.Metadata.Name == "" {
 		return "empty name is not allowed", nil
@@ -58,6 +60,8 @@ func AddNamespace(desc *yaml.NamespaceDesc) (string, error) {
 }
 
 func RemoveNamespace(name string) (string, error) {
+	mu.Lock()
+	defer mu.Unlock()
 	// TODO: 删除namespace下的其他资源
 	existed, err := EtcdCli.Exist(namespacePrefix + name)
 	if err != nil {
@@ -77,6 +81,8 @@ func RemoveNamespace(name string) (string, error) {
 }
 
 func GetNamespace(name string) (string, error) {
+	mu.RLock()
+	defer mu.RUnlock()
 	result, err := EtcdCli.Get(namespacePrefix + name)
 	if err != nil {
 		fmt.Println("failed to get namespace from etcd")
@@ -87,6 +93,8 @@ func GetNamespace(name string) (string, error) {
 }
 
 func GetNamespaces() (string, error) {
+	mu.RLock()
+	defer mu.RUnlock()
 	pairs, err := EtcdCli.GetWithPrefix(namespacePrefix)
 	if err != nil {
 		fmt.Println("failed to get from etcd")

@@ -46,6 +46,9 @@ func bind(r *gin.Engine) {
 	r.POST(url.UpdateService, handler.UpdateService)
 	r.POST(url.RemoveService, handler.RemoveService)
 	// r.GET(url.DescribeService, handler.DescribeService)
+
+	r.GET(url.GetAllEndpoint, handler.GetAllEndpoint)
+	r.POST(url.UpdateEndpointBatch, handler.UpdateEndpointBatch)
 }
 
 func Start() {

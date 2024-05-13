@@ -1,6 +1,10 @@
 package process
 
-import "github.com/MiniK8s-SE3356/minik8s/pkg/etcdclient"
+import (
+	"sync"
+
+	"github.com/MiniK8s-SE3356/minik8s/pkg/etcdclient"
+)
 
 const (
 	prefix          = "/minik8s"
@@ -8,6 +12,8 @@ const (
 	nodePrefix      = prefix + "/node/"
 	podPrefix       = prefix + "/pod/"
 	servicePrefix   = prefix + "/service/"
+	endpointPrefix  = prefix + "/endpoint/"
 )
 
 var EtcdCli *etcdclient.EtcdClient
+var mu sync.RWMutex
