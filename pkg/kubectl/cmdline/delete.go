@@ -11,7 +11,7 @@ import (
 var deleteFuncTable = map[string]func(namespace string, name string) (string, error){
 	"Pod":        deletePod,
 	"Service":    deleteService,
-	"ReplicaSet": deleteReplicaSet,
+	"Replicaset": deleteReplicaSet,
 	"Namespace":  deleteNamespace,
 }
 
@@ -100,7 +100,12 @@ func deleteReplicaSet(namespace string, name string) (string, error) {
 		"name":      name,
 	}
 
-	result, err := GetRequestWithParams(url.RemoveReplicasetURL, params)
+	jsonData, err := json.Marshal(params)
+	if err != nil {
+		fmt.Println("failed to translate into json")
+		return "", err
+	}
+	result, err := PostRequest(url.RemoveReplicasetURL, jsonData)
 	if err != nil {
 		fmt.Println("error in delete replicaset ", err.Error())
 		return "", err

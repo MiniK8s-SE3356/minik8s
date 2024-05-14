@@ -34,9 +34,9 @@ func bind(r *gin.Engine) {
 	r.GET(url.GetNode, handler.GetNode)
 	r.POST(url.RemoveNode, handler.RemoveNode)
 
-	// r.POST(url.AddReplicaset, handler.AddReplicaSet)
-	// r.GET(url.GetReplicaset, handler.GetReplicaSet)
-	// r.POST(url.RemoveReplicaset, handler.RemoveReplicaSet)
+	r.POST(url.AddReplicaset, handler.AddReplicaSet)
+	r.GET(url.GetReplicaset, handler.GetReplicaSet)
+	r.POST(url.RemoveReplicaset, handler.RemoveReplicaSet)
 	// r.GET(url.DescribeReplicaset, handler.DescribeReplicaSet)
 
 	r.POST(url.AddService, handler.AddService)

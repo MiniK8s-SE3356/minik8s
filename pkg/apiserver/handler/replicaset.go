@@ -12,13 +12,16 @@ import (
 
 // gin server的 /api/v1/addReplicaSet对应的方法
 func AddReplicaSet(c *gin.Context) {
-	var desc yaml.ReplicaSetDesc
-	if err := c.ShouldBindJSON(&desc); err != nil {
+	var requestMsg struct {
+		Namespace string
+		Desc      yaml.ReplicaSetDesc
+	}
+	if err := c.ShouldBindJSON(&requestMsg); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	process.AddReplicaSet(&desc)
+	process.AddReplicaSet(requestMsg.Namespace, &requestMsg.Desc)
 }
 
 func RemoveReplicaSet(c *gin.Context) {
@@ -27,10 +30,9 @@ func RemoveReplicaSet(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-
 	namespace, ok := param["namespace"]
 	if !ok {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "no field 'namespace'"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "no field 'name'"})
 		return
 	}
 
@@ -40,10 +42,13 @@ func RemoveReplicaSet(c *gin.Context) {
 		return
 	}
 
-	err := process.RemoveReplicaSet(namespace, name)
+	result, err := process.RemoveReplicaSet(namespace, name)
 	if err != nil {
+		fmt.Println("error in process.RemoveReplicaset ", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 	}
+
+	c.JSON(http.StatusOK, result)
 }
 
 // func ModifyReplicaSet(c *gin.Context) {
@@ -57,81 +62,94 @@ func RemoveReplicaSet(c *gin.Context) {
 // }
 
 func GetReplicaSet(c *gin.Context) {
-	var param map[string]string
-	if err := c.ShouldBindJSON(&param); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
 	namespace := c.Query("namespace")
-
 	name := c.Query("name")
 
-	var result string
-	var err error
 	// 四种情况
 	// 1. namespace name均为空 获取全部replicaset
 	if namespace == "" && name == "" {
-		result, err = process.GetAllReplicaSets()
+		result, err := process.GetAllReplicaSets()
+
+		if err != nil {
+			fmt.Println("error in process.GetReplicaSet ", err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		}
+
+		c.JSON(http.StatusOK, result)
 	}
 	// 2. namespace为空，name不为空 获取Default下的replicaset
 	if namespace == "" && name != "" {
 		namespace = "Default"
-		result, err = process.GetReplicaSet(namespace, name)
+		result, err := process.GetReplicaSet(namespace, name)
+
+		if err != nil {
+			fmt.Println("error in process.GetReplicaSet ", err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		}
+
+		c.JSON(http.StatusOK, result)
 	}
 	// 3. namespace不为空，name为空 获取namespace下的全部replicaset
 	if namespace != "" && name == "" {
-		result, err = process.GetReplicaSets(namespace)
+		result, err := process.GetReplicaSets(namespace)
+
+		if err != nil {
+			fmt.Println("error in process.GetReplicaSet ", err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		}
+
+		c.JSON(http.StatusOK, result)
 	}
 	// 4. 均不为空 获取指定的
 	if namespace != "" && name == "" {
-		result, err = process.GetReplicaSet(namespace, name)
+		result, err := process.GetReplicaSet(namespace, name)
+
+		if err != nil {
+			fmt.Println("error in process.GetReplicaSet ", err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		}
+
+		c.JSON(http.StatusOK, result)
 	}
 
-	if err != nil {
-		fmt.Println("error in process.GetReplicaSet ", err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-	}
-
-	c.JSON(http.StatusOK, result)
 }
 
-func DescribeReplicaSet(c *gin.Context) {
-	var param map[string]string
-	if err := c.ShouldBindJSON(&param); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
+// func DescribeReplicaSet(c *gin.Context) {
+// 	var param map[string]string
+// 	if err := c.ShouldBindJSON(&param); err != nil {
+// 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+// 		return
+// 	}
 
-	namespace := c.Query("namespace")
+// 	namespace := c.Query("namespace")
 
-	name := c.Query("name")
+// 	name := c.Query("name")
 
-	var result string
-	var err error
-	// 四种情况
-	// 1. namespace name均为空 获取全部replicaset
-	if namespace == "" && name == "" {
-		result, err = process.DescribeAllReplicaSets()
-	}
-	// 2. namespace为空，name不为空 获取Default下的replicaset
-	if namespace == "" && name != "" {
-		namespace = "Default"
-		result, err = process.DescribeReplicaSet(namespace, name)
-	}
-	// 3. namespace不为空，name为空 获取namespace下的全部replicaset
-	if namespace != "" && name == "" {
-		result, err = process.DescribeReplicaSets(namespace)
-	}
-	// 4. 均不为空 获取指定的
-	if namespace != "" && name == "" {
-		result, err = process.DescribeReplicaSet(namespace, name)
-	}
+// 	var result string
+// 	var err error
+// 	// 四种情况
+// 	// 1. namespace name均为空 获取全部replicaset
+// 	if namespace == "" && name == "" {
+// 		result, err = process.DescribeAllReplicaSets()
+// 	}
+// 	// 2. namespace为空，name不为空 获取Default下的replicaset
+// 	if namespace == "" && name != "" {
+// 		namespace = "Default"
+// 		result, err = process.DescribeReplicaSet(namespace, name)
+// 	}
+// 	// 3. namespace不为空，name为空 获取namespace下的全部replicaset
+// 	if namespace != "" && name == "" {
+// 		result, err = process.DescribeReplicaSets(namespace)
+// 	}
+// 	// 4. 均不为空 获取指定的
+// 	if namespace != "" && name == "" {
+// 		result, err = process.DescribeReplicaSet(namespace, name)
+// 	}
 
-	if err != nil {
-		fmt.Println("error in process.DescribeReplicaSet ", err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-	}
+// 	if err != nil {
+// 		fmt.Println("error in process.DescribeReplicaSet ", err)
+// 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+// 	}
 
-	c.JSON(http.StatusOK, result)
-}
+// 	c.JSON(http.StatusOK, result)
+// }

@@ -14,7 +14,7 @@ import (
 var applyFuncTable = map[string]func(namespace string, b []byte) error{
 	"Pod":        applyPod,
 	"Service":    applyService,
-	"ReplicaSet": applyReplicaSet,
+	"Replicaset": applyReplicaSet,
 	"Namespace":  applyNamespace,
 }
 
@@ -171,19 +171,25 @@ func applyService(namespace string, b []byte) error {
 }
 
 func applyReplicaSet(namespace string, b []byte) error {
-	var replicaSetDesc minik8s_yaml.ReplicaSetDesc
+	var request struct {
+		Namespace string
+		Desc      minik8s_yaml.ReplicaSetDesc
+	}
+	request.Namespace = namespace
 
-	err := yaml.Unmarshal(b, &replicaSetDesc)
+	err := yaml.Unmarshal(b, &request.Desc)
 	if err != nil {
 		fmt.Println("failed to unmarshal replicaset yaml ", err.Error())
 		return err
 	}
 
-	jsonData, err := json.Marshal(replicaSetDesc)
+	jsonData, err := json.Marshal(request)
 	if err != nil {
 		fmt.Println("failed to translate into json ", err.Error())
 		return err
 	}
+	fmt.Println(string(jsonData))
+
 	result, err := PostRequest(url.AddReplicasetURL, jsonData)
 	if err != nil {
 		fmt.Println("error when post request ", err.Error())

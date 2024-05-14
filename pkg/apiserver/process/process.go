@@ -7,12 +7,13 @@ import (
 )
 
 const (
-	prefix          = "/minik8s"
-	namespacePrefix = prefix + "/namespace/"
-	nodePrefix      = prefix + "/node/"
-	podPrefix       = prefix + "/pod/"
-	servicePrefix   = prefix + "/service/"
-	endpointPrefix  = prefix + "/endpoint/"
+	prefix           = "/minik8s"
+	namespacePrefix  = prefix + "/namespace/"
+	nodePrefix       = prefix + "/node/"
+	podPrefix        = prefix + "/pod/"
+	servicePrefix    = prefix + "/service/"
+	endpointPrefix   = prefix + "/endpoint/"
+	replicasetPrefix = prefix + "/replicaset"
 )
 
 var EtcdCli *etcdclient.EtcdClient

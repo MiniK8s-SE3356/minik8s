@@ -79,13 +79,9 @@ func GetNode(name string) (string, error) {
 		return "node not found", nil
 	}
 
-	err = EtcdCli.Del(nodePrefix + name)
-	if err != nil {
-		fmt.Println("failed to del in etcd")
-		return "failed to del in etcd", err
-	}
+	// TODO
 
-	return "del successfully", nil
+	return "", nil
 }
 
 func GetNodes() (string, error) {
