@@ -11,7 +11,7 @@ var GetFuncTable = map[string]func(namespace string, name string) (string, error
 	"Node":       getNode,
 	"Pod":        getPod,
 	"Service":    getService,
-	"ReplicaSet": getReplicaSet,
+	"Replicaset": getReplicaSet,
 	"Namespace":  getNamespace,
 }
 
