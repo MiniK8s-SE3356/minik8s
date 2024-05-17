@@ -8,17 +8,18 @@ import (
 type Kubelet struct {
 	kubeletConfig *KubeletConfig
 	msgProxy      *msgproxy.MsgProxy
-	podManager    *kubelet_worker.PodManager
+	podManager    kubelet_worker.PodManager
 }
 
 func NewKubelet(config *KubeletConfig) *Kubelet {
 	kubelet := &Kubelet{
 		kubeletConfig: config,
 		msgProxy:      msgproxy.NewMsgProxy(&config.MQConfig),
+		podManager:    kubelet_worker.NewPodManager(),
 	}
 	return kubelet
 }
 
-func (*Kubelet) Run() {
-
+func (k *Kubelet) Run() {
+	go k.msgProxy.Run()
 }
