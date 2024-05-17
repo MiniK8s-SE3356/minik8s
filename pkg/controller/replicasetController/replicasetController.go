@@ -8,7 +8,7 @@ import (
 	"github.com/MiniK8s-SE3356/minik8s/pkg/apiObject/pod"
 	"github.com/MiniK8s-SE3356/minik8s/pkg/apiObject/replicaset"
 	"github.com/MiniK8s-SE3356/minik8s/pkg/apiserver/url"
-	"github.com/MiniK8s-SE3356/minik8s/pkg/utils/httprequest"
+	"github.com/MiniK8s-SE3356/minik8s/pkg/utils/httpRequest"
 )
 
 type ReplicasetController struct {
@@ -32,7 +32,7 @@ func checkMatchedPod(podLabels map[string]string, selector map[string]string) bo
 func getPodsFromServer() ([]pod.Pod, error) {
 	var result []pod.Pod
 
-	jsonData, err := httprequest.GetRequest(url.RootURL + url.GetPod)
+	jsonData, err := httpRequest.GetRequest(url.RootURL + url.GetPod)
 	if err != nil {
 		fmt.Println("error in get request")
 		return result, err
@@ -51,7 +51,7 @@ func getPodsFromServer() ([]pod.Pod, error) {
 func getReplicasetsFromServer() ([]replicaset.Replicaset, error) {
 	var result []replicaset.Replicaset
 
-	jsonData, err := httprequest.GetRequest(url.RootURL + url.GetReplicaset)
+	jsonData, err := httpRequest.GetRequest(url.RootURL + url.GetReplicaset)
 	if err != nil {
 		fmt.Println("error in get request")
 		return result, err
