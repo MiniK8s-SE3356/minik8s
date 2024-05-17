@@ -3,12 +3,14 @@ package service
 import "github.com/MiniK8s-SE3356/minik8s/pkg/apiObject/selector"
 
 const (
-	CLUSTERIP_PREFIX              = "MINIK8S-CLUSTERIP-"
-	CLUSTERIP_ID_ALLOCATED        = "ID Allocated"
-	CLUSTERIP_IP_ALLOCATED        = "IP Allocated"
-	CLUSTERIP_ENDPOINTS_ALLOCATED = "Endponits Allocated"
-	CLUSTERIP_SUCCESS             = "Success"
-	CLUSTERIP_ERROR               = "Error"
+	CLUSTERIP_PREFIX = "MINIK8S-CLUSTERIP-"
+	// CLUSTERIP_ID_ALLOCATED        = "ID Allocated"        /*状态1*/
+	// CLUSTERIP_IP_ALLOCATED        = "IP Allocated"        /*状态2*/
+	// CLUSTERIP_ENDPOINTS_ALLOCATED = "Endponits Allocated" /*状态3*/
+	// CLUSTERIP_SUCCESS             = "Success"             /*状态4*/
+	// CLUSTERIP_ERROR               = "Error"               /*状态5*/
+	CLUSTERIP_READY    = "READY"
+	CLUSTERIP_NOTREADY = "NOTREADY"
 )
 
 type ClusterIP struct {
@@ -35,11 +37,12 @@ type ClusterIPSpec struct {
 
 type ClusterIPPortInfo struct {
 	Protocal   string `json:"protocal" yaml:"protocal"`
-	Port       int16  `json:"port" yaml:"port"`
-	TargetPort int16  `json:"targetPort" yaml:"targetPort"`
+	Port       uint16 `json:"port" yaml:"port"`
+	TargetPort uint16 `json:"targetPort" yaml:"targetPort"`
 }
 
 type ClusterIPStatus struct {
-	Phase          string           `json:"phase" yaml:"phase"` /*只允许此文件上述的和状态有关的const常量，可参考飞书《Service设计方案》*/
-	ServicesStatus map[int16]string `json:"servicesStatus" yaml:"servicesStatus"`
+	Phase          string              `json:"phase" yaml:"phase"` /*READY or NOTREADY */
+	Version        int                 /* 版本号 */
+	ServicesStatus map[uint16][]string `json:"servicesStatus" yaml:"servicesStatus"`
 }

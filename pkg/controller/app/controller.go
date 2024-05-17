@@ -2,7 +2,6 @@ package app
 
 import (
 	"fmt"
-	"time"
 
 	"github.com/MiniK8s-SE3356/minik8s/pkg/controller/endpointsController"
 	"github.com/MiniK8s-SE3356/minik8s/pkg/controller/nodesController"
@@ -40,5 +39,8 @@ func (co *Controller) Run() {
 	go co.nodesController.Run()
 	go co.servicesController.Run()
 
-	time.Sleep(2 * time.Second)
+	// TODO:主线程暂时没有要做的事情，先while1,后续需要补充
+	for {
+
+	}
 }

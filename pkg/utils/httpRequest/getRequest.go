@@ -44,7 +44,7 @@ func GetRequestWithParams(url string, params map[string]string) (string, error) 
 // GetRequestByObject
 //
 //	 @param url
-//	 @param param_list 		:	params list
+//	 @param param_list 		:	params list (can be nil)
 //	 @param response_target 	:	the **point** of response object
 //									you can also get plain text through a string point
 //	 @return int
@@ -57,16 +57,19 @@ func GetRequestByObject(url string, param_list map[string]string, response_targe
 	}
 
 	p := neturl.Values{}
-	for k, v := range param_list {
-		p.Set(k, v)
+	if param_list != nil {
+		for k, v := range param_list {
+			p.Set(k, v)
+		}
 	}
+
 	parseURL.RawQuery = p.Encode()
 	urlWithParams := parseURL.String()
 	response, err := http.Get(urlWithParams)
 
 	if err != nil {
-		fmt.Printf("GetRequestByObject: Post object failed, err msg: %s\n" + err.Error())
-		return 0, err
+		fmt.Printf("GetRequestByObject: Get object failed, err msg: %s\n" + err.Error())
+		return response.StatusCode, err
 	}
 	defer response.Body.Close()
 
@@ -82,7 +85,7 @@ func GetRequestByObject(url string, param_list map[string]string, response_targe
 		text, err := io.ReadAll(response.Body)
 		if err != nil {
 			fmt.Printf("GetRequestByObject: Decode response failed, err msg: %s\n", err.Error())
-			return 0, err
+			return response.StatusCode, err
 		}
 		*va = string(text)
 	} else {
@@ -90,7 +93,7 @@ func GetRequestByObject(url string, param_list map[string]string, response_targe
 		err = json.NewDecoder(response.Body).Decode(response_target)
 		if err != nil {
 			fmt.Printf("GetRequestByObject: Decode response failed, err msg: %s\n", err.Error())
-			return 0, err
+			return response.StatusCode, err
 		}
 	}
 

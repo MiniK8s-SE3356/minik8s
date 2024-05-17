@@ -3,11 +3,13 @@ package service
 import "github.com/MiniK8s-SE3356/minik8s/pkg/apiObject/selector"
 
 const (
-	NODEPORT_PREFIX           = "MINIK8S-NODEPORT-"
-	NODEPORT_ID_ALLOCATED     = "ID Allocated"
-	NODEPORT_CLUSTERIP_FINISH = "Cluster Finish"
-	NODEPORT_SUCCESS          = "Success"
-	NODEPORT_ERROR            = "Error"
+	NODEPORT_PREFIX = "MINIK8S-NODEPORT-"
+	// NODEPORT_ID_ALLOCATED     = "ID Allocated"   /*状态1*/
+	// NODEPORT_CLUSTERIP_FINISH = "Cluster Finish" /*状态2*/
+	// NODEPORT_SUCCESS          = "Success"        /*状态3*/
+	// NODEPORT_ERROR            = "Error"          /*状态4*/
+	NODEPORT_READY    = "READY"
+	NODEPORT_NOTREADY = "NOTREADY"
 )
 
 type NodePort struct {
@@ -32,13 +34,14 @@ type NodePortSpec struct {
 }
 
 type NodePortPortInfo struct {
-	NodePort   int16  `json:"nodePort" yaml:"nodePort"`
+	NodePort   uint16 `json:"nodePort" yaml:"nodePort"`
 	Protocal   string `json:"protocal" yaml:"protocal"`
-	Port       int16  `json:"port" yaml:"port"`
-	TargetPort int16  `json:"targetPort" yaml:"targetPort"`
+	Port       uint16 `json:"port" yaml:"port"`
+	TargetPort uint16 `json:"targetPort" yaml:"targetPort"`
 }
 
 type NodePortStatus struct {
-	Phase       string `json:"phase" yaml:"phase"` /*只允许此文件上述的和状态有关的const常量，可参考飞书《Service设计方案》*/
+	Phase       string `json:"phase" yaml:"phase"` /*READY or NOTREADY*/
+	Version     int
 	ClusterIPID string `json:"clusterIPID" yaml:"clusterIPID"`
 }
