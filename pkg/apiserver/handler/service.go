@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/MiniK8s-SE3356/minik8s/pkg/apiObject/yaml"
 	"github.com/MiniK8s-SE3356/minik8s/pkg/apiserver/process"
 	"github.com/gin-gonic/gin"
 )
@@ -13,7 +12,7 @@ import (
 func AddService(c *gin.Context) {
 	var requestMsg struct {
 		Namespace string
-		Desc      yaml.ServiceDesc
+		Desc      map[string]interface{}
 	}
 	if err := c.ShouldBindJSON(&requestMsg); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})

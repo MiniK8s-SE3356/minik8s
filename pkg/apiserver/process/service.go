@@ -2,112 +2,74 @@ package process
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 
 	"github.com/MiniK8s-SE3356/minik8s/pkg/apiObject/service"
-	"github.com/MiniK8s-SE3356/minik8s/pkg/apiObject/yaml"
-	"github.com/MiniK8s-SE3356/minik8s/pkg/utils/idgenerate"
 )
 
-func AddService(namespace string, desc *yaml.ServiceDesc) (string, error) {
+func AddService(namespace string, desc interface{}) (string, error) {
 	mu.Lock()
 	defer mu.Unlock()
-	// serviceType, ok := desc.Spec["type"].(string)
-	// fmt.Println(serviceType)
-	// if !ok {
-	// 	// 默认是ClusterIP
-	// 	serviceType = "ClusterIP"
-	// }
-
-	// if serviceType == "ClusterIP" {
-	// 	var desc yaml.ServiceClusterIPDesc
-	// 	err := yaml.Unmarshal(b, &desc)
-	// 	if err != nil {
-	// 		fmt.Println("failed to unmarshal clusterIP service ", err.Error())
-	// 		return err
-	// 	}
-
-	// 	requestMsg.Desc = desc
-	// 	requestMsg.Namespace = namespace
-
-	// 	jsonData, err = json.Marshal(requestMsg)
-	// 	if err != nil {
-	// 		fmt.Println("failed to marshal clusterIP service", err.Error())
-	// 		return err
-	// 	}
-	// } else if serviceType == "NodePort" {
-	// 	var desc yaml.ServiceNodePortDesc
-	// 	err := yaml.Unmarshal(b, &desc)
-	// 	if err != nil {
-	// 		fmt.Println("failed to unmarshal NodePort service ", err.Error())
-	// 		return err
-	// 	}
-
-	// 	requestMsg.Desc = desc
-	// 	requestMsg.Namespace = namespace
-
-	// 	jsonData, err = json.Marshal(requestMsg)
-	// 	if err != nil {
-	// 		fmt.Println("failed to marshal NodePort service", err.Error())
-	// 		return err
-	// 	}
-	// }
-
-	// existed, err := EtcdCli.Exist(servicePrefix + namespace + "/" + desc.Metadata.Name)
-	// if err != nil {
-	// 	return "failed to check existence in etcd", err
-	// }
-	// if existed {
-	// 	return "namespace existed", errors.New("namespace existed")
-	// }
-
-	// err = EtcdCli.Put(servicePrefix+namespace+"/"+desc.Metadata.Name, value)
-	// if err != nil {
-	// 	fmt.Println("failed to write in etcd")
-	// 	return "failed to write in etcd", err
-	// }
-	id, err := idgenerate.GenerateID()
-	if err != nil {
-		fmt.Println("failed to generate id", err)
-		return "", err
+	serviceType, ok := desc.(map[string]interface{})["Spec"].(map[string]interface{})["type"].(string)
+	fmt.Println(serviceType)
+	if !ok {
+		// 默认是ClusterIP
+		serviceType = "ClusterIP"
 	}
 
-	var a service.ClusterIP
-	a.ApiVersion = "v1"
-	a.Kind = "Service"
-	a.Metadata.Name = "test-service"
-	a.Metadata.Namespace = "Default"
-	a.Metadata.Id = id
-	a.Metadata.Ip = ""
-	a.Spec.Ports = append(a.Spec.Ports, service.ClusterIPPortInfo{
-		Protocal:   "TCP",
-		Port:       1111,
-		TargetPort: 1111,
-	})
-	a.Spec.Type = "ClusterIP"
+	if serviceType == "ClusterIP" {
+		clusterIP := desc.(service.ClusterIP)
 
-	value, err := json.Marshal(a)
-	if err != nil {
-		fmt.Println("failed to translate into json")
-		return "", err
+		existed, err := EtcdCli.Exist(servicePrefix + namespace + "/" + clusterIP.Metadata.Name)
+		if err != nil {
+			return "failed to check existence in etcd", err
+		}
+		if existed {
+			return "namespace existed", errors.New("namespace existed")
+		}
+
+		value, err := json.Marshal(clusterIP)
+		if err != nil {
+			fmt.Println("failed to marshal clusterIP")
+			return "failed to marshal clusterIP", err
+		}
+
+		err = EtcdCli.Put(servicePrefix+namespace+"/"+clusterIP.Metadata.Name, string(value))
+		if err != nil {
+			fmt.Println("failed to write in etcd")
+			return "failed to write in etcd", err
+		}
+
+		return "add successfully", nil
+
+	} else if serviceType == "NodePort" {
+		nodePort := desc.(service.NodePort)
+
+		existed, err := EtcdCli.Exist(servicePrefix + namespace + "/" + nodePort.Metadata.Name)
+		if err != nil {
+			return "failed to check existence in etcd", err
+		}
+		if existed {
+			return "namespace existed", errors.New("namespace existed")
+		}
+
+		value, err := json.Marshal(nodePort)
+		if err != nil {
+			fmt.Println("failed to marshal nodePort")
+			return "failed to marshal nodePort", err
+		}
+
+		err = EtcdCli.Put(servicePrefix+namespace+"/"+nodePort.Metadata.Name, string(value))
+		if err != nil {
+			fmt.Println("failed to write in etcd")
+			return "failed to write in etcd", err
+		}
+
+		return "add successfully", nil
 	}
-	fmt.Println(string(value))
 
-	// existed, err := EtcdCli.Exist(servicePrefix + "Default" + "/" + a.Metadata.Name)
-	// if err != nil {
-	// 	return "failed to check existence in etcd", err
-	// }
-	// if existed {
-	// 	return "namespace existed", errors.New("namespace existed")
-	// }
-
-	err = EtcdCli.Put(servicePrefix+namespace+"/"+a.Metadata.Name, string(value))
-	if err != nil {
-		fmt.Println("failed to write in etcd")
-		return "failed to write in etcd", err
-	}
-
-	return "add successfully", nil
+	return "", nil
 }
 
 func RemoveService(namespace string, name string) (string, error) {
