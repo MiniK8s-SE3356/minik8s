@@ -281,11 +281,11 @@ func (ic *IptablesController) SyncConfig(slist *httpobject.HTTPResponse_GetAllSe
 				}
 				new_sid2eid[sid] = port_eid_list
 
-				new_kpcip.Vports=append(new_kpcip.Vports, port_info.Port)
+				new_kpcip.Vports = append(new_kpcip.Vports, port_info.Port)
 			}
 		}
-		if (len(new_kpcip.Vports)>0){
-			new_service_status.ClusterIP[clusterip.Metadata.Id]=new_kpcip
+		if len(new_kpcip.Vports) > 0 {
+			new_service_status.ClusterIP[clusterip.Metadata.Id] = new_kpcip
 		}
 	}
 
@@ -298,9 +298,9 @@ func (ic *IptablesController) SyncConfig(slist *httpobject.HTTPResponse_GetAllSe
 			continue
 		}
 
-		new_kpnp:=kptype.KpNodePort{
+		new_kpnp := kptype.KpNodePort{
 			Version: nodeport.Status.Version,
-			Nports: []uint16{},
+			Nports:  []uint16{},
 		}
 
 		clusteripid := nodeport.Status.ClusterIPID
@@ -310,12 +310,12 @@ func (ic *IptablesController) SyncConfig(slist *httpobject.HTTPResponse_GetAllSe
 			if _, exist := new_sid2smeta[sid]; exist {
 				new_nodeport2sid[nodeport_port.Port] = sid
 
-				new_kpnp.Nports=append(new_kpnp.Nports, nodeport_port.Port)
+				new_kpnp.Nports = append(new_kpnp.Nports, nodeport_port.Port)
 			}
 		}
 
-		if(len(new_kpnp.Nports)>0){
-			new_service_status.NodePort[nodeport.Metadata.Id]=new_kpnp
+		if len(new_kpnp.Nports) > 0 {
+			new_service_status.NodePort[nodeport.Metadata.Id] = new_kpnp
 		}
 
 	}

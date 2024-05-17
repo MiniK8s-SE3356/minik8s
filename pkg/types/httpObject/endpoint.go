@@ -5,3 +5,8 @@ import (
 )
 
 type HTTPResponse_GetAllEndpoint map[string]service.EndPoint
+
+type HTTPRequest_AddorDeleteEndpoint struct {
+	Delete []string           `json:"delete" yaml:"delete"`
+	Add    []service.EndPoint `json:"add" yaml:"add"`
+}

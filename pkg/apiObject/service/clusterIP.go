@@ -1,6 +1,9 @@
 package service
 
-import "github.com/MiniK8s-SE3356/minik8s/pkg/apiObject/selector"
+import (
+	"github.com/MiniK8s-SE3356/minik8s/pkg/apiObject/selector"
+	"github.com/google/uuid"
+)
 
 const (
 	CLUSTERIP_PREFIX = "MINIK8S-CLUSTERIP-"
@@ -45,4 +48,33 @@ type ClusterIPStatus struct {
 	Phase          string              `json:"phase" yaml:"phase"` /*READY or NOTREADY */
 	Version        int                 /* 版本号 */
 	ServicesStatus map[uint16][]string `json:"servicesStatus" yaml:"servicesStatus"`
+}
+
+func NodePort2ClusterIP(np *NodePort)ClusterIP{
+	result:=ClusterIP{}
+
+	result.ApiVersion=np.ApiVersion
+	result.Kind=np.Kind
+
+	result.Metadata.Id=uuid.NewString()
+	result.Metadata.Labels=np.Metadata.Labels
+	result.Metadata.Ip=""
+	result.Metadata.Name=CLUSTERIP_PREFIX+(result.Metadata.Id)[:8]
+	result.Metadata.Namespace=np.Metadata.Namespace
+
+	result.Spec.Type="ClusterIP"
+	result.Spec.Selector=np.Spec.Selector
+	for _,v:=range(np.Spec.Ports){
+		result.Spec.Ports=append(result.Spec.Ports, ClusterIPPortInfo{
+			Protocal: v.Protocal,
+			Port: v.Port,
+			TargetPort: v.TargetPort,
+		})
+	}
+
+	result.Status.Phase=CLUSTERIP_NOTREADY
+	result.Status.ServicesStatus=map[uint16][]string{}
+	result.Status.Version=0
+
+	return result
 }

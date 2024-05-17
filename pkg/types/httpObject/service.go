@@ -10,5 +10,3 @@ type HTTPResponse_GetAllServices struct {
 }
 
 type HTTPRequest_UpdateServices map[string]string
-
-type HTTPResponse_UpdateServices []string

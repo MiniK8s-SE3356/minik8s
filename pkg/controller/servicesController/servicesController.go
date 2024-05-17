@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/MiniK8s-SE3356/minik8s/pkg/apiObject/service"
 	"github.com/MiniK8s-SE3356/minik8s/pkg/controller/servicesController/ipAllocater"
 	httpobject "github.com/MiniK8s-SE3356/minik8s/pkg/types/httpObject"
 	"github.com/MiniK8s-SE3356/minik8s/pkg/utils/httpRequest"
@@ -38,7 +39,7 @@ func (sc *ServicesController) Run() {
 func (sc *ServicesController) routine() {
 	fmt.Printf("ServicesController routine\n")
 
-	// TODO: 只做了ClusterIP ，NodePort相关还没添加
+	// NOTE: ServiceController只分配ClusterIP的虚拟IP,对于NodePort没有影响
 
 	var response_object httpobject.HTTPResponse_GetAllServices
 
@@ -51,13 +52,31 @@ func (sc *ServicesController) routine() {
 
 	fmt.Println(response_object)
 
-	update_map := make(httpobject.HTTPRequest_UpdateServices)
+	update_map := httpobject.HTTPRequest_UpdateServices{}
+
+	// 遍历nodeport,为nodeport分配对应的ClusterIP
+	for _,value:=range response_object.NodePort{
+		if (value.Status.ClusterIPID==""){
+			// 分配一个新的clusterIP
+			new_clu:=service.NodePort2ClusterIP(&value)
+			value.Status.ClusterIPID=new_clu.Metadata.Id
+			
+			response_object.ClusterIP=append(response_object.ClusterIP, new_clu)
+
+			//nodeport加入更新队列
+			json_byte, _ := json.Marshal(value)
+			update_map[value.Metadata.Name] = string(json_byte)
+		}
+	}
+	
+
+	// 遍历clusterIP，分配虚拟IP
+	// 但是注意clusterIP还没有READY,其需要绑定endponits后才会READY
+	// 也要注意，由于clusterIP没有READY,其（可能的）绑定对应的NodePort也不可能READY
 	for _, value := range response_object.ClusterIP {
 		if value.Metadata.Ip == "" {
-
 			value.Metadata.Ip = sc.Ipallocater.AllocateIP()
-			// value.Status.Phase = service.CLUSTERIP_IP_ALLOCATED/*只允许此文件上述的和状态有关的const常量，可参考飞书《Service设计方案》*/
-
+			// // value.Status.Phase = service.CLUSTERIP_IP_ALLOCATED/*只允许此文件上述的和状态有关的const常量，可参考飞书《Service设计方案》*/
 			json_byte, _ := json.Marshal(value)
 			update_map[value.Metadata.Name] = string(json_byte)
 		}
