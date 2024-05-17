@@ -5,6 +5,9 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/MiniK8s-SE3356/minik8s/pkg/apiObject/service"
+	kptype "github.com/MiniK8s-SE3356/minik8s/pkg/kubeProxy/types"
+	httpobject "github.com/MiniK8s-SE3356/minik8s/pkg/types/httpObject"
 	"github.com/coreos/go-iptables/iptables"
 )
 
@@ -20,26 +23,30 @@ const (
 	OUTPUT          = "OUTPUT"
 	INPUT           = "INPUT"
 	DNAT            = "DNAT"
+
+	not_found     = "not found"
+	already_exist = "already exist"
+	add_success   = "add success"
 )
 
 type metadata struct {
 	ip       string
 	protocol string /* 只允许tcp和udp两种字符串 */
-	port     int
+	port     uint16
 }
 
 type IptablesController struct {
 	// 控制iptables的实际对象
 	ipt *iptables.IPTables
 
-	// 记录service下辖pods，service ID --> endpoint ID数组
+	// 记录service+port下辖pods，service ID+port --> endpoint ID数组
 	// ID是该类对象的集群唯一标识符，这些符号会参与构建KUBE-SVC-XXX和KUBE-SEP-XXX
 	sid2eid map[string]([]string)
 
-	// 记录nodePort与service对应关系，本机端口号 --> service ID
-	nodeport2sid map[int](string)
+	// 记录nodePort与service+port对应关系，本机端口号 --> service ID+port
+	nodeport2sid map[uint16](string)
 
-	// service ID --> service metadata的map
+	// service ID+port --> service metadata的map
 	// service metadata记录了service的虚拟IP，协议（tcp/udp）和虚拟port
 	sid2smeta map[string]metadata
 
@@ -67,7 +74,7 @@ func (ic *IptablesController) Init() {
 	ic.ipt, _ = iptables.New()
 	// 为所有的map做初始化
 	ic.sid2eid = make(map[string][]string)
-	ic.nodeport2sid = make(map[int]string)
+	ic.nodeport2sid = make(map[uint16]string)
 	ic.sid2smeta = make(map[string]metadata)
 	ic.eid2emeta = make(map[string]metadata)
 
@@ -146,10 +153,50 @@ func (ic *IptablesController) Init() {
 
 }
 
-// SyncConfig 根据传入的参数更新本地IptablesController数据
+func getSid(uuid string, port uint16) string {
+	uuid_prefix := uuid[:8]
+	return uuid_prefix + strconv.Itoa(int(port))
+}
+
+func getEid(uuid string) string {
+	uuid_prefix := uuid[:8]
+	return uuid_prefix
+}
+
+func uniqueAddEid(e_uuid string, euuid_list *([]string), elist *httpobject.HTTPResponse_GetAllEndpoint) string {
+	if _, exist := (*elist)[e_uuid]; exist {
+		can_add := true
+		for _, va := range *euuid_list {
+			if va == e_uuid {
+				can_add = false
+			}
+		}
+		if can_add {
+			(*euuid_list) = append((*euuid_list), e_uuid)
+			return add_success
+		} else {
+			return already_exist
+		}
+	} else {
+		return not_found
+	}
+}
+
+func getPortInfo(port uint16, port_info_list *([]service.ClusterIPPortInfo)) service.ClusterIPPortInfo {
+	for _, va := range *port_info_list {
+		if port == va.Port {
+			return va
+		}
+	}
+	return service.ClusterIPPortInfo{Port: 0}
+}
+
+// SyncConfig 根据请求下来的数据更新本地数据结构
 //
 //	@receiver ic
-func (ic *IptablesController) SyncConfig() {
+//	@param slist 请求下来的service list
+//	@param elist 请求下来的endpoint list
+func (ic *IptablesController) SyncConfig(slist *httpobject.HTTPResponse_GetAllServices, elist *httpobject.HTTPResponse_GetAllEndpoint) (kptype.KpServicesStatus, error) {
 	// TODO: 设计并完成SyncConfig
 	fmt.Printf("IptablesController sync config ...\n")
 
@@ -176,12 +223,125 @@ func (ic *IptablesController) SyncConfig() {
 
 	// ic.nodeport2sid[service1_nodeport] = service1ID
 	// ic.nodeport2sid[service2_nodeport] = service2ID
+	new_service_status := kptype.KpServicesStatus{}
+
+	// 创建新的数据结构，如果本轮更新成功，则替代原有的数据结构，否则保留原状
+	new_sid2eid := make(map[string]([]string))
+	new_nodeport2sid := make(map[uint16](string))
+	new_sid2smeta := make(map[string]metadata)
+	new_eid2emeta := make(map[string]metadata)
+
+	// endpoint uuid list,在最后写入eid2emeta
+	euuid_list := []string{}
+
+	//添加clusterip所需规则
+	// 从status的每一条开始访问：
+	for _, clusterip := range slist.ClusterIP {
+		// 如果clusterip状态不符，则不予考虑
+		// if clusterip.Status.Phase != service.CLUSTERIP_ENDPOINTS_ALLOCATED &&
+		// 	clusterip.Status.Phase != service.CLUSTERIP_SUCCESS {
+		// 	continue
+		// }
+		if clusterip.Status.Phase != service.CLUSTERIP_READY {
+			continue
+		}
+
+		new_kpcip := kptype.KpClusterIP{Version: clusterip.Status.Version, Vports: []uint16{}}
+
+		for key, clusterip_port := range clusterip.Status.ServicesStatus {
+			// 拿到对应的spec
+			port_info := getPortInfo(key, &(clusterip.Spec.Ports))
+			if port_info.Port == 0 {
+				// error,这个clusterip_port不存在于spec
+				continue
+			}
+			// port_eid_list记录本轮可以真正加入的endpoint
+			port_eid_list := []string{}
+
+			// 遍历此clusterip_port中的endpointid，检查其是否存在于拉下的endpoints中
+			// 若存在，加入本轮的port_eid_list和全局euuid_list
+			for _, euuid_item := range clusterip_port {
+				// 加入全局euuid_list，并给出加入状态
+				// 如果此euuid不存在于拉下的endpoints中，则不会加入任何组中
+				if uniqueAddEid(euuid_item, &euuid_list, elist) != not_found {
+					// 如果此euuid存在于拉下的endpoints中
+					// 则其会被唯一加入euuid_list，并加入port_eid_list中
+					port_eid_list = append(port_eid_list, getEid(euuid_item))
+				}
+			}
+
+			// 创建clusterip_port对应的metadata,并在sid中添加对应eid的映射
+			// 注意,只有port_eid_list中有内容，才会添加这条，这代表该clusterip有真正的endpoint可以整合进入
+			if len(port_eid_list) > 0 {
+				sid := getSid(clusterip.Metadata.Id, port_info.Port)
+				new_sid2smeta[sid] = metadata{
+					ip:       clusterip.Metadata.Ip,
+					protocol: port_info.Protocal,
+					port:     key,
+				}
+				new_sid2eid[sid] = port_eid_list
+
+				new_kpcip.Vports = append(new_kpcip.Vports, port_info.Port)
+			}
+		}
+		if len(new_kpcip.Vports) > 0 {
+			new_service_status.ClusterIP[clusterip.Metadata.Id] = new_kpcip
+		}
+	}
+
+	//添加nodeport所需规则
+	for _, nodeport := range slist.NodePort {
+		// if nodeport.Status.Phase != service.NODEPORT_CLUSTERIP_FINISH && nodeport.Status.Phase != service.NODEPORT_SUCCESS {
+		// 	continue
+		// }
+		if nodeport.Status.Phase != service.NODEPORT_READY {
+			continue
+		}
+
+		new_kpnp := kptype.KpNodePort{
+			Version: nodeport.Status.Version,
+			Nports:  []uint16{},
+		}
+
+		clusteripid := nodeport.Status.ClusterIPID
+		//遍历所有ports,如果对应的sid已经被加入new数据结构，则其对应的nodeport也可被加入
+		for _, nodeport_port := range nodeport.Spec.Ports {
+			sid := getSid(clusteripid, nodeport_port.Port)
+			if _, exist := new_sid2smeta[sid]; exist {
+				new_nodeport2sid[nodeport_port.Port] = sid
+
+				new_kpnp.Nports = append(new_kpnp.Nports, nodeport_port.Port)
+			}
+		}
+
+		if len(new_kpnp.Nports) > 0 {
+			new_service_status.NodePort[nodeport.Metadata.Id] = new_kpnp
+		}
+
+	}
+
+	// 将endpoint存入meta数据结构(这些endpoint一定被某service用到，且存在于本轮请求下来的endpoints数据中)
+	for _, euuid := range euuid_list {
+		endpoint_item := (*elist)[euuid]
+		new_eid2emeta[getEid(euuid)] = metadata{
+			ip:       endpoint_item.PodIP,
+			protocol: endpoint_item.Protocol,
+			port:     endpoint_item.PodPort,
+		}
+	}
+
+	// 更新无误，替代原有数据结构
+	ic.sid2eid = new_sid2eid
+	ic.nodeport2sid = new_nodeport2sid
+	ic.sid2smeta = new_sid2smeta
+	ic.eid2emeta = new_eid2emeta
+	return new_service_status, nil
 }
 
 // SyncIptables 根据本地IptablesController的数据同步iptables规则
 //
 //	@receiver ic
-func (ic *IptablesController) SyncIptables() {
+func (ic *IptablesController) SyncIptables() error {
 	fmt.Printf("IptablesController sync iptables ...\n")
 
 	// 删除上一版本的内容，使其恢复到Init时的空状态
@@ -215,7 +375,7 @@ func (ic *IptablesController) SyncIptables() {
 		ic.ipt.NewChain("nat", KUBE_SEP+key)
 		ic.ipt.Append("nat", KUBE_SEP+key, "-m", "addrtype", "--src-type", "LOCAL", "-j", KUBE_MARK_MASQ)
 		ic.ipt.Append("nat", KUBE_SEP+key, "-s", value.ip, "-j", KUBE_MARK_MASQ)
-		ic.ipt.Append("nat", KUBE_SEP+key, "-p", value.protocol, "-m", value.protocol, "-j", DNAT, "--to-destination", value.ip+":"+strconv.Itoa(value.port))
+		ic.ipt.Append("nat", KUBE_SEP+key, "-p", value.protocol, "-m", value.protocol, "-j", DNAT, "--to-destination", value.ip+":"+strconv.Itoa(int(value.port)))
 	}
 
 	// 创建所有KUBE_SVC_XXX链
@@ -237,13 +397,13 @@ func (ic *IptablesController) SyncIptables() {
 	// 在KUBE-NODEPORTS中填入MARK-SNAT规则和service转发规则
 	for port, sid := range ic.nodeport2sid {
 		meta := (ic.sid2smeta)[sid]
-		ic.ipt.Append("nat", KUBE_NODEPORTS, "-p", meta.protocol, "-m", meta.protocol, "--dport", strconv.Itoa(port), "-j", KUBE_MARK_MASQ)
-		ic.ipt.Append("nat", KUBE_NODEPORTS, "-p", meta.protocol, "-m", meta.protocol, "--dport", strconv.Itoa(port), "-j", KUBE_SVC+sid)
+		ic.ipt.Append("nat", KUBE_NODEPORTS, "-p", meta.protocol, "-m", meta.protocol, "--dport", strconv.Itoa(int(port)), "-j", KUBE_MARK_MASQ)
+		ic.ipt.Append("nat", KUBE_NODEPORTS, "-p", meta.protocol, "-m", meta.protocol, "--dport", strconv.Itoa(int(port)), "-j", KUBE_SVC+sid)
 	}
 
 	// 在KUBE-SERVICES中填入规则，先ClusterIP后NodePort
 	for sid, meta := range ic.sid2smeta {
-		ic.ipt.Append("nat", KUBE_SERVICES, "-d", meta.ip, "-p", meta.protocol, "-m", meta.protocol, "--dport", strconv.Itoa(meta.port), "-j", KUBE_SVC+sid)
+		ic.ipt.Append("nat", KUBE_SERVICES, "-d", meta.ip, "-p", meta.protocol, "-m", meta.protocol, "--dport", strconv.Itoa(int(meta.port)), "-j", KUBE_SVC+sid)
 	}
 	ic.ipt.Append("nat", KUBE_SERVICES, "-m", "addrtype", "--dst-type", "LOCAL", "-j", KUBE_NODEPORTS)
 
@@ -251,5 +411,5 @@ func (ic *IptablesController) SyncIptables() {
 	// 若按原配置，访问部分公网服务（如canvas等）会无法连接
 	// // 在service向外机负载均衡时，配置SNAT
 	// ic.ipt.Insert("nat", POSTROUING, 1, "-m", "addrtype", "--src-type", "LOCAL", "-j", "MASQUERADE")
-
+	return nil
 }
