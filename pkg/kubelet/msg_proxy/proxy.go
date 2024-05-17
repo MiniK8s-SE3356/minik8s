@@ -24,19 +24,29 @@ func NewMsgProxy(mqConfig *minik8s_message.MQConfig) *MsgProxy {
 }
 
 func (mp *MsgProxy) handleReceive(delivery amqp.Delivery) {
-	var parsed_msg minik8s_message.Message
+	var parsed_msg map[string]interface{}
 	err := json.Unmarshal(delivery.Body, &parsed_msg)
 	if err != nil {
 		return
 	}
 
-	switch parsed_msg.Type {
-	case minik8s_message.PodAdd:
+	typeData, _ := json.Marshal(parsed_msg["type"])
+	var msgType minik8s_message.MsgType
+	err = json.Unmarshal(typeData, &msgType)
+	if err != nil {
+		return
+	}
+
+	contentData, _ := json.Marshal(parsed_msg["content"])
+	var parsed_pod minik8s_pod.Pod
+	err = json.Unmarshal(contentData, &parsed_pod)
+	if err != nil {
+		return
+	}
+
+	switch msgType {
+	case minik8s_message.CreatePod:
 		var parsed_pod minik8s_pod.Pod
-		err := json.Unmarshal([]byte(parsed_msg.Body), &parsed_pod)
-		if err != nil {
-			return
-		}
 
 		mp.PodUpdateChannel <- &minik8s_worker.Task{
 			Type: minik8s_worker.Task_Add,

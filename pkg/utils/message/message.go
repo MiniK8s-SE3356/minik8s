@@ -3,10 +3,12 @@ package message
 type MsgType string
 
 const (
-	PodAdd MsgType = "PodAdd"
+	CreatePod MsgType = "CreatePod"
 )
 
+type Content interface{}
+
 type Message struct {
-	Type MsgType `json:"type"`
-	Body string  `json:"body"`
+	Type    MsgType `json:"type"`
+	Content Content `json:"content"`
 }

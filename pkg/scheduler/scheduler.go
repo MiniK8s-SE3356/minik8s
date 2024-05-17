@@ -6,10 +6,7 @@ import (
 	"sync"
 	"time"
 
-	minik8s_apiobject "github.com/MiniK8s-SE3356/minik8s/pkg/apiObject"
 	minik8s_pod "github.com/MiniK8s-SE3356/minik8s/pkg/apiObject/pod"
-	minik8s_yaml "github.com/MiniK8s-SE3356/minik8s/pkg/apiObject/yaml"
-	minik8s_container "github.com/MiniK8s-SE3356/minik8s/pkg/types/container"
 	minik8s_node "github.com/MiniK8s-SE3356/minik8s/pkg/types/node"
 	minik8s_message "github.com/MiniK8s-SE3356/minik8s/pkg/utils/message"
 	"github.com/streadway/amqp"
@@ -116,7 +113,7 @@ func (s *Scheduler) SelectNode(node []*minik8s_node.Node) *minik8s_node.Node {
 }
 
 func (s *Scheduler) ScheduleHandler(delivery amqp.Delivery) {
-	var parsed_msg minik8s_message.Message
+	var parsed_msg map[string]interface{}
 	err := json.Unmarshal(delivery.Body, &parsed_msg)
 
 	if err != nil {
@@ -142,8 +139,9 @@ func (s *Scheduler) ScheduleHandler(delivery amqp.Delivery) {
 	}
 
 	// Unmarshal pod_desc from msg body
-	pod_desc := minik8s_yaml.PodDesc{}
-	err = json.Unmarshal([]byte(parsed_msg.Body), &pod_desc)
+	pod := minik8s_pod.Pod{}
+	contentData, _ := json.Marshal(parsed_msg["content"])
+	err = json.Unmarshal(contentData, &pod)
 	if err != nil {
 		println("Error unmarshalling pod_desc")
 		return
@@ -155,42 +153,7 @@ func (s *Scheduler) ScheduleHandler(delivery amqp.Delivery) {
 		return
 	}
 
-	pod := minik8s_pod.Pod{
-		Basic: minik8s_apiobject.Basic{
-			APIVersion: pod_desc.ApiVersion,
-			Kind:       pod_desc.Kind,
-			Metadata: minik8s_apiobject.Metadata{
-				// TODO: Generate UUID
-				UUID: "uuid",
-				Name: pod_desc.Metadata.Name,
-				// TODO: Add namespace
-				Namespace: "default",
-				Labels:    pod_desc.Metadata.Labels,
-				// TODO: Add annotations
-				Annotations: map[string]string{},
-			},
-		},
-		Spec: minik8s_pod.PodSpec{
-			NodeName:   selected_node.Metadata.Name,
-			Containers: []minik8s_container.Container{},
-			// TODO: Add volumes
-			Volumes: []minik8s_pod.Volume{},
-			// TODO: Add nodeSelector
-			NodeSelector: map[string]string{},
-		},
-	}
-
-	// Add containers to pod
-	for _, container_desc := range pod_desc.Spec {
-		pod.Spec.Containers = append(
-			pod.Spec.Containers,
-			minik8s_container.Container{
-				Name:  container_desc.Name,
-				Image: container_desc.Image,
-				// TODO: combine some fields
-			},
-		)
-	}
+	pod.Spec.NodeName = selected_node.Metadata.Name
 
 	// Publish pod to apiserver
 
