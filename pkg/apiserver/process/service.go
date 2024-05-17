@@ -2,7 +2,6 @@ package process
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 
 	"github.com/MiniK8s-SE3356/minik8s/pkg/apiObject/service"
@@ -134,15 +133,15 @@ func RemoveService(namespace string, name string) (string, error) {
 func UpdateService(namespace string, name string, value string) (string, error) {
 	mu.Lock()
 	defer mu.Unlock()
-	existed, err := EtcdCli.Exist(servicePrefix + namespace + "/" + name)
-	if err != nil {
-		return "failed to check existence in etcd", err
-	}
-	if !existed {
-		return "service not found", errors.New("service not found")
-	}
+	// existed, err := EtcdCli.Exist(servicePrefix + namespace + "/" + name)
+	// if err != nil {
+	// 	return "failed to check existence in etcd", err
+	// }
+	// if !existed {
+	// 	return "service not found", errors.New("service not found")
+	// }
 
-	err = EtcdCli.Put(servicePrefix+namespace+"/"+name, value)
+	err := EtcdCli.Put(servicePrefix+namespace+"/"+name, value)
 	if err != nil {
 		fmt.Println("failed to update in etcd")
 		return "failed to update in etcd", err
