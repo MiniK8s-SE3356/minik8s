@@ -20,6 +20,8 @@ func AddService(namespace string, desc interface{}) (string, error) {
 
 	if serviceType == "ClusterIP" {
 		clusterIP := desc.(service.ClusterIP)
+		clusterIP.Status.Phase = service.CLUSTERIP_NOTREADY
+		clusterIP.Status.Version = 0
 
 		existed, err := EtcdCli.Exist(servicePrefix + namespace + "/" + clusterIP.Metadata.Name)
 		if err != nil {
@@ -45,6 +47,8 @@ func AddService(namespace string, desc interface{}) (string, error) {
 
 	} else if serviceType == "NodePort" {
 		nodePort := desc.(service.NodePort)
+		nodePort.Status.Phase = service.NODEPORT_NOTREADY
+		nodePort.Status.Version = 0
 
 		existed, err := EtcdCli.Exist(servicePrefix + namespace + "/" + nodePort.Metadata.Name)
 		if err != nil {
