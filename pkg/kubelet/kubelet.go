@@ -17,3 +17,7 @@ func NewKubelet(config *KubeletConfig) *Kubelet {
 	}
 	return kubelet
 }
+
+func (*Kubelet) Run() {
+
+}
