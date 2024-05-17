@@ -54,10 +54,9 @@ func GetCmdHandler(cmd *cobra.Command, args []string) {
 	fmt.Println("result is ", result)
 }
 
-// get这里有按照namespace获取的功能，这个筛选过程是在前端还是在后端执行?
 func getNode(namespace string, name string) (string, error) {
 	// 实际上无论namespace和name是什么，getNode都会获取所有的node
-	result, err := GetRequest(url.GetNodesURL)
+	result, err := GetRequest(url.RootURL + url.GetNode)
 	if err != nil {
 		fmt.Println("error in getNode", err.Error())
 		return "", err
@@ -72,7 +71,7 @@ func getPod(namespace string, name string) (string, error) {
 		"name":      name,
 	}
 
-	result, err := GetRequestWithParams(url.GetPodURL, params)
+	result, err := GetRequestWithParams(url.RootURL+url.GetPod, params)
 	if err != nil {
 		fmt.Println("error in get pod ", err.Error())
 		return "", err
@@ -87,7 +86,7 @@ func getService(namespace string, name string) (string, error) {
 		"name":      name,
 	}
 
-	result, err := GetRequestWithParams(url.GetServiceURL, params)
+	result, err := GetRequestWithParams(url.RootURL+url.GetService, params)
 	if err != nil {
 		fmt.Println("error in get service ", err.Error())
 		return "", err
@@ -102,7 +101,7 @@ func getReplicaSet(namespace string, name string) (string, error) {
 		"name":      name,
 	}
 
-	result, err := GetRequestWithParams(url.GetReplicasetURL, params)
+	result, err := GetRequestWithParams(url.RootURL+url.GetReplicaset, params)
 	if err != nil {
 		fmt.Println("error in get replicaset ", err.Error())
 		return "", err
@@ -118,7 +117,7 @@ func getNamespace(namespace string, name string) (string, error) {
 		"name": name,
 	}
 
-	result, err := GetRequestWithParams(url.GetNamespaceURL, params)
+	result, err := GetRequestWithParams(url.RootURL+url.GetNamespace, params)
 	if err != nil {
 		fmt.Println("error in get namespace ", err.Error())
 		return "", err

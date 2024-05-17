@@ -32,7 +32,7 @@ func checkMatchedPod(podLabels map[string]string, selector map[string]string) bo
 func getPodsFromServer() ([]pod.Pod, error) {
 	var result []pod.Pod
 
-	jsonData, err := httprequest.GetRequest(url.GetPodURL)
+	jsonData, err := httprequest.GetRequest(url.RootURL + url.GetPod)
 	if err != nil {
 		fmt.Println("error in get request")
 		return result, err
@@ -51,7 +51,7 @@ func getPodsFromServer() ([]pod.Pod, error) {
 func getReplicasetsFromServer() ([]replicaset.Replicaset, error) {
 	var result []replicaset.Replicaset
 
-	jsonData, err := httprequest.GetRequest(url.GetReplicasetURL)
+	jsonData, err := httprequest.GetRequest(url.RootURL + url.GetReplicaset)
 	if err != nil {
 		fmt.Println("error in get request")
 		return result, err

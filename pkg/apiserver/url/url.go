@@ -3,12 +3,13 @@ package url
 const (
 	version = "v1"
 	// 这里暂时是localhost
-	rootURL = "http://localhost:8080"
+	RootURL = "http://localhost:8080"
 	prefix  = "/api/" + version
 
 	AddPod      = prefix + "/AddPod"
 	RemovePod   = prefix + "/RemovePod"
 	GetPod      = prefix + "/GetPod"
+	GetAllPod   = prefix + "/GetAllPod"
 	DescribePod = prefix + "/DescribePod"
 
 	AddService         = prefix + "/AddService"
@@ -35,33 +36,5 @@ const (
 
 	GetAllEndpoint      = prefix + "/AddAllEndpoint"
 	UpdateEndpointBatch = prefix + "/UpdateEndpointBatch"
-
-	AddPodURL      = rootURL + prefix + "/AddPod"
-	RemovePodURL   = rootURL + prefix + "/RemovePod"
-	GetPodURL      = rootURL + prefix + "/GetPod"
-	DescribePodURL = rootURL + prefix + "/DescribePod"
-
-	AddServiceURL      = rootURL + prefix + "/AddService"
-	RemoveServiceURL   = rootURL + prefix + "/RemoveService"
-	GetServiceURL      = rootURL + prefix + "/GetService"
-	DescribeServiceURL = rootURL + prefix + "/DescribeService"
-
-	GetNodesURL = rootURL + prefix + "/GetNodes"
-
-	AddNamespaceURL      = rootURL + prefix + "/AddNamespace"
-	RemoveNamespaceURL   = rootURL + prefix + "/RemoveNamespace"
-	GetNamespaceURL      = rootURL + prefix + "/GetNamespace"
-	DescribeNamespaceURL = rootURL + prefix + "/DescribeNamespace"
-
-	AddReplicasetURL      = rootURL + prefix + "/AddReplicaset"
-	RemoveReplicasetURL   = rootURL + prefix + "/RemoveReplicaset"
-	GetReplicasetURL      = rootURL + prefix + "/GetReplicaset"
-	DescribeReplicasetURL = rootURL + prefix + "/DescribeReplicaset"
-
-	GetAllEndpointURL      = rootURL + GetAllEndpoint
-	UpdateEndpointBatchURL = rootURL + UpdateEndpointBatch
+	AddorDeleteEndpoint = prefix + "/AddorDeleteEndpoint"
 )
-
-func GetURL(path string) string {
-	return rootURL + path
-}

@@ -20,9 +20,9 @@ import (
 
 func bind(r *gin.Engine) {
 	// Pod
-	// r.POST(url.AddPod, handler.AddPod)
-	// r.GET(url.GetPod, handler.GetPod)
-	// r.POST(url.RemovePod, handler.RemovePod)
+	r.POST(url.AddPod, handler.AddPod)
+	r.GET(url.GetPod, handler.GetPod)
+	r.POST(url.RemovePod, handler.RemovePod)
 	// r.GET(url.DescribePod, handler.DescribePod)
 
 	r.POST(url.AddNamespace, handler.AddNamespace)
@@ -49,6 +49,7 @@ func bind(r *gin.Engine) {
 
 	r.GET(url.GetAllEndpoint, handler.GetAllEndpoint)
 	r.POST(url.UpdateEndpointBatch, handler.UpdateEndpointBatch)
+	r.POST(url.AddorDeleteEndpoint, handler.AddorDeleteEndpoint)
 }
 
 func Start() {

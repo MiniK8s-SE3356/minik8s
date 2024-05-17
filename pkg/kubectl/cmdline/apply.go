@@ -86,7 +86,7 @@ func applyPod(namespace string, b []byte) error {
 		fmt.Println("failed to translate into json")
 		return err
 	}
-	result, err := PostRequest(url.AddPodURL, jsonData)
+	result, err := PostRequest(url.RootURL+url.AddPod, jsonData)
 	if err != nil {
 		fmt.Println("error when post request")
 		return err
@@ -159,7 +159,7 @@ func applyService(namespace string, b []byte) error {
 		}
 	}
 
-	result, err := PostRequest(url.AddServiceURL, jsonData)
+	result, err := PostRequest(url.RootURL+url.AddService, jsonData)
 	if err != nil {
 		fmt.Println("error when post request ", err.Error())
 		return err
@@ -190,7 +190,7 @@ func applyReplicaSet(namespace string, b []byte) error {
 	}
 	fmt.Println(string(jsonData))
 
-	result, err := PostRequest(url.AddReplicasetURL, jsonData)
+	result, err := PostRequest(url.RootURL+url.AddReplicaset, jsonData)
 	if err != nil {
 		fmt.Println("error when post request ", err.Error())
 		return err
@@ -215,7 +215,7 @@ func applyNamespace(namespace string, b []byte) error {
 		fmt.Println("failed to translate into json")
 		return err
 	}
-	result, err := PostRequest(url.AddNamespaceURL, jsonData)
+	result, err := PostRequest(url.RootURL+url.AddNamespace, jsonData)
 	if err != nil {
 		fmt.Println("error when post request")
 		return err

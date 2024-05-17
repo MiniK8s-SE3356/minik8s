@@ -66,7 +66,7 @@ func deletePod(namespace string, name string) (string, error) {
 		"name":      name,
 	}
 
-	result, err := GetRequestWithParams(url.RemovePodURL, params)
+	result, err := GetRequestWithParams(url.RootURL+url.RemovePod, params)
 	if err != nil {
 		fmt.Println("error in delete pod ", err.Error())
 		return "", err
@@ -85,7 +85,7 @@ func deleteService(namespace string, name string) (string, error) {
 		fmt.Println("failed to translate into json")
 		return "", err
 	}
-	result, err := PostRequest(url.RemoveServiceURL, jsonData)
+	result, err := PostRequest(url.RootURL+url.RemoveService, jsonData)
 	if err != nil {
 		fmt.Println("error in delete service ", err.Error())
 		return "", err
@@ -105,7 +105,7 @@ func deleteReplicaSet(namespace string, name string) (string, error) {
 		fmt.Println("failed to translate into json")
 		return "", err
 	}
-	result, err := PostRequest(url.RemoveReplicasetURL, jsonData)
+	result, err := PostRequest(url.RootURL+url.RemoveReplicaset, jsonData)
 	if err != nil {
 		fmt.Println("error in delete replicaset ", err.Error())
 		return "", err
@@ -124,7 +124,7 @@ func deleteNamespace(namespace string, name string) (string, error) {
 		return "", err
 	}
 
-	result, err := PostRequest(url.RemoveNamespaceURL, jsonData)
+	result, err := PostRequest(url.RootURL+url.RemoveNamespace, jsonData)
 	if err != nil {
 		fmt.Println("error in delete namespace ", err.Error())
 		return "", err

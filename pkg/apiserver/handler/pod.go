@@ -11,13 +11,16 @@ import (
 )
 
 func AddPod(c *gin.Context) {
-	var desc yaml.PodDesc
+	var desc struct {
+		PodDesc   yaml.PodDesc `json:"podDesc"`
+		Namespace string       `json:"namespace"`
+	}
 	if err := c.ShouldBindJSON(&desc); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	result, err := process.AddPod(&desc)
+	result, err := process.AddPod(desc.Namespace, &desc.PodDesc)
 	if err != nil {
 		fmt.Println("error in process.AddPod ", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -67,10 +70,9 @@ func GetPod(c *gin.Context) {
 	}
 
 	namespace := c.Query("namespace")
-
 	name := c.Query("name")
 
-	var result string
+	var result map[string]interface{}
 	var err error
 	// 四种情况
 	// 1. namespace name均为空 获取全部pod
@@ -93,6 +95,17 @@ func GetPod(c *gin.Context) {
 
 	if err != nil {
 		fmt.Println("error in process.GetPod ", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	}
+
+	c.JSON(http.StatusOK, result)
+}
+
+func GetAllPod(c *gin.Context) {
+	result, err := process.GetAllPods()
+
+	if err != nil {
+		fmt.Println("error in process.DescribePod ", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 	}
 

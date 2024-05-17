@@ -60,7 +60,7 @@ func describePod(namespace string, name string) (string, error) {
 		"name":      name,
 	}
 
-	result, err := GetRequestWithParams(url.DescribePodURL, params)
+	result, err := GetRequestWithParams(url.RootURL+url.DescribePod, params)
 	if err != nil {
 		fmt.Println("error in describe pod ", err.Error())
 		return "", err
@@ -75,7 +75,7 @@ func describeService(namespace string, name string) (string, error) {
 		"name":      name,
 	}
 
-	result, err := GetRequestWithParams(url.DescribeServiceURL, params)
+	result, err := GetRequestWithParams(url.RootURL+url.DescribeService, params)
 	if err != nil {
 		fmt.Println("error in describe service ", err.Error())
 		return "", err
@@ -90,7 +90,7 @@ func describeReplicaSet(namespace string, name string) (string, error) {
 		"name":      name,
 	}
 
-	result, err := GetRequestWithParams(url.DescribeReplicasetURL, params)
+	result, err := GetRequestWithParams(url.RootURL+url.DescribeReplicaset, params)
 	if err != nil {
 		fmt.Println("error in describe replicaset ", err.Error())
 		return "", err
@@ -105,7 +105,7 @@ func describeNamespace(namespace string, name string) (string, error) {
 		// "name":      name,
 	}
 
-	result, err := GetRequestWithParams(url.DescribeNamespaceURL, params)
+	result, err := GetRequestWithParams(url.RootURL+url.DescribeNamespace, params)
 	if err != nil {
 		fmt.Println("error in describe namespace ", err.Error())
 		return "", err

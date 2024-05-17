@@ -81,10 +81,11 @@ func ModifyReplicaSet(namespace string, name string) error {
 	return nil
 }
 
-func GetReplicaSet(namespace string, name string) (replicaset.Replicaset, error) {
+func GetReplicaSet(namespace string, name string) (map[string]interface{}, error) {
 	mu.RLock()
 	defer mu.RUnlock()
-	var result replicaset.Replicaset
+	var r replicaset.Replicaset
+	result := make(map[string]interface{}, 0)
 
 	existed, err := EtcdCli.Exist(replicasetPrefix + namespace + "/" + name)
 	if err != nil {
@@ -100,19 +101,21 @@ func GetReplicaSet(namespace string, name string) (replicaset.Replicaset, error)
 		return result, nil
 	}
 
-	err = json.Unmarshal(tmp, &result)
+	err = json.Unmarshal(tmp, &r)
 	if err != nil {
 		fmt.Println("failed to unmarshal")
 		return result, nil
 	}
 
+	result[replicasetPrefix+namespace+"/"+name] = r
+
 	return result, nil
 }
 
-func GetReplicaSets(namespace string) ([]replicaset.Replicaset, error) {
+func GetReplicaSets(namespace string) (map[string]interface{}, error) {
 	mu.RLock()
 	defer mu.RUnlock()
-	result := make([]replicaset.Replicaset, 0)
+	result := make(map[string]interface{}, 0)
 
 	pairs, err := EtcdCli.GetWithPrefix(replicasetPrefix + namespace)
 	if err != nil {
@@ -126,17 +129,17 @@ func GetReplicaSets(namespace string) ([]replicaset.Replicaset, error) {
 		if err != nil {
 			fmt.Println("failed to translate into json")
 		} else {
-			result = append(result, tmp)
+			result[p.Key] = tmp
 		}
 	}
 
 	return result, nil
 }
 
-func GetAllReplicaSets() ([]replicaset.Replicaset, error) {
+func GetAllReplicaSets() (map[string]interface{}, error) {
 	mu.RLock()
 	defer mu.RUnlock()
-	result := make([]replicaset.Replicaset, 0)
+	result := make(map[string]interface{}, 0)
 
 	pairs, err := EtcdCli.GetWithPrefix(replicasetPrefix)
 	if err != nil {
@@ -150,7 +153,7 @@ func GetAllReplicaSets() ([]replicaset.Replicaset, error) {
 		if err != nil {
 			fmt.Println("failed to translate into json")
 		} else {
-			result = append(result, tmp)
+			result[p.Key] = tmp
 		}
 	}
 

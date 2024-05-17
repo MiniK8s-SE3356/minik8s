@@ -68,3 +68,42 @@ func UpdateEndpointBatch(desc map[string]service.EndPoint) (map[string]interface
 
 	return result, nil
 }
+
+func AddorDeleteEndpoint(d []string, a []service.EndPoint) {
+	mu.Lock()
+	defer mu.Unlock()
+	for _, name := range d {
+		existed, err := EtcdCli.Exist(endpointPrefix + name)
+		if err != nil {
+			fmt.Println("failed to check existence in etcd", err)
+		}
+		if !existed {
+			fmt.Println("endpoint not found")
+		}
+
+		err = EtcdCli.Del(endpointPrefix + name)
+		if err != nil {
+			fmt.Println("failed to del in etcd")
+		}
+	}
+
+	for _, ep := range a {
+		// 检查name是否为空
+		if ep.Id == "" {
+			fmt.Println("empty name is not allowed")
+			continue
+		}
+
+		value, err := json.Marshal(ep)
+		if err != nil {
+			fmt.Println("failed to translate into json ", err.Error())
+		}
+
+		// 然后存入etcd
+		err = EtcdCli.Put(nodePrefix+ep.Id, string(value))
+		if err != nil {
+			fmt.Println("failed to write to etcd ", err.Error())
+		}
+	}
+
+}
