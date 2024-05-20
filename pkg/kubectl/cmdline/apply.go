@@ -73,6 +73,7 @@ func ApplyCmdHandler(cmd *cobra.Command, args []string) {
 }
 
 func applyPod(namespace string, b []byte) error {
+	req := make(map[string]interface{})
 	var podDesc minik8s_yaml.PodDesc
 
 	err := yaml.Unmarshal(b, &podDesc)
@@ -80,12 +81,15 @@ func applyPod(namespace string, b []byte) error {
 		fmt.Println("failed to unmarshal pod yaml")
 		return err
 	}
+	req["namespace"] = namespace
+	req["podDesc"] = podDesc
 
-	jsonData, err := json.Marshal(podDesc)
+	jsonData, err := json.Marshal(req)
 	if err != nil {
 		fmt.Println("failed to translate into json")
 		return err
 	}
+	// fmt.Println(podDesc.Spec.Containers)
 	result, err := PostRequest(url.RootURL+url.AddPod, jsonData)
 	if err != nil {
 		fmt.Println("error when post request")

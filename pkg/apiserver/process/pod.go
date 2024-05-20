@@ -26,6 +26,8 @@ func AddPod(namespace string, desc *yaml.PodDesc) (string, error) {
 	pod.Metadata.UUID = id
 	pod.Metadata.Labels = desc.Metadata.Labels
 	pod.Spec = desc.Spec
+	fmt.Println(desc.Spec.Containers)
+	fmt.Println(pod.Spec.Containers)
 	// for _, c := range desc.Spec.Containers {
 	// var tmp container.Container
 	// pod.Spec.Containers = append(pod.Spec.Containers, )
@@ -38,7 +40,15 @@ func AddPod(namespace string, desc *yaml.PodDesc) (string, error) {
 	}
 
 	// 先查看一下key是否已经存在
-	EtcdCli.Get(pod.Metadata.Name)
+	tmp, err := EtcdCli.Exist(podPrefix + namespace + "/" + pod.Metadata.Name)
+	if err != nil {
+		fmt.Println("failed to check existence in etcd")
+		return "failed to check existence in etcd", err
+	}
+	if tmp {
+		fmt.Println("pod has existed")
+		return "pod has existed", nil
+	}
 	// 然后存入etcd
 	err = EtcdCli.Put(podPrefix+namespace+"/"+id, string(value))
 	if err != nil {

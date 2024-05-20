@@ -56,7 +56,12 @@ func bind(r *gin.Engine) {
 
 func Start() {
 	var err error
-	process.EtcdCli, err = etcdclient.Connect([]string{etcdclient.EtcdURL}, etcdclient.Timeout)
+	for i := 0; i <= 100; i++ {
+		process.EtcdCli, err = etcdclient.Connect([]string{etcdclient.EtcdURL}, etcdclient.Timeout)
+		if err == nil {
+			break
+		}
+	}
 	if err != nil {
 		fmt.Println("failed to connect to etcd ", err.Error())
 		return
