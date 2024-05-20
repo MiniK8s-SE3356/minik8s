@@ -53,11 +53,11 @@ func RemoveNode(c *gin.Context) {
 }
 
 func GetNode(c *gin.Context) {
-	var param map[string]string
-	if err := c.ShouldBindJSON(&param); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
+	// var param map[string]string
+	// if err := c.ShouldBindJSON(&param); err != nil {
+	// 	c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	// 	return
+	// }
 
 	name := c.Query("name")
 
