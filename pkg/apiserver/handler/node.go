@@ -84,6 +84,10 @@ func GetNode(c *gin.Context) {
 	}
 }
 
+func NodeHeartBeat(c *gin.Context) {
+
+}
+
 // func DescribeNode(c *gin.Context) {
 // 	var param map[string]string
 // 	if err := c.ShouldBindJSON(&param); err != nil {

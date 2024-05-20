@@ -24,6 +24,8 @@ const (
 	GetNode    = prefix + "/GetNode"
 	RemoveNode = prefix + "/RemoveNode"
 
+	NodeHeartBeat = prefix + "/NodeHeartBeat"
+
 	AddNamespace      = prefix + "/AddNamespace"
 	RemoveNamespace   = prefix + "/RemoveNamespace"
 	GetNamespace      = prefix + "/GetNamespace"

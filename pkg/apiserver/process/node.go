@@ -108,3 +108,7 @@ func DescribeNode(name string) (string, error) {
 func DescribeAllNodes() (string, error) {
 	return "", nil
 }
+
+func NodeHeartBeat() {
+
+}
