@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/MiniK8s-SE3356/minik8s/pkg/apiObject/pod"
+	"github.com/MiniK8s-SE3356/minik8s/pkg/apiObject/service"
 	"github.com/MiniK8s-SE3356/minik8s/pkg/apiserver/process"
 	"github.com/MiniK8s-SE3356/minik8s/pkg/types/node"
 
@@ -45,13 +47,10 @@ func RemoveNode(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 	}
 
+	// 还需要把node上附带的pod删除
+
 	c.JSON(http.StatusOK, result)
 }
-
-// apply是不是已经够了，不需要modify？
-// func ModifyNode(c *gin.Context) {
-
-// }
 
 func GetNode(c *gin.Context) {
 	var param map[string]string
@@ -85,6 +84,17 @@ func GetNode(c *gin.Context) {
 }
 
 func NodeHeartBeat(c *gin.Context) {
+	var param map[string]interface{}
+	if err := c.ShouldBindJSON(&param); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	nodeStatus := param["nodeStatus"].(node.NodeStatus)
+	podStatus := param["nodeStatus"].([]pod.Pod)
+	nodePortStatus := param["nodePortStatus"].([]service.NodePort)
+
+	process.NodeHeartBeat(nodeStatus, podStatus, nodePortStatus)
 
 }
 

@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/MiniK8s-SE3356/minik8s/pkg/apiObject/pod"
+	"github.com/MiniK8s-SE3356/minik8s/pkg/apiObject/service"
 	"github.com/MiniK8s-SE3356/minik8s/pkg/types/node"
 )
 
@@ -11,9 +13,11 @@ func AddNode(desc *node.Node) (string, error) {
 	mu.Lock()
 	defer mu.Unlock()
 	// 检查name是否为空
-	if desc.Metadata.Name == "" {
-		return "empty name is not allowed", nil
+	if desc.Metadata.Name != "" {
+		return "name must be empty", nil
 	}
+
+	desc.Metadata.Name = desc.Status.Hostname + "@" + desc.Status.Ip
 
 	// 检查是否已经存在
 	existed, err := EtcdCli.Exist(nodePrefix + desc.Metadata.Name)
@@ -109,6 +113,23 @@ func DescribeAllNodes() (string, error) {
 	return "", nil
 }
 
-func NodeHeartBeat() {
+func NodeHeartBeat(nodeStatus node.NodeStatus, pods []pod.Pod, nodePorts []service.NodePort) (string, error) {
+	mu.Lock()
+	defer mu.Unlock()
 
+	name := nodeStatus.Hostname + "@" + nodeStatus.Ip
+	// 检查是否已经存在
+	existed, err := EtcdCli.Exist(nodePrefix + name)
+	if err != nil {
+		return "failed to check existence in etcd", err
+	}
+
+	if !existed {
+		return "node not existed", nil
+	}
+
+	// for _, pod := range pods {
+	// }
+
+	return "", nil
 }

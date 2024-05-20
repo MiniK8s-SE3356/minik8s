@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/MiniK8s-SE3356/minik8s/pkg/apiObject/pod"
 	"github.com/MiniK8s-SE3356/minik8s/pkg/apiObject/yaml"
 	"github.com/MiniK8s-SE3356/minik8s/pkg/apiserver/process"
 
@@ -61,6 +62,21 @@ func RemovePod(c *gin.Context) {
 // func ModifyPod(c *gin.Context) {
 
 // }
+
+func UpdatePod(c *gin.Context) {
+	var desc struct {
+		Pod       pod.Pod `json:"pod"`
+		Namespace string  `json:"namespace"`
+	}
+
+	if err := c.ShouldBindJSON(&desc); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// result, err := process.UpdatePod(desc.Namespace, desc.Pod)
+
+}
 
 func GetPod(c *gin.Context) {
 	var param map[string]string

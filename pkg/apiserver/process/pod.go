@@ -25,9 +25,10 @@ func AddPod(namespace string, desc *yaml.PodDesc) (string, error) {
 	pod.Metadata.Name = desc.Metadata.Name
 	pod.Metadata.UUID = id
 	pod.Metadata.Labels = desc.Metadata.Labels
-	// for _, c := range pod.Spec.Containers {
-	// 	// var tmp container.Container
-	// 	pod.Spec.Containers = append(pod.Spec.Containers, c)
+	pod.Spec = desc.Spec
+	// for _, c := range desc.Spec.Containers {
+	// var tmp container.Container
+	// pod.Spec.Containers = append(pod.Spec.Containers, )
 	// }
 
 	value, err := json.Marshal(pod)
@@ -39,7 +40,7 @@ func AddPod(namespace string, desc *yaml.PodDesc) (string, error) {
 	// 先查看一下key是否已经存在
 	EtcdCli.Get(pod.Metadata.Name)
 	// 然后存入etcd
-	err = EtcdCli.Put(podPrefix+id, string(value))
+	err = EtcdCli.Put(podPrefix+namespace+"/"+id, string(value))
 	if err != nil {
 		fmt.Println("failed to write to etcd ", err.Error())
 		return "failed to write to etcd", err
@@ -53,20 +54,34 @@ func AddPod(namespace string, desc *yaml.PodDesc) (string, error) {
 		fmt.Println("failed to construct msgBody")
 		return "failed to construct msgBody", err
 	}
-	Mq.Publish("exchange", "scheduler", "application/json", jsonData)
+	Mq.Publish("minik8s", "scheduler", "application/json", jsonData)
 
 	return "add pod to minik8s", nil
 }
 
-func RemovePod(pod string, name string) (string, error) {
+func RemovePod(namespace string, name string) (string, error) {
 	mu.Lock()
 	defer mu.Unlock()
+
+	existed, err := EtcdCli.Exist(podPrefix + namespace + "/" + name)
+	if err != nil {
+		return "failed to check existence in etcd", err
+	}
+	if !existed {
+		return "target not exist", nil
+	}
+
+	EtcdCli.Del(podPrefix + namespace + "/" + name)
+
 	return "", nil
 }
 
-func ModifyPod() (string, error) {
+func UpdatePod(namespace string, pod pod.Pod) (string, error) {
 	mu.Lock()
 	defer mu.Unlock()
+
+	// name := pod.Metadata.Name
+
 	return "", nil
 }
 
@@ -149,6 +164,28 @@ func GetAllPods() (map[string]interface{}, error) {
 
 	return result, nil
 }
+
+// func removePodByNode(nodeIP string) (string, error) {
+// 	mu.RLock()
+// 	defer mu.RUnlock()
+// 	pairs, err := EtcdCli.GetWithPrefix(podPrefix)
+// 	if err != nil {
+// 		fmt.Println("failed to get from etcd")
+// 		return "", err
+// 	}
+
+// 	var deleteList []string
+// 	for _, p := range pairs {
+// 		var pod pod.Pod
+// 		err := json.Unmarshal([]byte(p.Value), &pod)
+// 		if err != nil {
+// 			fmt.Println("failed to translate into json")
+// 			continue
+// 		} else {
+// 			pod.Spec
+// 		}
+// 	}
+// }
 
 func DescribePod(pod string, name string) (string, error) {
 	return "", nil
