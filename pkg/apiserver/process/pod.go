@@ -50,7 +50,7 @@ func AddPod(namespace string, desc *yaml.PodDesc) (string, error) {
 		return "pod has existed", nil
 	}
 	// 然后存入etcd
-	err = EtcdCli.Put(podPrefix+namespace+"/"+id, string(value))
+	err = EtcdCli.Put(podPrefix+namespace+"/"+pod.Metadata.Name, string(value))
 	if err != nil {
 		fmt.Println("failed to write to etcd ", err.Error())
 		return "failed to write to etcd", err

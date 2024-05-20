@@ -65,8 +65,12 @@ func deletePod(namespace string, name string) (string, error) {
 		"namespace": namespace,
 		"name":      name,
 	}
-
-	result, err := GetRequestWithParams(url.RootURL+url.RemovePod, params)
+	jsonData, err := json.Marshal(params)
+	if err != nil {
+		fmt.Println("failed to translate into json")
+		return "", err
+	}
+	result, err := PostRequest(url.RootURL+url.RemovePod, jsonData)
 	if err != nil {
 		fmt.Println("error in delete pod ", err.Error())
 		return "", err

@@ -64,17 +64,17 @@ func RemovePod(c *gin.Context) {
 // }
 
 func UpdatePod(c *gin.Context) {
-	var desc struct {
+	var req struct {
 		Pod       pod.Pod `json:"pod"`
 		Namespace string  `json:"namespace"`
 	}
 
-	if err := c.ShouldBindJSON(&desc); err != nil {
+	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	result, err := process.UpdatePod(desc.Namespace, desc.Pod)
+	result, err := process.UpdatePod(req.Namespace, req.Pod)
 
 	if err != nil {
 		fmt.Println("error in process updatePod")
@@ -86,11 +86,11 @@ func UpdatePod(c *gin.Context) {
 }
 
 func GetPod(c *gin.Context) {
-	var param map[string]string
-	if err := c.ShouldBindJSON(&param); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
+	// var param map[string]string
+	// if err := c.ShouldBindJSON(&param); err != nil {
+	// 	c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	// 	return
+	// }
 
 	namespace := c.Query("namespace")
 	name := c.Query("name")
