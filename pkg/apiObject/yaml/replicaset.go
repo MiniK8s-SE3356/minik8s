@@ -1,5 +1,7 @@
 package yaml
 
+import "github.com/MiniK8s-SE3356/minik8s/pkg/types/container"
+
 type ReplicaSetDesc struct {
 	ApiVersion string `yaml:"apiVersion" json:"apiVersion"`
 	Kind       string `yaml:"kind" json:"kind"`
@@ -21,7 +23,7 @@ type ReplicaSetSpec struct {
 			Labels map[string]string `yaml:"labels" json:"labels"`
 		} `yaml:"metadata" json:"metadata"`
 		Spec struct {
-			Containers []ContainerDesc `yaml:"containers" json:"containers"`
+			Containers []container.Container `yaml:"containers" json:"containers"`
 		} `yaml:"spec" json:"spec"`
 	}
 }

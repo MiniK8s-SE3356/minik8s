@@ -22,9 +22,9 @@ type MQConfig struct {
 }
 
 var DefaultMQConfig = &MQConfig{
-	User:       "admin",
-	Password:   "admin",
-	Host:       "10.181.208.73",
+	User:       "guest",
+	Password:   "guest",
+	Host:       "localhost",
 	Port:       "5672",
 	Vhost:      "/",
 	MaxRetry:   5,

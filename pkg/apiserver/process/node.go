@@ -7,6 +7,7 @@ import (
 	"github.com/MiniK8s-SE3356/minik8s/pkg/apiObject/pod"
 	"github.com/MiniK8s-SE3356/minik8s/pkg/apiObject/service"
 	"github.com/MiniK8s-SE3356/minik8s/pkg/types/node"
+	"github.com/MiniK8s-SE3356/minik8s/pkg/utils/idgenerate"
 )
 
 func AddNode(desc *node.Node) (string, error) {
@@ -17,6 +18,12 @@ func AddNode(desc *node.Node) (string, error) {
 		return "name must be empty", nil
 	}
 
+	id, err := idgenerate.GenerateID()
+	if err != nil {
+		fmt.Println("failed to generate id")
+		return "failed to generate id", err
+	}
+	desc.Metadata.Id = id
 	desc.Metadata.Name = desc.Status.Hostname + "@" + desc.Status.Ip
 
 	// 检查是否已经存在
@@ -72,37 +79,53 @@ func ModifyNode() (string, error) {
 	return "", nil
 }
 
-func GetNode(name string) (string, error) {
+func GetNode(name string) (node.Node, error) {
 	mu.RLock()
 	defer mu.RUnlock()
+	var result node.Node
 	existed, err := EtcdCli.Exist(nodePrefix + name)
 	if err != nil {
-		return "failed to check existence in etcd", err
+		return result, err
 	}
 	if !existed {
-		return "node not found", nil
+		return result, nil
 	}
 
-	// TODO
+	v, err := EtcdCli.Get(nodePrefix + name)
+	if err != nil {
+		fmt.Println("failed to get from etcd")
+		return result, err
+	}
+	err = json.Unmarshal(v, &result)
+	if err != nil {
+		fmt.Println("failed to unmarshal")
+		return result, err
+	}
 
-	return "", nil
+	return result, nil
 }
 
-func GetNodes() (string, error) {
+func GetNodes() ([]node.Node, error) {
 	mu.RLock()
 	defer mu.RUnlock()
+	var result []node.Node
 	pairs, err := EtcdCli.GetWithPrefix(nodePrefix)
 	if err != nil {
 		fmt.Println("failed to get from etcd")
-		return "", err
+		return result, err
 	}
 
-	jsonData, err := json.Marshal(pairs)
-	if err != nil {
-		fmt.Println("failed to translate into json")
-		return "", err
+	for _, p := range pairs {
+		var n node.Node
+		err := json.Unmarshal([]byte(p.Value), &n)
+		if err != nil {
+			fmt.Println("failed to unmarshal")
+		} else {
+			result = append(result, n)
+		}
 	}
-	return string(jsonData), nil
+
+	return result, nil
 }
 
 func DescribeNode(name string) (string, error) {

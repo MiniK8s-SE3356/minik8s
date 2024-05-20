@@ -58,7 +58,7 @@ func bind(r *gin.Engine) {
 
 func Start() {
 	var err error
-	for i := 0; i <= 100; i++ {
+	for i := 0; i < 100; i++ {
 		process.EtcdCli, err = etcdclient.Connect([]string{etcdclient.EtcdURL}, etcdclient.Timeout)
 		if err == nil {
 			break

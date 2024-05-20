@@ -7,6 +7,8 @@ import (
 
 	"github.com/MiniK8s-SE3356/minik8s/pkg/apiObject/pod"
 	"github.com/MiniK8s-SE3356/minik8s/pkg/apiObject/replicaset"
+	"github.com/MiniK8s-SE3356/minik8s/pkg/apiObject/yaml"
+	"github.com/MiniK8s-SE3356/minik8s/pkg/apiserver/process"
 	"github.com/MiniK8s-SE3356/minik8s/pkg/apiserver/url"
 	"github.com/MiniK8s-SE3356/minik8s/pkg/utils/httpRequest"
 )
@@ -67,6 +69,48 @@ func getReplicasetsFromServer() ([]replicaset.Replicaset, error) {
 	return result, err
 }
 
+func applyPod(pod yaml.PodDesc) error {
+	req := make(map[string]interface{})
+	req["namespace"] = process.DefaultNamespace
+	req["podDesc"] = pod
+
+	jsonData, err := json.Marshal(req)
+	if err != nil {
+		fmt.Println("failed to translate into json")
+		return err
+	}
+	// fmt.Println(podDesc.Spec.Containers)
+	result, err := httpRequest.PostRequest(url.RootURL+url.AddPod, jsonData)
+	if err != nil {
+		fmt.Println("error when post request")
+		return err
+	}
+
+	fmt.Println(result)
+
+	return nil
+}
+
+func removePod(namespace string, name string) error {
+	params := map[string]string{
+		"namespace": namespace,
+		"name":      name,
+	}
+	jsonData, err := json.Marshal(params)
+	if err != nil {
+		fmt.Println("failed to translate into json")
+		return err
+	}
+	result, err := httpRequest.PostRequest(url.RootURL+url.RemovePod, jsonData)
+	if err != nil {
+		fmt.Println("error in delete pod ", err.Error())
+		return err
+	}
+	fmt.Println(result)
+
+	return nil
+}
+
 func rscTask() {
 	// 从APIserver获取全体pod和全体replicaset
 	pods, err := getPodsFromServer()
@@ -80,13 +124,15 @@ func rscTask() {
 		fmt.Println("failed to get replicaset from server")
 	}
 
+	replicasetNames := make([]string, 0)
 	// 利用label找到replicaset对应的pod
 	for _, rs := range replicasets {
+		replicasetNames = append(replicasetNames, rs.Metadata.Name)
 		var matchedPod []pod.Pod
 
-		for _, pod := range pods {
-			if checkMatchedPod(pod.Metadata.Labels, rs.Spec.Selector.MatchLabels) {
-				matchedPod = append(matchedPod, pod)
+		for _, p := range pods {
+			if checkMatchedPod(p.Metadata.Labels, rs.Spec.Selector.MatchLabels) {
+				matchedPod = append(matchedPod, p)
 			}
 		}
 
@@ -94,12 +140,37 @@ func rscTask() {
 
 		if len(matchedPod) > rs.Spec.Replicas {
 			// delete some pod
+			for i := 0; i < len(matchedPod)-rs.Spec.Replicas; i++ {
+				ns := matchedPod[i].Metadata.Namespace
+				name := matchedPod[i].Metadata.Name
+				err := removePod(ns, name)
+				if err != nil {
+					fmt.Println("failed to delete pod", err)
+				}
+			}
 		} else if len(matchedPod) < rs.Spec.Replicas {
 			// add some pod
+			for i := 0; i < rs.Spec.Replicas-len(matchedPod); i++ {
+				var podDesc yaml.PodDesc
+				podDesc.ApiVersion = "v1"
+				podDesc.Kind = "Pod"
+				podDesc.Metadata.Labels["replicaset"] = rs.Metadata.Name
+				podDesc.Spec.Containers = rs.Spec.Template.Spec.Containers
+				err := applyPod(podDesc)
+				if err != nil {
+					fmt.Println("failed to apply pod")
+				}
+			}
 		}
 	}
 
 	// 处理孤儿pod
+	// 从replicaset创建的Pod都带有与replicaset对应的label
+	for _, p := range pods {
+		value, ok := p.Metadata.Labels["replicaset"]
+		if ok && replicasets
+	}
+
 }
 
 func (sc *ReplicasetController) Init() {

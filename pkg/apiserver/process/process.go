@@ -8,6 +8,7 @@ import (
 )
 
 const (
+	DefaultNamespace = "Default"
 	prefix           = "/minik8s"
 	namespacePrefix  = prefix + "/namespace/"
 	nodePrefix       = prefix + "/node/"
