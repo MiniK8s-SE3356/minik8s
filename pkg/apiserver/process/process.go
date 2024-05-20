@@ -4,6 +4,7 @@ import (
 	"sync"
 
 	"github.com/MiniK8s-SE3356/minik8s/pkg/etcdclient"
+	"github.com/MiniK8s-SE3356/minik8s/pkg/utils/message"
 )
 
 const (
@@ -17,4 +18,5 @@ const (
 )
 
 var EtcdCli *etcdclient.EtcdClient
+var Mq *message.MQConnection
 var mu sync.RWMutex

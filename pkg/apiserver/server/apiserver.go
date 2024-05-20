@@ -7,6 +7,7 @@ import (
 	"github.com/MiniK8s-SE3356/minik8s/pkg/apiserver/process"
 	"github.com/MiniK8s-SE3356/minik8s/pkg/apiserver/url"
 	"github.com/MiniK8s-SE3356/minik8s/pkg/etcdclient"
+	"github.com/MiniK8s-SE3356/minik8s/pkg/utils/message"
 	"github.com/gin-gonic/gin"
 )
 
@@ -33,6 +34,7 @@ func bind(r *gin.Engine) {
 	r.POST(url.AddNode, handler.AddNode)
 	r.GET(url.GetNode, handler.GetNode)
 	r.POST(url.RemoveNode, handler.RemoveNode)
+	r.POST(url.NodeHeartBeat, handler.NodeHeartBeat)
 
 	r.POST(url.AddReplicaset, handler.AddReplicaSet)
 	r.GET(url.GetReplicaset, handler.GetReplicaSet)
@@ -57,6 +59,12 @@ func Start() {
 	process.EtcdCli, err = etcdclient.Connect([]string{etcdclient.EtcdURL}, etcdclient.Timeout)
 	if err != nil {
 		fmt.Println("failed to connect to etcd ", err.Error())
+		return
+	}
+
+	process.Mq, err = message.NewMQConnection(message.DefaultMQConfig)
+	if err != nil {
+		fmt.Println("failed to connect to rabbitmq", err.Error())
 		return
 	}
 

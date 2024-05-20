@@ -45,6 +45,16 @@ func AddPod(namespace string, desc *yaml.PodDesc) (string, error) {
 		return "failed to write to etcd", err
 	}
 
+	msgBody := make(map[string]interface{})
+	msgBody["type"] = "create_pod"
+	msgBody["content"] = pod
+	jsonData, err := json.Marshal(msgBody)
+	if err != nil {
+		fmt.Println("failed to construct msgBody")
+		return "failed to construct msgBody", err
+	}
+	Mq.Publish("exchange", "scheduler", "application/json", jsonData)
+
 	return "add pod to minik8s", nil
 }
 
