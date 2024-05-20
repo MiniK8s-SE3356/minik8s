@@ -12,7 +12,7 @@ import (
 type MsgProxy struct {
 	mqConn           *minik8s_message.MQConnection
 	listenQueueName  string
-	PodUpdateChannel chan<- *minik8s_worker.Task
+	PodUpdateChannel chan *minik8s_worker.Task
 }
 
 func NewMsgProxy(mqConfig *minik8s_message.MQConfig) *MsgProxy {
