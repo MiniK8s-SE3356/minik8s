@@ -74,8 +74,15 @@ func UpdatePod(c *gin.Context) {
 		return
 	}
 
-	// result, err := process.UpdatePod(desc.Namespace, desc.Pod)
+	result, err := process.UpdatePod(desc.Namespace, desc.Pod)
 
+	if err != nil {
+		fmt.Println("error in process updatePod")
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, result)
 }
 
 func GetPod(c *gin.Context) {

@@ -81,18 +81,41 @@ func RemovePod(namespace string, name string) (string, error) {
 		return "target not exist", nil
 	}
 
-	EtcdCli.Del(podPrefix + namespace + "/" + name)
+	err = EtcdCli.Del(podPrefix + namespace + "/" + name)
+	if err != nil {
+		fmt.Println("failed to del in etcd")
+		return "failed to del in etcd", err
+	}
 
-	return "", nil
+	return "del pod success", nil
 }
 
 func UpdatePod(namespace string, pod pod.Pod) (string, error) {
 	mu.Lock()
 	defer mu.Unlock()
 
-	// name := pod.Metadata.Name
+	name := pod.Metadata.Name
 
-	return "", nil
+	existed, err := EtcdCli.Exist(podPrefix + namespace + "/" + name)
+	if err != nil {
+		return "failed to check existence in etcd", err
+	}
+	if !existed {
+		return "target not exist", nil
+	}
+
+	value, err := json.Marshal(pod)
+	if err != nil {
+		fmt.Println("failed to translate into json ", err.Error())
+		return "failed to translate into json ", err
+	}
+	err = EtcdCli.Put(podPrefix+namespace+"/"+name, string(value))
+	if err != nil {
+		fmt.Println("failed to put into etcd")
+		return "failed to put into etcd", err
+	}
+
+	return "update success", nil
 }
 
 func GetPod(namespace string, name string) (map[string]interface{}, error) {
