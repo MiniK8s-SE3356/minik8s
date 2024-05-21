@@ -48,7 +48,7 @@ func getPodsFromServer() ([]pod.Pod, error) {
 		return result, err
 	}
 
-	return result, err
+	return result, nil
 }
 
 func getReplicasetsFromServer() ([]replicaset.Replicaset, error) {
@@ -67,7 +67,7 @@ func getReplicasetsFromServer() ([]replicaset.Replicaset, error) {
 		return result, err
 	}
 
-	return result, err
+	return result, nil
 }
 
 func applyPod(pod yaml.PodDesc) error {
