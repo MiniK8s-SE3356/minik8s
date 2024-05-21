@@ -3,7 +3,7 @@ package message
 type MsgType string
 
 const (
-	CreatePod MsgType = "CreatePod"
+	CreatePod MsgType = "create_pod"
 )
 
 type Content interface{}
@@ -12,3 +12,8 @@ type Message struct {
 	Type    MsgType `json:"type"`
 	Content Content `json:"content"`
 }
+
+const (
+	DefaultExchangeName       = "minik8s"
+	DefaultSchedulerQueueName = "scheduler"
+)

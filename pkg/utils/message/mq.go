@@ -86,8 +86,34 @@ func (mq *MQConnection) Publish(exchange string, routingKey string, contentType 
 	}
 	defer ch.Close()
 
-	// TODO: Check queue exists or create and bind queue
+	// Check queue exists, if not create queue
+	queue, err := ch.QueueDeclare(
+		routingKey,
+		true,
+		false,
+		false,
+		false,
+		nil,
+	)
+	if err != nil {
+		fmt.Println("Failed to declare a queue, error message: ", err)
+		return err
+	}
 
+	// Bind queue to exchange
+	err = ch.QueueBind(
+		queue.Name,
+		routingKey,
+		exchange,
+		false,
+		nil,
+	)
+	if err != nil {
+		fmt.Println("Failed to bind a queue, error message: ", err)
+		return err
+	}
+
+	// Publish message
 	err = ch.Publish(
 		exchange,
 		routingKey,
@@ -118,6 +144,21 @@ func (mq *MQConnection) Subscribe(queue string, callback func(amqp.Delivery), do
 	}
 	defer ch.Close()
 
+	// Check queue exists, if not create queue
+	_, err = ch.QueueDeclare(
+		queue,
+		true,
+		false,
+		false,
+		false,
+		nil,
+	)
+	if err != nil {
+		fmt.Println("Failed to declare a queue, error message: ", err)
+		return err
+	}
+
+	// Consume message
 	msgChannel, err := ch.Consume(
 		queue,
 		"",

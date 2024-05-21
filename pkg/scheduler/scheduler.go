@@ -2,12 +2,14 @@ package scheduler
 
 import (
 	"encoding/json"
+	"fmt"
 	"math/rand"
 	"sync"
 	"time"
 
 	minik8s_pod "github.com/MiniK8s-SE3356/minik8s/pkg/apiObject/pod"
 	minik8s_node "github.com/MiniK8s-SE3356/minik8s/pkg/types/node"
+	"github.com/MiniK8s-SE3356/minik8s/pkg/utils/httpRequest"
 	minik8s_message "github.com/MiniK8s-SE3356/minik8s/pkg/utils/message"
 	"github.com/streadway/amqp"
 )
@@ -49,28 +51,51 @@ func NewScheduler(mqConfig *minik8s_message.MQConfig, policy Policy, APIServerIP
 
 func (s *Scheduler) GetNodes() ([]*minik8s_node.Node, error) {
 	// fake
-	nodes := []*minik8s_node.Node{
-		{
-			Metadata: minik8s_node.NodeMetadata{
-				Id:   "1",
-				Name: "node1",
-				Labels: map[string]string{
-					"zone": "zone1",
-				},
-			},
-			Status: minik8s_node.NodeStatus{
-				Hostname:   "node1",
-				Ip:         "127.0.0.1",
-				Condition:  []string{minik8s_node.NODE_Ready},
-				CpuPercent: 0.1,
-				MemPercent: 0.2,
-				NumPods:    1,
-				UpdateTime: time.Now().String(),
-			},
-		},
+	// nodes := []*minik8s_node.Node{
+	// 	{
+	// 		Metadata: minik8s_node.NodeMetadata{
+	// 			Id:   "1",
+	// 			Name: "node1",
+	// 			Labels: map[string]string{
+	// 				"zone": "zone1",
+	// 			},
+	// 		},
+	// 		Status: minik8s_node.NodeStatus{
+	// 			Hostname:   "node1",
+	// 			Ip:         "127.0.0.1",
+	// 			Condition:  []string{minik8s_node.NODE_Ready},
+	// 			CpuPercent: 0.1,
+	// 			MemPercent: 0.2,
+	// 			NumPods:    1,
+	// 			UpdateTime: time.Now().String(),
+	// 		},
+	// 	},
+	// }
+
+	// Implement get nodes from apiserver
+	request_url := fmt.Sprintf("http://%s:%s/api/v1/GetNode", s.APIServerIP, s.APIServerPort)
+	var responseNodes []minik8s_node.Node
+	responseStatus, err := httpRequest.GetRequestByObject(
+		request_url,
+		nil,
+		&responseNodes,
+	)
+	if err != nil {
+		fmt.Println("Get nodes failed")
+		return nil, err
+	}
+	fmt.Println("Get nodes response status: ", responseStatus)
+
+	responseNodesJson, _ := json.Marshal(responseNodes)
+	fmt.Println("Get nodes response: \n", string(responseNodesJson))
+
+	// return nodes' pointer array, switch to pointer array
+	returnNodes := make([]*minik8s_node.Node, 0)
+	for _, node := range responseNodes {
+		returnNodes = append(returnNodes, &node)
 	}
 
-	return nodes, nil
+	return returnNodes, nil
 }
 
 func RoundRobinSelect(node []*minik8s_node.Node) *minik8s_node.Node {
@@ -138,6 +163,14 @@ func (s *Scheduler) ScheduleHandler(delivery amqp.Delivery) {
 		}
 	}
 
+	var msgType minik8s_message.MsgType
+	msgTypeData, _ := json.Marshal(parsed_msg["type"])
+	err = json.Unmarshal(msgTypeData, &msgType)
+	if err != nil {
+		println("Error unmarshalling msgType")
+		return
+	}
+
 	// Unmarshal pod_desc from msg body
 	pod := minik8s_pod.Pod{}
 	contentData, _ := json.Marshal(parsed_msg["content"])
@@ -156,24 +189,45 @@ func (s *Scheduler) ScheduleHandler(delivery amqp.Delivery) {
 	pod.Spec.NodeName = selected_node.Metadata.Name
 
 	// Publish pod to apiserver
+	request_url := fmt.Sprintf("http://%s:%s/api/v1/UpdatePod", s.APIServerIP, s.APIServerPort)
+	requestBody := make(map[string]interface{})
+	requestBody["namespace"] = "default"
+	requestBody["pod"] = pod
+	requestBodyData, _ := json.Marshal(requestBody)
+	response, err := httpRequest.PostRequest(
+		request_url,
+		requestBodyData,
+	)
+	if err != nil {
+		println("Error posting request: ", err)
+		return
+	}
+	fmt.Println("\nUpdate pod response: ", response)
 
 	// Publish pod update to mq
-	pod_json, err := json.Marshal(pod)
+	msgBody := make(map[string]interface{})
+	msgBody["type"] = msgType
+	msgBody["content"] = pod
+	msgBodyJson, err := json.Marshal(msgBody)
 	if err != nil {
-		println("Error marshalling pod")
+		println("Error marshalling msgBody")
 		return
 	}
 
 	s.mqConn.Publish(
-		"minik8s",
-		// TODO: Node's ID or Name?
-		selected_node.Metadata.Id,
+		minik8s_message.DefaultExchangeName,
+		// We use node id as routing key
+		selected_node.Metadata.Name,
 		"application/json",
-		pod_json,
+		msgBodyJson,
 	)
 }
 
 func (s *Scheduler) Run() {
 	done := make(chan bool)
-	s.mqConn.Subscribe("scheduler", s.ScheduleHandler, done)
+	s.mqConn.Subscribe(
+		minik8s_message.DefaultSchedulerQueueName,
+		s.ScheduleHandler,
+		done,
+	)
 }

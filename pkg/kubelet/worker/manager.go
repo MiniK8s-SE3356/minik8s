@@ -31,9 +31,11 @@ func NewPodManager() PodManager {
 func (pm *podManager) AddPod(pod *apiobject_pod.Pod) error {
 	fmt.Println(pod.Metadata.Name + " is added to the pod manager.")
 	UID := pod.Metadata.UUID
+	fmt.Println("UID: " + UID)
 
 	// Check if the pod worker already exists
 	if _, ok := pm.PodWorkers[UID]; ok {
+		fmt.Println("pod worker with UID " + UID + " already exists.")
 		return fmt.Errorf("pod worker with UID %s already exists", UID)
 	}
 

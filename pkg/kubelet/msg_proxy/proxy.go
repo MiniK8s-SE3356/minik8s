@@ -12,14 +12,15 @@ import (
 type MsgProxy struct {
 	mqConn           *minik8s_message.MQConnection
 	listenQueueName  string
-	PodUpdateChannel chan *minik8s_worker.Task
+	PodUpdateChannel chan minik8s_worker.Task
 }
 
-func NewMsgProxy(mqConfig *minik8s_message.MQConfig) *MsgProxy {
+func NewMsgProxy(mqConfig *minik8s_message.MQConfig, queueName string) *MsgProxy {
 	newConn, _ := minik8s_message.NewMQConnection(mqConfig)
 	return &MsgProxy{
 		mqConn:           newConn,
-		PodUpdateChannel: make(chan *minik8s_worker.Task),
+		listenQueueName:  queueName,
+		PodUpdateChannel: make(chan minik8s_worker.Task),
 	}
 }
 
@@ -37,6 +38,10 @@ func (mp *MsgProxy) handleReceive(delivery amqp.Delivery) {
 		return
 	}
 
+	//!debug//
+	// fmt.Println("msgType: ", msgType)
+	//!debug//
+
 	contentData, _ := json.Marshal(parsed_msg["content"])
 	var parsed_pod minik8s_pod.Pod
 	err = json.Unmarshal(contentData, &parsed_pod)
@@ -44,11 +49,15 @@ func (mp *MsgProxy) handleReceive(delivery amqp.Delivery) {
 		return
 	}
 
+	//!debug//
+	// podJson, _ := json.Marshal(parsed_pod)
+	// fmt.Println("pod: ", string(podJson))
+	// fmt.Println("container numbs: ", len(parsed_pod.Spec.Containers))
+	//!debug//
+
 	switch msgType {
 	case minik8s_message.CreatePod:
-		var parsed_pod minik8s_pod.Pod
-
-		mp.PodUpdateChannel <- &minik8s_worker.Task{
+		mp.PodUpdateChannel <- minik8s_worker.Task{
 			Type: minik8s_worker.Task_Add,
 			Pod:  &parsed_pod,
 		}
