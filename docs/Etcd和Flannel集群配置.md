@@ -1,5 +1,6 @@
 # Etcd和Flannel集群配置
 
+> author: Haocheng Wang  
 > Version: 0.1
 
 ## IP

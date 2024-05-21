@@ -1,5 +1,8 @@
 # ClusterIP iptables design
 
+> author: Haocheng Wang  
+> Version: 0.1
+
 ## 配置
 ### pod
 - 主机cloudos1
