@@ -6,6 +6,7 @@ require (
 	github.com/coreos/go-iptables v0.7.0
 	github.com/gin-gonic/gin v1.9.1
 	github.com/spf13/cobra v1.8.0
+	github.com/spf13/pflag v1.0.5
 	go.etcd.io/etcd/client/v3 v3.5.13
 	gopkg.in/yaml.v3 v3.0.1
 )
@@ -32,7 +33,6 @@ require (
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/pelletier/go-toml/v2 v2.0.8 // indirect
-	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/ugorji/go/codec v1.2.11 // indirect
 	go.etcd.io/etcd/api/v3 v3.5.13 // indirect
