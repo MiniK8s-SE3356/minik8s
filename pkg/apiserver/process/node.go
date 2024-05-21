@@ -26,7 +26,7 @@ func AddNode(desc *node.Node) (node.Node, error) {
 	}
 	desc.Metadata.Id = id
 	desc.Metadata.Name = desc.Status.Hostname + "@" + desc.Status.Ip
-	desc.Metadata.Labels = map[string]string{}
+	// desc.Metadata.Labels = map[string]string{}
 	// desc.Status.Condition = []string{}
 
 	// 检查是否已经存在
