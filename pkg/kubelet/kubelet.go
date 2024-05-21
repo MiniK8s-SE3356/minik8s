@@ -100,8 +100,8 @@ func (k *Kubelet) Run() {
 		return
 	}
 
-	// go k.Proxy()
-	// go k.msgProxy.Run()
+	go k.Proxy()
+	go k.msgProxy.Run()
 
 	<-forever
 }
