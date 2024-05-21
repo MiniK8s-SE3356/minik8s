@@ -15,7 +15,7 @@ const (
 	podPrefix        = prefix + "/pod/"
 	servicePrefix    = prefix + "/service/"
 	endpointPrefix   = prefix + "/endpoint/"
-	replicasetPrefix = prefix + "/replicaset"
+	replicasetPrefix = prefix + "/replicaset/"
 )
 
 var EtcdCli *etcdclient.EtcdClient

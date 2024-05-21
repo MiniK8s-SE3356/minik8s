@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/MiniK8s-SE3356/minik8s/pkg/apiObject/pod"
 	"github.com/MiniK8s-SE3356/minik8s/pkg/apiObject/replicaset"
 	"github.com/MiniK8s-SE3356/minik8s/pkg/apiObject/yaml"
 	"github.com/MiniK8s-SE3356/minik8s/pkg/utils/idgenerate"
@@ -112,10 +113,11 @@ func GetReplicaSet(namespace string, name string) (map[string]interface{}, error
 	return result, nil
 }
 
-func GetReplicaSets(namespace string) (map[string]interface{}, error) {
+func GetReplicaSets(namespace string) ([]replicaset.Replicaset, error) {
 	mu.RLock()
 	defer mu.RUnlock()
-	result := make(map[string]interface{}, 0)
+	result := make([]replicaset.Replicaset, 0)
+	rsmap := make(map[string]replicaset.Replicaset, 0)
 
 	pairs, err := EtcdCli.GetWithPrefix(replicasetPrefix + namespace)
 	if err != nil {
@@ -129,8 +131,35 @@ func GetReplicaSets(namespace string) (map[string]interface{}, error) {
 		if err != nil {
 			fmt.Println("failed to translate into json")
 		} else {
-			result[p.Key] = tmp
+			rsmap[tmp.Metadata.Name] = tmp
 		}
+	}
+
+	podPairs, err := EtcdCli.GetWithPrefix(podPrefix)
+	if err != nil {
+		fmt.Println("failed to get all pods from etcd")
+		return result, err
+	}
+	for _, pair := range podPairs {
+		tmp := pod.Pod{}
+		err := json.Unmarshal([]byte(pair.Value), &tmp)
+		if err != nil {
+			fmt.Println("failed to unmarshal")
+		} else {
+			value, ok := tmp.Metadata.Labels["replicaset"]
+			if ok {
+				_, ok2 := rsmap[value]
+				if ok2 {
+					// TODO conditions
+					tmp1 := rsmap[value]
+					tmp1.Status.Replicas += 1
+					rsmap[value] = tmp1
+				}
+			}
+		}
+	}
+	for _, rs := range rsmap {
+		result = append(result, rs)
 	}
 
 	return result, nil
