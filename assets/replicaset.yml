@@ -7,13 +7,11 @@ spec:
   selector:
     matchLabels:
       labelkey1: labelvalue1
-      labelkey2: labelvalue2
   template:
     metadata:
       name: testRep
       labels:
         labelkey1: labelvalue1
-        labelkey2: labelvalue2
     spec:
       containers:
       - name: testContainer-1

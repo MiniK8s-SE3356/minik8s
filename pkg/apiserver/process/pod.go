@@ -27,8 +27,6 @@ func AddPod(namespace string, desc *yaml.PodDesc) (string, error) {
 	pod.Metadata.UUID = id
 	pod.Metadata.Labels = desc.Metadata.Labels
 	pod.Spec = desc.Spec
-	fmt.Println(desc.Spec.Containers)
-	fmt.Println(pod.Spec.Containers)
 	// for _, c := range desc.Spec.Containers {
 	// var tmp container.Container
 	// pod.Spec.Containers = append(pod.Spec.Containers, )

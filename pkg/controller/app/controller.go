@@ -36,8 +36,8 @@ func (co *Controller) Init() {
 
 func (co *Controller) Run() {
 	fmt.Printf("Run Controller ...\n")
-	go co.endpointsController.Run()
-	go co.servicesController.Run()
+	// go co.endpointsController.Run()
+	// go co.servicesController.Run()
 	go co.replicasetController.Run()
 
 	// TODO:主线程暂时没有要做的事情，先while1,后续需要补充

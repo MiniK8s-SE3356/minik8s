@@ -10,18 +10,19 @@ import (
 	"github.com/MiniK8s-SE3356/minik8s/pkg/utils/idgenerate"
 )
 
-func AddNode(desc *node.Node) (string, error) {
+func AddNode(desc *node.Node) (node.Node, error) {
 	mu.Lock()
 	defer mu.Unlock()
 	// 检查name是否为空
+	result := node.Node{}
 	if desc.Metadata.Name != "" {
-		return "name must be empty", nil
+		return result, nil
 	}
 
 	id, err := idgenerate.GenerateID()
 	if err != nil {
 		fmt.Println("failed to generate id")
-		return "failed to generate id", err
+		return result, err
 	}
 	desc.Metadata.Id = id
 	desc.Metadata.Name = desc.Status.Hostname + "@" + desc.Status.Ip
@@ -31,17 +32,17 @@ func AddNode(desc *node.Node) (string, error) {
 	// 检查是否已经存在
 	existed, err := EtcdCli.Exist(nodePrefix + desc.Metadata.Name)
 	if err != nil {
-		return "failed to check existence in etcd", err
+		return result, err
 	}
 
 	if existed {
-		return "node has existed", nil
+		return result, nil
 	}
 
 	value, err := json.Marshal(desc)
 	if err != nil {
 		fmt.Println("failed to translate into json ", err.Error())
-		return "failed to translate into json ", err
+		return result, err
 	}
 
 	// 然后存入etcd
@@ -49,10 +50,11 @@ func AddNode(desc *node.Node) (string, error) {
 	err = EtcdCli.Put(nodePrefix+desc.Metadata.Name, string(value))
 	if err != nil {
 		fmt.Println("failed to write to etcd ", err.Error())
-		return "failed to write to etcd", err
+		return result, err
 	}
 
-	return "add node to minik8s", nil
+	result = *desc
+	return result, nil
 }
 
 func RemoveNode(name string) (string, error) {
