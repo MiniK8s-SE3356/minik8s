@@ -6,4 +6,8 @@ import (
 
 type KubeletConfig struct {
 	minik8s_message.MQConfig
+	APIServerIP   string
+	APIServerPort string
+	NodeIP        string
+	NodeHostName  string
 }

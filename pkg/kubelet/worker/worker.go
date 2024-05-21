@@ -1,6 +1,8 @@
 package worker
 
 import (
+	"fmt"
+
 	apiobject_pod "github.com/MiniK8s-SE3356/minik8s/pkg/apiObject/pod"
 	minik8s_runtime "github.com/MiniK8s-SE3356/minik8s/pkg/runtime"
 )
@@ -47,6 +49,7 @@ func (p *PodWorker) Run() {
 func (p *PodWorker) ExecuteTask(task *Task) {
 	switch task.Type {
 	case Task_Add:
+		fmt.Println("PodWorker Add task")
 		p.AddTaskHandler(task.Pod)
 	case Task_Update:
 	case Task_Remove:

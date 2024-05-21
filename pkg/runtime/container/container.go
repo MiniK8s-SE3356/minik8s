@@ -3,6 +3,7 @@ package container
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 
 	"github.com/MiniK8s-SE3356/minik8s/pkg/runtime/docker"
 	"github.com/MiniK8s-SE3356/minik8s/pkg/runtime/image"
@@ -75,6 +76,7 @@ func (cm *ContainerManager) CreateContainer(name string, config *minik8s_contain
 	imageManager := &image.ImageManager{}
 	_, err := imageManager.PullImage(config.Image)
 	if err != nil {
+		fmt.Println("Failed to pull image, err:", err)
 		return "", err
 	}
 

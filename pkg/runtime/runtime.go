@@ -1,6 +1,8 @@
 package runtime
 
 import (
+	"fmt"
+
 	minik8s_pod "github.com/MiniK8s-SE3356/minik8s/pkg/apiObject/pod"
 	runtime_container "github.com/MiniK8s-SE3356/minik8s/pkg/runtime/container"
 	"github.com/MiniK8s-SE3356/minik8s/pkg/runtime/image"
@@ -20,26 +22,50 @@ func NewRuntimeManager() *RuntimeManager {
 }
 
 func (rm *RuntimeManager) CreatePod(pod *minik8s_pod.Pod) (string, error) {
+	//!debug//
+	// fmt.Println("Creating pod for:", pod.Metadata.UUID)
+	//!debug//
 	pauseContainerId, err := rm.CreateAndStartPauseContainer(pod)
 	if err != nil {
 		return "", err
 	}
+	//!debug//
+	// fmt.Println("Pause container created")
+	// fmt.Println("Container number: ", len(pod.Spec.Containers))
+	//!debug//
 
 	// Create containers for the pod
 	for _, container := range pod.Spec.Containers {
+		//!debug//
+		// fmt.Println("Creating container: ", container.Image)
+		//!debug//
 		containerConfig := &minik8s_container.CreateContainerConfig{
 			Image:       container.Image,
 			NetworkMode: "container:" + pauseContainerId,
 			IpcMode:     "container:" + pauseContainerId,
 			PidMode:     "container:" + pauseContainerId,
 		}
+		//!debug//
+		// fmt.Println("Start creating container")
+		//!debug//
 		containerId, err := rm.containerManager.CreateContainer(container.Name, containerConfig)
+		//!debug//
+		// fmt.Println("Finish creating container")
+		//!debug//
 		if err != nil {
+			fmt.Println("Failed to create container", err)
 			return "", err
 		}
 		// Start the container
+		//!debug//
+		// fmt.Println("Start starting container")
+		//!debug//
 		_, err = rm.containerManager.StartContainer(containerId)
+		//!debug//
+		// fmt.Println("Finish starting container")
+		//!debug//
 		if err != nil {
+			fmt.Println("Failed to start container", err)
 			return "", err
 		}
 	}
