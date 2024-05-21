@@ -102,8 +102,6 @@ func (c *EtcdClient) GetWithPrefix(keyPrefix string) ([]KVPair, error) {
 
 	var result []KVPair
 	for _, kvp := range response.Kvs {
-		fmt.Println(kvp.Value)
-		fmt.Println(string(kvp.Value))
 		result = append(result, KVPair{Key: string(kvp.Key), Value: string(kvp.Value)})
 	}
 

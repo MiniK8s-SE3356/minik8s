@@ -62,7 +62,8 @@ func RemoveReplicaSet(c *gin.Context) {
 // }
 
 func GetReplicaSet(c *gin.Context) {
-	namespace := c.Query("namespace")
+	// namespace := c.Query("namespace")
+	namespace := process.DefaultNamespace
 	name := c.Query("name")
 
 	// 四种情况

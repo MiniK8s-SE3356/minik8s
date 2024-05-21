@@ -71,6 +71,7 @@ func AddPod(namespace string, desc *yaml.PodDesc) (string, error) {
 func RemovePod(namespace string, name string) (string, error) {
 	mu.Lock()
 	defer mu.Unlock()
+	var r pod.Pod
 
 	existed, err := EtcdCli.Exist(podPrefix + namespace + "/" + name)
 	if err != nil {
@@ -78,6 +79,32 @@ func RemovePod(namespace string, name string) (string, error) {
 	}
 	if !existed {
 		return "target not exist", nil
+	}
+
+	tmp, err := EtcdCli.Get(podPrefix + namespace + "/" + name)
+	if err != nil {
+		fmt.Println("failed to get from etcd")
+		return "failed to get from etcd", nil
+	}
+
+	err = json.Unmarshal(tmp, &r)
+	if err != nil {
+		fmt.Println("failed to unmarshal")
+		return "failed to unmarshal", nil
+	}
+	// 这里有一个假设是一定能够删除成功
+	msgBody := make(map[string]interface{})
+	msgBody["type"] = "create_pod"
+	msgBody["content"] = r
+	jsonData, err := json.Marshal(msgBody)
+	if err != nil {
+		fmt.Println("failed to construct msgBody")
+		return "failed to construct msgBody", err
+	}
+	err = Mq.Publish("minik8s", "scheduler", "application/json", jsonData)
+	if err != nil {
+		fmt.Println("failed to send to mq")
+		return "failed to send to mq", err
 	}
 
 	err = EtcdCli.Del(podPrefix + namespace + "/" + name)

@@ -41,6 +41,7 @@ func AddReplicaSet(namespace string, desc *yaml.ReplicaSetDesc) (string, error) 
 	rs.Metadata.Labels = desc.Metadata.Labels
 	rs.Spec = desc.Spec
 	rs.Status = replicaset.ReplicaSetStatus{}
+	rs.Status.Replicas = desc.Spec.Replicas
 	rs.Status.Conditions = []replicaset.ReplicaSetCondition{}
 
 	value, err := json.Marshal(rs)
@@ -82,35 +83,44 @@ func ModifyReplicaSet(namespace string, name string) error {
 	return nil
 }
 
-func GetReplicaSet(namespace string, name string) (map[string]interface{}, error) {
+func GetReplicaSet(namespace string, name string) (replicaset.Replicaset, error) {
 	mu.RLock()
 	defer mu.RUnlock()
-	var r replicaset.Replicaset
-	result := make(map[string]interface{}, 0)
+	var rs replicaset.Replicaset
 
-	existed, err := EtcdCli.Exist(replicasetPrefix + namespace + "/" + name)
-	if err != nil {
-		return result, err
-	}
-	if !existed {
-		return result, nil
-	}
-
-	tmp, err := EtcdCli.Get(replicasetPrefix + namespace + "/" + name)
+	v, err := EtcdCli.Get(replicasetPrefix + namespace + "/" + name)
 	if err != nil {
 		fmt.Println("failed to get from etcd")
-		return result, nil
+		return rs, err
 	}
 
-	err = json.Unmarshal(tmp, &r)
+	err = json.Unmarshal(v, &rs)
 	if err != nil {
-		fmt.Println("failed to unmarshal")
-		return result, nil
+		fmt.Println("failed to translate into json")
 	}
 
-	result[replicasetPrefix+namespace+"/"+name] = r
+	podPairs, err := EtcdCli.GetWithPrefix(podPrefix)
+	if err != nil {
+		fmt.Println("failed to get all pods from etcd")
+		return rs, err
+	}
 
-	return result, nil
+	for _, pair := range podPairs {
+		var tmp pod.Pod
+		err := json.Unmarshal([]byte(pair.Value), &tmp)
+		if err != nil {
+			fmt.Println("failed to unmarshal")
+		} else {
+			value, ok := tmp.Metadata.Labels["replicaset"]
+			fmt.Println(tmp.Metadata.Labels, rs)
+			if ok && value == rs.Metadata.Name {
+				// TODO conditions
+				rs.Status.ReadyReplicas += 1
+			}
+		}
+	}
+
+	return rs, nil
 }
 
 func GetReplicaSets(namespace string) (map[string]replicaset.Replicaset, error) {
@@ -140,7 +150,7 @@ func GetReplicaSets(namespace string) (map[string]replicaset.Replicaset, error) 
 		return rsmap, err
 	}
 	for _, pair := range podPairs {
-		tmp := pod.Pod{}
+		var tmp pod.Pod
 		err := json.Unmarshal([]byte(pair.Value), &tmp)
 		if err != nil {
 			fmt.Println("failed to unmarshal")
@@ -151,7 +161,7 @@ func GetReplicaSets(namespace string) (map[string]replicaset.Replicaset, error) 
 				if ok2 {
 					// TODO conditions
 					tmp1 := rsmap[value]
-					tmp1.Status.Replicas += 1
+					tmp1.Status.ReadyReplicas += 1
 					rsmap[value] = tmp1
 				}
 			}
@@ -161,15 +171,15 @@ func GetReplicaSets(namespace string) (map[string]replicaset.Replicaset, error) 
 	return rsmap, nil
 }
 
-func GetAllReplicaSets() (map[string]interface{}, error) {
+func GetAllReplicaSets() (map[string]replicaset.Replicaset, error) {
 	mu.RLock()
 	defer mu.RUnlock()
-	result := make(map[string]interface{}, 0)
+	rsmap := make(map[string]replicaset.Replicaset, 0)
 
 	pairs, err := EtcdCli.GetWithPrefix(replicasetPrefix)
 	if err != nil {
 		fmt.Println("failed to get from etcd")
-		return result, err
+		return rsmap, err
 	}
 
 	for _, p := range pairs {
@@ -178,9 +188,33 @@ func GetAllReplicaSets() (map[string]interface{}, error) {
 		if err != nil {
 			fmt.Println("failed to translate into json")
 		} else {
-			result[p.Key] = tmp
+			rsmap[tmp.Metadata.Name] = tmp
 		}
 	}
 
-	return result, nil
+	podPairs, err := EtcdCli.GetWithPrefix(podPrefix)
+	if err != nil {
+		fmt.Println("failed to get all pods from etcd")
+		return rsmap, err
+	}
+	for _, pair := range podPairs {
+		var tmp pod.Pod
+		err := json.Unmarshal([]byte(pair.Value), &tmp)
+		if err != nil {
+			fmt.Println("failed to unmarshal")
+		} else {
+			value, ok := tmp.Metadata.Labels["replicaset"]
+			if ok {
+				_, ok2 := rsmap[value]
+				if ok2 {
+					// TODO conditions
+					tmp1 := rsmap[value]
+					tmp1.Status.ReadyReplicas += 1
+					rsmap[value] = tmp1
+				}
+			}
+		}
+	}
+
+	return rsmap, nil
 }

@@ -8,6 +8,7 @@ import (
 	"github.com/MiniK8s-SE3356/minik8s/pkg/apiObject/pod"
 	"github.com/MiniK8s-SE3356/minik8s/pkg/apiObject/replicaset"
 	"github.com/MiniK8s-SE3356/minik8s/pkg/apiObject/yaml"
+	"github.com/MiniK8s-SE3356/minik8s/pkg/apiserver/process"
 	"github.com/MiniK8s-SE3356/minik8s/pkg/apiserver/url"
 	"github.com/MiniK8s-SE3356/minik8s/pkg/utils/httpRequest"
 	"github.com/MiniK8s-SE3356/minik8s/pkg/utils/idgenerate"
@@ -83,23 +84,23 @@ func getReplicasetsFromServer() ([]replicaset.Replicaset, error) {
 func applyPod(pod yaml.PodDesc) error {
 	fmt.Println("apply pod", pod)
 
-	// req := make(map[string]interface{})
-	// req["namespace"] = process.DefaultNamespace
-	// req["podDesc"] = pod
+	req := make(map[string]interface{})
+	req["namespace"] = process.DefaultNamespace
+	req["podDesc"] = pod
 
-	// jsonData, err := json.Marshal(req)
-	// if err != nil {
-	// 	fmt.Println("failed to translate into json")
-	// 	return err
-	// }
-	// // fmt.Println(podDesc.Spec.Containers)
-	// result, err := httpRequest.PostRequest(url.RootURL+url.AddPod, jsonData)
-	// if err != nil {
-	// 	fmt.Println("error when post request")
-	// 	return err
-	// }
+	jsonData, err := json.Marshal(req)
+	if err != nil {
+		fmt.Println("failed to translate into json")
+		return err
+	}
+	// fmt.Println(podDesc.Spec.Containers)
+	result, err := httpRequest.PostRequest(url.RootURL+url.AddPod, jsonData)
+	if err != nil {
+		fmt.Println("error when post request")
+		return err
+	}
 
-	// fmt.Println(result)
+	fmt.Println(result)
 
 	return nil
 }
