@@ -11,6 +11,7 @@ import (
 	"github.com/MiniK8s-SE3356/minik8s/pkg/apiserver/process"
 	"github.com/MiniK8s-SE3356/minik8s/pkg/apiserver/url"
 	"github.com/MiniK8s-SE3356/minik8s/pkg/utils/httpRequest"
+	"github.com/MiniK8s-SE3356/minik8s/pkg/utils/idgenerate"
 )
 
 type ReplicasetController struct {
@@ -124,10 +125,10 @@ func rscTask() {
 		fmt.Println("failed to get replicaset from server")
 	}
 
-	replicasetNames := make([]string, 0)
+	replicasetNames := make(map[string]bool, 0)
 	// 利用label找到replicaset对应的pod
 	for _, rs := range replicasets {
-		replicasetNames = append(replicasetNames, rs.Metadata.Name)
+		replicasetNames[rs.Metadata.Name] = true
 		var matchedPod []pod.Pod
 
 		for _, p := range pods {
@@ -154,6 +155,8 @@ func rscTask() {
 				var podDesc yaml.PodDesc
 				podDesc.ApiVersion = "v1"
 				podDesc.Kind = "Pod"
+				newId, _ := idgenerate.GenerateID()
+				podDesc.Metadata.Name = rs.Metadata.Name + "-" + newId[:8]
 				podDesc.Metadata.Labels["replicaset"] = rs.Metadata.Name
 				podDesc.Spec.Containers = rs.Spec.Template.Spec.Containers
 				err := applyPod(podDesc)
@@ -167,8 +170,14 @@ func rscTask() {
 	// 处理孤儿pod
 	// 从replicaset创建的Pod都带有与replicaset对应的label
 	for _, p := range pods {
-		value, ok := p.Metadata.Labels["replicaset"]
-		if ok && replicasets
+		value1, ok1 := p.Metadata.Labels["replicaset"]
+		if ok1 {
+			_, ok2 := replicasetNames[value1]
+			if !ok2 {
+				removePod(p.Metadata.Namespace, p.Metadata.Name)
+
+			}
+		}
 	}
 
 }

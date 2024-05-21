@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/MiniK8s-SE3356/minik8s/pkg/apiObject/service"
+	"github.com/MiniK8s-SE3356/minik8s/pkg/utils/idgenerate"
 )
 
 func AddService(namespace string, desc interface{}) (string, error) {
@@ -20,6 +21,11 @@ func AddService(namespace string, desc interface{}) (string, error) {
 
 	if serviceType == "ClusterIP" {
 		clusterIP := desc.(service.ClusterIP)
+		if clusterIP.Metadata.Id == "" {
+			id, _ := idgenerate.GenerateID()
+			clusterIP.Metadata.Id = id
+		}
+		clusterIP.Metadata.Namespace = namespace
 		clusterIP.Status.Phase = service.CLUSTERIP_NOTREADY
 		clusterIP.Status.Version = 0
 
@@ -47,6 +53,12 @@ func AddService(namespace string, desc interface{}) (string, error) {
 
 	} else if serviceType == "NodePort" {
 		nodePort := desc.(service.NodePort)
+
+		if nodePort.Metadata.Id == "" {
+			id, _ := idgenerate.GenerateID()
+			nodePort.Metadata.Id = id
+		}
+		nodePort.Metadata.Namespace = namespace
 		nodePort.Status.Phase = service.NODEPORT_NOTREADY
 		nodePort.Status.Version = 0
 

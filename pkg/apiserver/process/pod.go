@@ -23,6 +23,7 @@ func AddPod(namespace string, desc *yaml.PodDesc) (string, error) {
 	pod.APIVersion = desc.ApiVersion
 	pod.Kind = desc.Kind
 	pod.Metadata.Name = desc.Metadata.Name
+	pod.Metadata.Namespace = namespace
 	pod.Metadata.UUID = id
 	pod.Metadata.Labels = desc.Metadata.Labels
 	pod.Spec = desc.Spec

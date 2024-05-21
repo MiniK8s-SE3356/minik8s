@@ -21,7 +21,7 @@ func AddPod(c *gin.Context) {
 		return
 	}
 
-	result, err := process.AddPod(desc.Namespace, &desc.PodDesc)
+	result, err := process.AddPod(process.DefaultNamespace, &desc.PodDesc)
 	if err != nil {
 		fmt.Println("error in process.AddPod ", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -37,11 +37,11 @@ func RemovePod(c *gin.Context) {
 		return
 	}
 
-	namespace, ok := param["namespace"]
-	if !ok {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "no field 'namespace'"})
-		return
-	}
+	// namespace, ok := param["namespace"]
+	// if !ok {
+	// 	c.JSON(http.StatusBadRequest, gin.H{"error": "no field 'namespace'"})
+	// 	return
+	// }
 
 	name, ok := param["name"]
 	if !ok {
@@ -49,7 +49,7 @@ func RemovePod(c *gin.Context) {
 		return
 	}
 
-	result, err := process.RemovePod(namespace, name)
+	result, err := process.RemovePod(process.DefaultNamespace, name)
 	if err != nil {
 		fmt.Println("error in process.RemovePod ", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -74,7 +74,7 @@ func UpdatePod(c *gin.Context) {
 		return
 	}
 
-	result, err := process.UpdatePod(req.Namespace, req.Pod)
+	result, err := process.UpdatePod(process.DefaultNamespace, req.Pod)
 
 	if err != nil {
 		fmt.Println("error in process updatePod")
@@ -142,7 +142,8 @@ func DescribePod(c *gin.Context) {
 		return
 	}
 
-	namespace := c.Query("namespace")
+	// namespace := c.Query("namespace")
+	namespace := process.DefaultNamespace
 
 	name := c.Query("name")
 
