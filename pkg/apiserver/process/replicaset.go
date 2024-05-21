@@ -113,16 +113,15 @@ func GetReplicaSet(namespace string, name string) (map[string]interface{}, error
 	return result, nil
 }
 
-func GetReplicaSets(namespace string) ([]replicaset.Replicaset, error) {
+func GetReplicaSets(namespace string) (map[string]replicaset.Replicaset, error) {
 	mu.RLock()
 	defer mu.RUnlock()
-	result := make([]replicaset.Replicaset, 0)
 	rsmap := make(map[string]replicaset.Replicaset, 0)
 
 	pairs, err := EtcdCli.GetWithPrefix(replicasetPrefix + namespace)
 	if err != nil {
 		fmt.Println("failed to get from etcd")
-		return result, err
+		return rsmap, err
 	}
 
 	for _, p := range pairs {
@@ -138,7 +137,7 @@ func GetReplicaSets(namespace string) ([]replicaset.Replicaset, error) {
 	podPairs, err := EtcdCli.GetWithPrefix(podPrefix)
 	if err != nil {
 		fmt.Println("failed to get all pods from etcd")
-		return result, err
+		return rsmap, err
 	}
 	for _, pair := range podPairs {
 		tmp := pod.Pod{}
@@ -158,11 +157,8 @@ func GetReplicaSets(namespace string) ([]replicaset.Replicaset, error) {
 			}
 		}
 	}
-	for _, rs := range rsmap {
-		result = append(result, rs)
-	}
 
-	return result, nil
+	return rsmap, nil
 }
 
 func GetAllReplicaSets() (map[string]interface{}, error) {

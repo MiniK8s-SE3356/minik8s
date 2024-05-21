@@ -8,7 +8,6 @@ import (
 	"github.com/MiniK8s-SE3356/minik8s/pkg/apiObject/pod"
 	"github.com/MiniK8s-SE3356/minik8s/pkg/apiObject/replicaset"
 	"github.com/MiniK8s-SE3356/minik8s/pkg/apiObject/yaml"
-	"github.com/MiniK8s-SE3356/minik8s/pkg/apiserver/process"
 	"github.com/MiniK8s-SE3356/minik8s/pkg/apiserver/url"
 	"github.com/MiniK8s-SE3356/minik8s/pkg/utils/httpRequest"
 	"github.com/MiniK8s-SE3356/minik8s/pkg/utils/idgenerate"
@@ -34,18 +33,23 @@ func checkMatchedPod(podLabels map[string]string, selector map[string]string) bo
 
 func getPodsFromServer() ([]pod.Pod, error) {
 	var result []pod.Pod
-
-	jsonData, err := httpRequest.GetRequest(url.RootURL + url.GetPod)
+	var podMap map[string]pod.Pod
+	jsonData, err := httpRequest.GetRequest(url.RootURL + url.GetAllPod)
 	if err != nil {
 		fmt.Println("error in get request")
 		return result, err
 	}
 
-	err = json.Unmarshal([]byte(jsonData), &result)
+	fmt.Println(string(jsonData))
+	err = json.Unmarshal([]byte(jsonData), &podMap)
 	if err != nil {
 		fmt.Println("failed to unmarshal")
 		fmt.Println(jsonData)
 		return result, err
+	}
+
+	for _, v := range podMap {
+		result = append(result, v)
 	}
 
 	return result, nil
@@ -55,59 +59,68 @@ func getReplicasetsFromServer() ([]replicaset.Replicaset, error) {
 	var result []replicaset.Replicaset
 
 	jsonData, err := httpRequest.GetRequest(url.RootURL + url.GetReplicaset)
+	fmt.Println(string(jsonData))
 	if err != nil {
 		fmt.Println("error in get request")
 		return result, err
 	}
 
-	err = json.Unmarshal([]byte(jsonData), &result)
+	var rsMap map[string]replicaset.Replicaset
+	err = json.Unmarshal([]byte(jsonData), &rsMap)
 	if err != nil {
 		fmt.Println("failed to unmarshal")
 		fmt.Println(jsonData)
 		return result, err
 	}
 
+	for _, rs := range rsMap {
+		result = append(result, rs)
+	}
+
 	return result, nil
 }
 
 func applyPod(pod yaml.PodDesc) error {
-	req := make(map[string]interface{})
-	req["namespace"] = process.DefaultNamespace
-	req["podDesc"] = pod
+	fmt.Println("apply pod", pod)
 
-	jsonData, err := json.Marshal(req)
-	if err != nil {
-		fmt.Println("failed to translate into json")
-		return err
-	}
-	// fmt.Println(podDesc.Spec.Containers)
-	result, err := httpRequest.PostRequest(url.RootURL+url.AddPod, jsonData)
-	if err != nil {
-		fmt.Println("error when post request")
-		return err
-	}
+	// req := make(map[string]interface{})
+	// req["namespace"] = process.DefaultNamespace
+	// req["podDesc"] = pod
 
-	fmt.Println(result)
+	// jsonData, err := json.Marshal(req)
+	// if err != nil {
+	// 	fmt.Println("failed to translate into json")
+	// 	return err
+	// }
+	// // fmt.Println(podDesc.Spec.Containers)
+	// result, err := httpRequest.PostRequest(url.RootURL+url.AddPod, jsonData)
+	// if err != nil {
+	// 	fmt.Println("error when post request")
+	// 	return err
+	// }
+
+	// fmt.Println(result)
 
 	return nil
 }
 
 func removePod(namespace string, name string) error {
-	params := map[string]string{
-		"namespace": namespace,
-		"name":      name,
-	}
-	jsonData, err := json.Marshal(params)
-	if err != nil {
-		fmt.Println("failed to translate into json")
-		return err
-	}
-	result, err := httpRequest.PostRequest(url.RootURL+url.RemovePod, jsonData)
-	if err != nil {
-		fmt.Println("error in delete pod ", err.Error())
-		return err
-	}
-	fmt.Println(result)
+	fmt.Println("remove", namespace, name)
+	// params := map[string]string{
+	// 	"namespace": namespace,
+	// 	"name":      name,
+	// }
+	// jsonData, err := json.Marshal(params)
+	// if err != nil {
+	// 	fmt.Println("failed to translate into json")
+	// 	return err
+	// }
+	// result, err := httpRequest.PostRequest(url.RootURL+url.RemovePod, jsonData)
+	// if err != nil {
+	// 	fmt.Println("error in delete pod ", err.Error())
+	// 	return err
+	// }
+	// fmt.Println(result)
 
 	return nil
 }
@@ -116,13 +129,13 @@ func rscTask() {
 	// 从APIserver获取全体pod和全体replicaset
 	pods, err := getPodsFromServer()
 	if err != nil {
-		fmt.Println("failed to get pod from server")
+		fmt.Println("failed to get pod from server", err)
 		return
 	}
 
 	replicasets, err := getReplicasetsFromServer()
 	if err != nil {
-		fmt.Println("failed to get replicaset from server")
+		fmt.Println("failed to get replicaset from server", err)
 	}
 
 	replicasetNames := make(map[string]bool, 0)
@@ -157,6 +170,7 @@ func rscTask() {
 				podDesc.Kind = "Pod"
 				newId, _ := idgenerate.GenerateID()
 				podDesc.Metadata.Name = rs.Metadata.Name + "-" + newId[:8]
+				podDesc.Metadata.Labels = make(map[string]string)
 				podDesc.Metadata.Labels["replicaset"] = rs.Metadata.Name
 				podDesc.Spec.Containers = rs.Spec.Template.Spec.Containers
 				err := applyPod(podDesc)
@@ -191,8 +205,8 @@ func (sc *ReplicasetController) Run() {
 	fmt.Printf("Run ReplicasetController ...\n")
 
 	for {
-		time.After(10 * time.Second)
 
 		rscTask()
+		<-time.After(100 * time.Second)
 	}
 }
