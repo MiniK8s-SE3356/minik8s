@@ -102,7 +102,7 @@ func GetReplicaSet(c *gin.Context) {
 		c.JSON(http.StatusOK, result)
 	}
 	// 4. 均不为空 获取指定的
-	if namespace != "" && name == "" {
+	if namespace != "" && name != "" {
 		result, err := process.GetReplicaSet(namespace, name)
 
 		if err != nil {

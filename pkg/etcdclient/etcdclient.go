@@ -2,6 +2,7 @@ package etcdclient
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -54,7 +55,7 @@ func (c *EtcdClient) Get(key string) ([]byte, error) {
 	if len(resp.Kvs) == 0 {
 		// key not found的情况怎么办，还需要再考虑
 		fmt.Println("key not found ")
-		return []byte{}, nil
+		return []byte{}, errors.New("key not found")
 	}
 
 	if len(resp.Kvs) > 1 {
