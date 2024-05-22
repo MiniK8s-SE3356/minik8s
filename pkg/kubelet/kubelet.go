@@ -99,6 +99,7 @@ func (k *Kubelet) RegisterNode() error {
 }
 
 func (k *Kubelet) Run() {
+	// TODO: run a cAdvisor container to monitor the node and container status
 	forever := make(chan bool)
 
 	err := k.RegisterNode()

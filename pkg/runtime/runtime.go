@@ -3,24 +3,26 @@ package runtime
 import (
 	"encoding/json"
 	"fmt"
+	"os"
 
 	minik8s_pod "github.com/MiniK8s-SE3356/minik8s/pkg/apiObject/pod"
 	runtime_container "github.com/MiniK8s-SE3356/minik8s/pkg/runtime/container"
-	"github.com/MiniK8s-SE3356/minik8s/pkg/runtime/image"
+	runtime_image "github.com/MiniK8s-SE3356/minik8s/pkg/runtime/image"
 	minik8s_container "github.com/MiniK8s-SE3356/minik8s/pkg/types/container"
+	minik8s_node "github.com/MiniK8s-SE3356/minik8s/pkg/types/node"
 	"github.com/MiniK8s-SE3356/minik8s/pkg/utils/nettools"
 	"github.com/docker/go-connections/nat"
 )
 
 type RuntimeManager struct {
 	containerManager *runtime_container.ContainerManager
-	imageManager     *image.ImageManager
+	imageManager     *runtime_image.ImageManager
 }
 
 func NewRuntimeManager() *RuntimeManager {
 	return &RuntimeManager{
 		containerManager: &runtime_container.ContainerManager{},
-		imageManager:     &image.ImageManager{},
+		imageManager:     &runtime_image.ImageManager{},
 	}
 }
 
@@ -225,4 +227,19 @@ func (rm *RuntimeManager) CreateAndStartPauseContainer(pod *minik8s_pod.Pod) (st
 	pod.Status.PodIP = pauseContainerIp
 
 	return pauseContainerId, nil
+}
+
+func (rm *RuntimeManager) GetNodeStatus() (minik8s_node.NodeStatus, error) {
+	hostName, err := os.Hostname()
+	if err != nil {
+		fmt.Println("Failed to get hostname")
+		return minik8s_node.NodeStatus{}, err
+	}
+
+	nodeIp := nettools.KubeletDefaultIP()
+
+	nodeConditions := []string{
+		minik8s_node.NODE_Ready,
+	}
+
 }
