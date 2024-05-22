@@ -6,6 +6,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/MiniK8s-SE3356/minik8s/pkg/kubeProxy/hostsController"
 	"github.com/MiniK8s-SE3356/minik8s/pkg/kubeProxy/iptablesController"
 	kptype "github.com/MiniK8s-SE3356/minik8s/pkg/kubeProxy/types"
 	httpobject "github.com/MiniK8s-SE3356/minik8s/pkg/types/httpObject"
@@ -15,18 +16,24 @@ import (
 
 type KubeProxy struct {
 	iptables_controller *(iptablesController.IptablesController)
+	hosts_controller    *(hostsController.HostsController)
 	services_status     kptype.KpServicesStatus
+	dns_status          kptype.KpDnsStatus
 	mutex               sync.Mutex
 }
 
-var need_send bool = false
+var service_need_send bool = false
+var dns_need_send bool = false
 
 func NewKubeProxy() *KubeProxy {
 	fmt.Printf("Create KubeProxy ...\n")
 	iptables_controller := iptablesController.NewIptablesController()
+	hosts_controller := hostsController.NewHostsController()
 	kube_proxy := &KubeProxy{
 		iptables_controller: iptables_controller,
+		hosts_controller:    hosts_controller,
 		services_status:     kptype.KpServicesStatus{},
+		dns_status:          kptype.KpDnsStatus{},
 		mutex:               sync.Mutex{},
 	}
 	return kube_proxy
@@ -35,16 +42,41 @@ func NewKubeProxy() *KubeProxy {
 func (kp *KubeProxy) Init() {
 	fmt.Printf("Init KubeProxy ...\n")
 	kp.iptables_controller.Init()
+	kp.hosts_controller.Init()
 }
 
 func (kp *KubeProxy) Run() {
 	fmt.Printf("Run KubeProxy ...\n")
 
-	poller.PollerStaticPeriod(10*time.Second, kp.routine, true)
-	poller.PollerStaticPeriod(5*time.Second, kp.syncServicesToKubelet, true)
+	go poller.PollerStaticPeriod(10*time.Second, kp.syncServices, true)
+	go poller.PollerStaticPeriod(5*time.Second, kp.syncServicesAndDnsToKubelet, true)
+
+	poller.PollerStaticPeriod(10*time.Second, kp.syncDns, true)
 }
 
-func (kp *KubeProxy) routine() {
+func (kp *KubeProxy) syncDns() {
+	// 获得所有dns
+	var dns_list httpobject.HTTPResponse_GetAllDns = httpobject.HTTPResponse_GetAllDns{}
+	status, err := httpRequest.GetRequestByObject("http://192.168.1.6:8080/api/v1/GetAllDNS", nil, &dns_list)
+	if status != http.StatusOK || err != nil {
+		fmt.Printf("EndpointsController routine error get, status %d, return\n", status)
+		return
+	}
+
+	// 更新本地/etc/hosts
+	new_dns_status, err := kp.hosts_controller.SyncEtcHosts(&dns_list)
+	if err != nil {
+		return
+	}
+
+	// 如果正常更新，则可以更新本地dns状态，并准备向kubelet同步
+	kp.mutex.Lock()
+	kp.dns_status = new_dns_status
+	dns_need_send = true
+	kp.mutex.Unlock()
+}
+
+func (kp *KubeProxy) syncServices() {
 	fmt.Printf("KubeProxy routine...\n")
 
 	var service_list httpobject.HTTPResponse_GetAllServices
@@ -74,18 +106,23 @@ func (kp *KubeProxy) routine() {
 	} else {
 		kp.mutex.Lock()
 		kp.services_status = new_service
-		need_send = true
+		service_need_send = true
 		kp.mutex.Unlock()
 	}
 
 }
 
-func (kp *KubeProxy) syncServicesToKubelet() {
+func (kp *KubeProxy) syncServicesAndDnsToKubelet() {
 	// 向kubelet更新本机上的service信息
-	if need_send {
+	if service_need_send || dns_need_send {
 		kp.mutex.Lock()
-		// TODO: 将node上的service数据发送至kubelet
-		need_send = false
+		if dns_need_send {
+			// TODO： dns状态报告给kubelet
+		}
+
+		if service_need_send {
+			// TODO： service状态报告给kubelet
+		}
 		kp.mutex.Unlock()
 	}
 }

@@ -6,6 +6,7 @@ require (
 	github.com/coreos/go-iptables v0.7.0
 	github.com/gin-gonic/gin v1.9.1
 	github.com/spf13/cobra v1.8.0
+	github.com/txn2/txeh v1.5.5
 	go.etcd.io/etcd/client/v3 v3.5.13
 	gopkg.in/yaml.v3 v3.0.1
 )

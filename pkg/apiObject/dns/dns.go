@@ -15,30 +15,35 @@ type Dns struct {
 }
 
 type DnsMetadata struct {
-	Name      string            `json:"name" yaml:"name"`
-	Namespace string            `json:"namespace" yaml:"namespace"`
-	Id        string            `json:"id" yaml:"id"`
+	Name      string `json:"name" yaml:"name"`
+	Namespace string `json:"namespace" yaml:"namespace"`
+	Id        string `json:"id" yaml:"id"`
 }
 
 type DnsSpec struct {
-	Host string `json:"host" yaml:"host"`
+	Host  string        `json:"host" yaml:"host"`
 	Paths []DnsPathInfo `json:"paths" yaml:"paths"`
 }
 
 type DnsStatus struct {
-	Phase string `json:"phase" yaml:"phase"` /*READY or NOTREADY*/
-	Version int `json:"version" yaml:"version"`
-	PathsStatus []DnsPathStatus `json:"pathsStatus" yaml:"pathsStatus"`
+	Phase   string `json:"phase" yaml:"phase"` /*READY or NOTREADY*/
+	Version int    `json:"version" yaml:"version"`
+	/* PathsStatus的key为对应的svcName*/
+	PathsStatus map[string]DnsPathStatus `json:"pathsStatus" yaml:"pathsStatus"`
 }
 
-type DnsPathInfo struct{
+type DnsPathInfo struct {
 	SubPath string `json:"subPath" yaml:"subPath"`
 	SvcName string `json:"svcName" yaml:"svcName"`
 	SvcPort uint16 `json:"svcPort" yaml:"svcPort"`
 }
 
-type DnsPathStatus struct{
+// func (di *DnsPathInfo)SpecEuqalStatus(ds *DnsPathStatus){
+// 	return (di.SubPath==ds.SubPath)&&(di.)
+// }
+
+type DnsPathStatus struct {
 	SubPath string `json:"subPath" yaml:"subPath"`
-	SvcIP string `json:"svcIP" yaml:"svcIP"`
+	SvcIP   string `json:"svcIP" yaml:"svcIP"`
 	SvcPort uint16 `json:"svcPort" yaml:"svcPort"`
 }

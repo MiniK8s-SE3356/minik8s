@@ -45,8 +45,8 @@ type ClusterIPPortInfo struct {
 }
 
 type ClusterIPStatus struct {
-	Phase          string              `json:"phase" yaml:"phase"` /*READY or NOTREADY */
-	Version        int                 `json:"version" yaml:"version"`/* 版本号 */
+	Phase          string              `json:"phase" yaml:"phase"`     /*READY or NOTREADY */
+	Version        int                 `json:"version" yaml:"version"` /* 版本号 */
 	ServicesStatus map[uint16][]string `json:"servicesStatus" yaml:"servicesStatus"`
 }
 
