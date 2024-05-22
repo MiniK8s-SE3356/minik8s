@@ -44,6 +44,7 @@ func (k *Kubelet) Proxy() {
 		case kubelet_worker.Task_Update:
 			k.podManager.UpdatePod(update.Pod)
 		case kubelet_worker.Task_Remove:
+			fmt.Println("Kubelet Remove pod")
 			k.podManager.RemovePod(update.Pod)
 		}
 	}

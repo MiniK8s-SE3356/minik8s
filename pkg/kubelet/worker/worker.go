@@ -45,6 +45,7 @@ func NewPodWorker(apiServer APIServer) *PodWorker {
 }
 
 func (p *PodWorker) AddTask(task *Task) error {
+	// TODO: check queue size is not full
 	p.TaskQueue <- task
 	return nil
 }
@@ -62,6 +63,7 @@ func (p *PodWorker) ExecuteTask(task *Task) {
 		p.AddTaskHandler(task.Pod)
 	case Task_Update:
 	case Task_Remove:
+		p.RemoveTaskHandler(task.Pod)
 	}
 }
 
@@ -81,6 +83,9 @@ func (p *PodWorker) AddTaskHandler(pod *apiobject_pod.Pod) (string, error) {
 	requestBody["namespace"] = "default"
 	requestBody["pod"] = pod
 	requestBodyData, _ := json.Marshal(requestBody)
+
+	fmt.Println("Update pod request: ", string(requestBodyData))
+
 	response, err := httpRequest.PostRequest(
 		request_url,
 		requestBodyData,
@@ -101,5 +106,13 @@ func (p *PodWorker) UpdateTaskHandler(pod *apiobject_pod.Pod) error {
 
 // TODO: Implement the following handlers
 func (p *PodWorker) RemoveTaskHandler(pod *apiobject_pod.Pod) error {
+	// If remove pod success, send http request to the API server to update the pod status.
+	// and stop the pod worker. Remove the pod worker from the pod manager map.
+
+	err := NodeRuntimeMangaer.RemovePod(pod)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }

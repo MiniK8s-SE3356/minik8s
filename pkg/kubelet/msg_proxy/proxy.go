@@ -61,6 +61,11 @@ func (mp *MsgProxy) handleReceive(delivery amqp.Delivery) {
 			Type: minik8s_worker.Task_Add,
 			Pod:  &parsed_pod,
 		}
+	case minik8s_message.RemovePod:
+		mp.PodUpdateChannel <- minik8s_worker.Task{
+			Type: minik8s_worker.Task_Remove,
+			Pod:  &parsed_pod,
+		}
 	// TODO: more actions
 	default:
 		return

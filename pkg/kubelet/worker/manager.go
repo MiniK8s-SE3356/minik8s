@@ -69,6 +69,24 @@ func (pm *podManager) UpdatePod(pod *apiobject_pod.Pod) error {
 }
 
 func (pm *podManager) RemovePod(pod *apiobject_pod.Pod) error {
+	fmt.Println("Removing pod: ", pod.Metadata.Name, " with UID: ", pod.Metadata.UUID)
+	UID := pod.Metadata.UUID
+
+	if _, ok := pm.PodWorkers[UID]; !ok {
+		fmt.Println("pod worker with UID " + UID + " does not exist.")
+		return fmt.Errorf("pod worker with UID %s does not exist", UID)
+	}
+
+	removeTask := &Task{
+		Type: Task_Remove,
+		Pod:  pod,
+	}
+
+	err := pm.PodWorkers[UID].AddTask(removeTask)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 

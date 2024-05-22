@@ -4,6 +4,7 @@ type MsgType string
 
 const (
 	CreatePod MsgType = "create_pod"
+	RemovePod MsgType = "remove_pod"
 )
 
 type Content interface{}

@@ -1,12 +1,15 @@
 package runtime
 
 import (
+	"encoding/json"
 	"fmt"
 
 	minik8s_pod "github.com/MiniK8s-SE3356/minik8s/pkg/apiObject/pod"
 	runtime_container "github.com/MiniK8s-SE3356/minik8s/pkg/runtime/container"
 	"github.com/MiniK8s-SE3356/minik8s/pkg/runtime/image"
 	minik8s_container "github.com/MiniK8s-SE3356/minik8s/pkg/types/container"
+	"github.com/MiniK8s-SE3356/minik8s/pkg/utils/nettools"
+	"github.com/docker/go-connections/nat"
 )
 
 type RuntimeManager struct {
@@ -21,52 +24,80 @@ func NewRuntimeManager() *RuntimeManager {
 	}
 }
 
+func (rm *RuntimeManager) GetVolumeBinds(volumes *[]minik8s_pod.Volume, volumeMounts *[]minik8s_container.VolumeMount) []string {
+	volumes_map := make(map[string]*minik8s_pod.Volume)
+
+	// Make a map of volumes
+	for _, volume := range *volumes {
+		volumes_map[volume.Name] = &volume
+	}
+
+	// Create a list of volume binds
+	// TODO: Check if the hostPath valid
+	volumeBinds := []string{}
+	for _, volumeMount := range *volumeMounts {
+		if _, ok := volumes_map[volumeMount.Name]; !ok {
+			fmt.Println("Volume ", volumeMount.Name, " not found")
+			continue
+		}
+
+		volume := volumes_map[volumeMount.Name]
+
+		volumeBind := fmt.Sprintf("%s:%s", volume.HostPath.Path, volumeMount.MountPath)
+
+		volumeBinds = append(volumeBinds, volumeBind)
+	}
+
+	return volumeBinds
+}
+
 func (rm *RuntimeManager) CreatePod(pod *minik8s_pod.Pod) (string, error) {
-	//!debug//
-	// fmt.Println("Creating pod for:", pod.Metadata.UUID)
-	//!debug//
+	fmt.Println("Creating pod for ", pod.Metadata.Name, " with UUID ", pod.Metadata.UUID)
+	jsonPod, _ := json.Marshal(pod)
+	fmt.Println(string(jsonPod))
 
 	// Create a pause container for the pod and this function will set pod's IP address
 	pauseContainerId, err := rm.CreateAndStartPauseContainer(pod)
 	if err != nil {
 		return "", err
 	}
-	//!debug//
-	// fmt.Println("Pause container created")
-	// fmt.Println("Container number: ", len(pod.Spec.Containers))
-	//!debug//
 
 	// Create containers for the pod
 	for i, container := range pod.Spec.Containers {
-		//!debug//
-		// fmt.Println("Creating container: ", container.Image)
-		//!debug//
+		// parse environment variables
+		env := []string{}
+		for _, envVar := range container.Env {
+			env = append(env, fmt.Sprintf("%s=%s", envVar.Name, envVar.Value))
+		}
+		// TODO: parse command
+
+		// parse volume mounts. We should mount the pod's volumes to the container
+		volumeBinds := rm.GetVolumeBinds(&pod.Spec.Volumes, &container.VolumeMounts)
+		for _, volumeBind := range volumeBinds {
+			fmt.Println("Volume bind: ", volumeBind)
+		}
+
+		// Because all containers in a pod share the same network namespace,
+		// we have set the port bindings in the pause container. No need to set every container's port bindings.
+
 		containerConfig := &minik8s_container.CreateContainerConfig{
 			Image:       container.Image,
 			NetworkMode: "container:" + pauseContainerId,
 			IpcMode:     "container:" + pauseContainerId,
 			PidMode:     "container:" + pauseContainerId,
+			Env:         env,
+			Binds:       volumeBinds,
+			CPU:         container.Resources.Limits.CPU,
+			Memory:      container.Resources.Limits.Memory,
 		}
-		//!debug//
-		// fmt.Println("Start creating container")
-		//!debug//
 		containerId, err := rm.containerManager.CreateContainer(container.Name, containerConfig)
 		pod.Spec.Containers[i].Id = containerId
-		//!debug//
-		// fmt.Println("Finish creating container")
-		//!debug//
 		if err != nil {
 			fmt.Println("Failed to create container", err)
 			return "", err
 		}
 		// Start the container
-		//!debug//
-		// fmt.Println("Start starting container")
-		//!debug//
 		_, err = rm.containerManager.StartContainer(containerId)
-		//!debug//
-		// fmt.Println("Finish starting container")
-		//!debug//
 		if err != nil {
 			fmt.Println("Failed to start container", err)
 			return "", err
@@ -109,9 +140,68 @@ func (rm *RuntimeManager) CreateAndStartPauseContainer(pod *minik8s_pod.Pod) (st
 
 	// Create a container for pause
 	// TODO: Set the pause container's network
+
+	PodPortBindings := nat.PortMap{}
+	PodExposedPorts := nat.PortSet{}
+
+	for _, container := range pod.Spec.Containers {
+		for _, port := range container.Ports {
+			if port.ContainerPort == 0 {
+				// If the container port is not set, skip it
+				continue
+			}
+			if port.HostIP == "" {
+				port.HostIP = "127.0.0.1"
+			}
+			if port.Protocol == "" {
+				port.Protocol = minik8s_container.ProtocolTCP
+			}
+			if port.HostPort == 0 {
+				// Check if the ContainerPort is already used
+				// If not in use, assign it to HostPort.
+				// Otherwise, assign the first available port to HostPort.
+				containerport_available := nettools.CheckPortAvailability(int(port.ContainerPort))
+				if containerport_available {
+					port.HostPort = port.ContainerPort
+				} else {
+					available_port, err := nettools.GetAvailablePort()
+					if err != nil {
+						fmt.Println("Failed to get available port")
+						return "", err
+					}
+					port.HostPort = (int32)(available_port)
+				}
+			}
+
+			// Add port binding
+			BindingKey, err := nat.NewPort((string)(port.Protocol), fmt.Sprintf("%d", port.ContainerPort))
+			if err != nil {
+				fmt.Println("Failed to create port binding")
+			}
+
+			// Check if the port is already in the map
+			if _, ok := PodPortBindings[BindingKey]; ok {
+				fmt.Println("Port binding already exists")
+			} else {
+				// Bind the port
+				PodPortBindings[BindingKey] = []nat.PortBinding{
+					{
+						HostIP:   port.HostIP,
+						HostPort: fmt.Sprintf("%d", port.HostPort),
+					},
+				}
+			}
+
+			// Add exposed port
+			PodExposedPorts[BindingKey] = struct{}{}
+		}
+	}
+
 	pauseContainerId, err := rm.containerManager.CreateContainer(pauseName, &minik8s_container.CreateContainerConfig{
-		Image:   "registry.aliyuncs.com/google_containers/pause:3.9",
-		IpcMode: "shareable",
+		Image:        "registry.aliyuncs.com/google_containers/pause:3.9",
+		IpcMode:      "shareable",
+		PortBindings: PodPortBindings,
+		ExposedPorts: PodExposedPorts,
 	})
 
 	if err != nil {
