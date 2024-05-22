@@ -16,6 +16,7 @@ const (
 	servicePrefix    = prefix + "/service/"
 	endpointPrefix   = prefix + "/endpoint/"
 	replicasetPrefix = prefix + "/replicaset/"
+	hpaPrefix        = prefix + "/hpa/"
 )
 
 var EtcdCli *etcdclient.EtcdClient

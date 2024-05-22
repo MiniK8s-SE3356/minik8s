@@ -14,8 +14,9 @@ type HPA struct {
 }
 
 type HPAStatus struct {
-	Replicas   int            `json:"replicas" yaml:"replicas"`
-	Conditions []HPACondition `json:"conditions" yaml:"conditions"`
+	ReadyReplicas int     `json:"readyReplicas" yaml:"readyReplicas"`
+	CPUUsage      float64 `yaml:"CPUUsage" json:"CPUUsage"`
+	MemUsage      float64 `yaml:"MemUsage" json:"MemUsage"`
 }
 
 type HPACondition struct {

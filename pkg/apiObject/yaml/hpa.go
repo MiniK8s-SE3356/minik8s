@@ -1,6 +1,10 @@
 package yaml
 
-import "github.com/MiniK8s-SE3356/minik8s/pkg/types/container"
+import (
+	"time"
+
+	"github.com/MiniK8s-SE3356/minik8s/pkg/types/container"
+)
 
 type HPADesc struct {
 	ApiVersion string `yaml:"apiVersion" json:"apiVersion"`
@@ -27,7 +31,8 @@ type HPASpec struct {
 			Containers []container.Container `yaml:"containers" json:"containers"`
 		} `yaml:"spec" json:"spec"`
 	}
-	Metrics HPAMetrics `yaml:"metrics" json:"metrics"`
+	AdjustInterval time.Duration `yaml:"adjustInterval" json:"adjustInterval"`
+	Metrics        HPAMetrics    `yaml:"metrics" json:"metrics"`
 }
 
 type HPAMetrics struct {

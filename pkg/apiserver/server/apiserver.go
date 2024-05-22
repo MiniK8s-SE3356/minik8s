@@ -26,12 +26,10 @@ func bind(r *gin.Engine) {
 	r.POST(url.RemovePod, handler.RemovePod)
 	r.POST(url.UpdatePod, handler.UpdatePod)
 	r.GET(url.GetAllPod, handler.GetAllPod)
-	// r.GET(url.DescribePod, handler.DescribePod)
 
 	r.POST(url.AddNamespace, handler.AddNamespace)
 	r.GET(url.GetNamespace, handler.GetNamespace)
 	r.POST(url.RemoveNamespace, handler.RemoveNamespace)
-	// r.GET(url.DescribeNamespace, handler.DescribeNamespace)
 
 	r.POST(url.AddNode, handler.AddNode)
 	r.GET(url.GetNode, handler.GetNode)
@@ -41,7 +39,10 @@ func bind(r *gin.Engine) {
 	r.POST(url.AddReplicaset, handler.AddReplicaSet)
 	r.GET(url.GetReplicaset, handler.GetReplicaSet)
 	r.POST(url.RemoveReplicaset, handler.RemoveReplicaSet)
-	// r.GET(url.DescribeReplicaset, handler.DescribeReplicaSet)
+
+	r.POST(url.AddHPA, handler.AddHPA)
+	r.GET(url.GetHPA, handler.GetHPA)
+	r.POST(url.RemoveHPA, handler.RemoveHPA)
 
 	r.POST(url.AddService, handler.AddService)
 	r.GET(url.GetAllService, handler.GetAllService)
@@ -49,7 +50,6 @@ func bind(r *gin.Engine) {
 	r.GET(url.GetFilteredService, handler.GetFilteredService)
 	r.POST(url.UpdateService, handler.UpdateService)
 	r.POST(url.RemoveService, handler.RemoveService)
-	// r.GET(url.DescribeService, handler.DescribeService)
 
 	r.GET(url.GetAllEndpoint, handler.GetAllEndpoint)
 	r.POST(url.UpdateEndpointBatch, handler.UpdateEndpointBatch)

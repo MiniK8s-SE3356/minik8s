@@ -107,21 +107,21 @@ func applyPod(pod yaml.PodDesc) error {
 
 func removePod(namespace string, name string) error {
 	fmt.Println("remove", namespace, name)
-	// params := map[string]string{
-	// 	"namespace": namespace,
-	// 	"name":      name,
-	// }
-	// jsonData, err := json.Marshal(params)
-	// if err != nil {
-	// 	fmt.Println("failed to translate into json")
-	// 	return err
-	// }
-	// result, err := httpRequest.PostRequest(url.RootURL+url.RemovePod, jsonData)
-	// if err != nil {
-	// 	fmt.Println("error in delete pod ", err.Error())
-	// 	return err
-	// }
-	// fmt.Println(result)
+	params := map[string]string{
+		"namespace": namespace,
+		"name":      name,
+	}
+	jsonData, err := json.Marshal(params)
+	if err != nil {
+		fmt.Println("failed to translate into json")
+		return err
+	}
+	result, err := httpRequest.PostRequest(url.RootURL+url.RemovePod, jsonData)
+	if err != nil {
+		fmt.Println("error in delete pod ", err.Error())
+		return err
+	}
+	fmt.Println(result)
 
 	return nil
 }

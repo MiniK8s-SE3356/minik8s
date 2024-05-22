@@ -4,7 +4,9 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/MiniK8s-SE3356/minik8s/pkg/apiserver/process"
 	"github.com/MiniK8s-SE3356/minik8s/pkg/apiserver/url"
+	"github.com/MiniK8s-SE3356/minik8s/pkg/utils/httpRequest"
 	"github.com/spf13/cobra"
 )
 
@@ -12,6 +14,7 @@ var deleteFuncTable = map[string]func(namespace string, name string) (string, er
 	"Pod":        deletePod,
 	"Service":    deleteService,
 	"Replicaset": deleteReplicaSet,
+	"HPA":        deleteHPA,
 	"Namespace":  deleteNamespace,
 }
 
@@ -38,7 +41,7 @@ func DeleteCmdHandler(cmd *cobra.Command, args []string) {
 
 	// 没有指定namespace，使用default
 	if namespace == "" {
-		namespace = defaultNamespace
+		namespace = process.DefaultNamespace
 	}
 
 	name := ""
@@ -70,7 +73,7 @@ func deletePod(namespace string, name string) (string, error) {
 		fmt.Println("failed to translate into json")
 		return "", err
 	}
-	result, err := PostRequest(url.RootURL+url.RemovePod, jsonData)
+	result, err := httpRequest.PostRequest(url.RootURL+url.RemovePod, jsonData)
 	if err != nil {
 		fmt.Println("error in delete pod ", err.Error())
 		return "", err
@@ -89,7 +92,7 @@ func deleteService(namespace string, name string) (string, error) {
 		fmt.Println("failed to translate into json")
 		return "", err
 	}
-	result, err := PostRequest(url.RootURL+url.RemoveService, jsonData)
+	result, err := httpRequest.PostRequest(url.RootURL+url.RemoveService, jsonData)
 	if err != nil {
 		fmt.Println("error in delete service ", err.Error())
 		return "", err
@@ -109,9 +112,29 @@ func deleteReplicaSet(namespace string, name string) (string, error) {
 		fmt.Println("failed to translate into json")
 		return "", err
 	}
-	result, err := PostRequest(url.RootURL+url.RemoveReplicaset, jsonData)
+	result, err := httpRequest.PostRequest(url.RootURL+url.RemoveReplicaset, jsonData)
 	if err != nil {
 		fmt.Println("error in delete replicaset ", err.Error())
+		return "", err
+	}
+
+	return result, nil
+}
+
+func deleteHPA(namespace string, name string) (string, error) {
+	params := map[string]string{
+		"namespace": namespace,
+		"name":      name,
+	}
+
+	jsonData, err := json.Marshal(params)
+	if err != nil {
+		fmt.Println("failed to translate into json")
+		return "", err
+	}
+	result, err := httpRequest.PostRequest(url.RootURL+url.RemoveHPA, jsonData)
+	if err != nil {
+		fmt.Println("error in delete HPA ", err.Error())
 		return "", err
 	}
 
@@ -128,7 +151,7 @@ func deleteNamespace(namespace string, name string) (string, error) {
 		return "", err
 	}
 
-	result, err := PostRequest(url.RootURL+url.RemoveNamespace, jsonData)
+	result, err := httpRequest.PostRequest(url.RootURL+url.RemoveNamespace, jsonData)
 	if err != nil {
 		fmt.Println("error in delete namespace ", err.Error())
 		return "", err
