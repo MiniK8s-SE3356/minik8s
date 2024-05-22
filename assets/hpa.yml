@@ -17,7 +17,7 @@ spec:
       - name: testContainer-1
         image: docker.io/library/nginx
         ImagePullPolicy: IfNotPresent
-  adjustInterval: 30
+  adjustInterval: 30s
   metrics:
     cpuPercent: 0.05
     memPercent: 0.05

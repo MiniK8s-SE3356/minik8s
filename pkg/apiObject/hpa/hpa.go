@@ -14,15 +14,16 @@ type HPA struct {
 }
 
 type HPAStatus struct {
-	ReadyReplicas int     `json:"readyReplicas" yaml:"readyReplicas"`
-	CPUUsage      float64 `yaml:"CPUUsage" json:"CPUUsage"`
-	MemUsage      float64 `yaml:"MemUsage" json:"MemUsage"`
+	ReadyReplicas  int       `json:"readyReplicas" yaml:"readyReplicas"`
+	LastUpdateTime time.Time `json:"lastUpdateTime" yaml:"lastUpdateTime"`
+	CPUUsage       float64   `yaml:"CPUUsage" json:"CPUUsage"`
+	MemUsage       float64   `yaml:"MemUsage" json:"MemUsage"`
 }
 
-type HPACondition struct {
-	Type           string    `json:"type" yaml:"type"`
-	Status         string    `json:"status" yaml:"status"`
-	LastUpdateTime time.Time `json:"lastUpdateTime" yaml:"lastUpdateTime"`
-	Reason         string    `json:"reason" yaml:"reason"`
-	Message        string    `json:"message" yaml:"message"`
-}
+// type HPACondition struct {
+// 	Type           string    `json:"type" yaml:"type"`
+// 	Status         string    `json:"status" yaml:"status"`
+// 	LastUpdateTime time.Time `json:"lastUpdateTime" yaml:"lastUpdateTime"`
+// 	Reason         string    `json:"reason" yaml:"reason"`
+// 	Message        string    `json:"message" yaml:"message"`
+// }

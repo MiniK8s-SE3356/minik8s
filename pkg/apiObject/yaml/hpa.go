@@ -31,8 +31,8 @@ type HPASpec struct {
 			Containers []container.Container `yaml:"containers" json:"containers"`
 		} `yaml:"spec" json:"spec"`
 	}
-	AdjustInterval time.Duration `yaml:"adjustInterval" json:"adjustInterval"`
-	Metrics        HPAMetrics    `yaml:"metrics" json:"metrics"`
+	TimeInterval time.Duration `yaml:"timeInterval" json:"timeInterval"`
+	Metrics      HPAMetrics    `yaml:"metrics" json:"metrics"`
 }
 
 type HPAMetrics struct {
