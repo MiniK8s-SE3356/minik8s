@@ -21,7 +21,12 @@ func NewKubelet(config *KubeletConfig) *Kubelet {
 	// We shouldn't create connection until the node is registered into apiserver
 	kubelet := &Kubelet{
 		kubeletConfig: config,
-		podManager:    kubelet_worker.NewPodManager(),
+		podManager: kubelet_worker.NewPodManager(
+			kubelet_worker.APIServer{
+				IP:   config.APIServerIP,
+				Port: config.APIServerPort,
+			},
+		),
 	}
 	return kubelet
 }

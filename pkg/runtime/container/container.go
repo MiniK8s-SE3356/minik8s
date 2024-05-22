@@ -52,6 +52,17 @@ func (cm *ContainerManager) GetContainerInspect(id string) (*types.ContainerJSON
 	return &containerInfo, nil
 }
 
+func (cm *ContainerManager) GetContainerIpAddress(id string) (string, error) {
+	// Get a container IP address
+	containerInfo, err := cm.GetContainerInspect(id)
+
+	if err != nil {
+		return "", err
+	}
+
+	return containerInfo.NetworkSettings.IPAddress, nil
+}
+
 func (cm *ContainerManager) ListAllContainers() ([]types.Container, error) {
 	// List all containers
 	containers, err := docker.DockerClient.ContainerList(

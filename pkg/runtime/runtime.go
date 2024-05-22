@@ -25,6 +25,8 @@ func (rm *RuntimeManager) CreatePod(pod *minik8s_pod.Pod) (string, error) {
 	//!debug//
 	// fmt.Println("Creating pod for:", pod.Metadata.UUID)
 	//!debug//
+
+	// Create a pause container for the pod and this function will set pod's IP address
 	pauseContainerId, err := rm.CreateAndStartPauseContainer(pod)
 	if err != nil {
 		return "", err
@@ -35,7 +37,7 @@ func (rm *RuntimeManager) CreatePod(pod *minik8s_pod.Pod) (string, error) {
 	//!debug//
 
 	// Create containers for the pod
-	for _, container := range pod.Spec.Containers {
+	for i, container := range pod.Spec.Containers {
 		//!debug//
 		// fmt.Println("Creating container: ", container.Image)
 		//!debug//
@@ -49,6 +51,7 @@ func (rm *RuntimeManager) CreatePod(pod *minik8s_pod.Pod) (string, error) {
 		// fmt.Println("Start creating container")
 		//!debug//
 		containerId, err := rm.containerManager.CreateContainer(container.Name, containerConfig)
+		pod.Spec.Containers[i].Id = containerId
 		//!debug//
 		// fmt.Println("Finish creating container")
 		//!debug//
@@ -70,7 +73,28 @@ func (rm *RuntimeManager) CreatePod(pod *minik8s_pod.Pod) (string, error) {
 		}
 	}
 
+	// CREATE POD SUCCESS
+	pod.Status.Phase = minik8s_pod.PodRunning
+
 	return pod.Metadata.UUID, nil
+}
+
+func (rm *RuntimeManager) RemovePod(pod *minik8s_pod.Pod) error {
+	// First, remove all containers in the pod
+	for _, container := range pod.Spec.Containers {
+		_, err := rm.containerManager.RemoveContainer(container.Id)
+		if err != nil {
+			return err
+		}
+	}
+
+	// Remove the pause container
+	_, err := rm.containerManager.RemoveContainer("pause-" + pod.Metadata.UUID)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (rm *RuntimeManager) CreateAndStartPauseContainer(pod *minik8s_pod.Pod) (string, error) {
@@ -101,6 +125,14 @@ func (rm *RuntimeManager) CreateAndStartPauseContainer(pod *minik8s_pod.Pod) (st
 		println("Failed to start pause container")
 		return "", err
 	}
+
+	// Get the pause container's IP address and set it as the pod's IP address
+	pauseContainerIp, err := rm.containerManager.GetContainerIpAddress(pauseContainerId)
+	if err != nil {
+		println("Failed to get pause container's IP address")
+		return "", err
+	}
+	pod.Status.PodIP = pauseContainerIp
 
 	return pauseContainerId, nil
 }

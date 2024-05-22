@@ -18,12 +18,14 @@ type PodManager interface {
 
 // podManager is the default implementation of PodManager.
 type podManager struct {
+	APIServer
 	// podWorkers is a map of pod workers indexed by pod UID.
 	PodWorkers map[string]*PodWorker
 }
 
-func NewPodManager() PodManager {
+func NewPodManager(apiServer APIServer) PodManager {
 	return &podManager{
+		APIServer:  apiServer,
 		PodWorkers: make(map[string]*PodWorker),
 	}
 }
@@ -40,7 +42,7 @@ func (pm *podManager) AddPod(pod *apiobject_pod.Pod) error {
 	}
 
 	// Create a new pod worker
-	podWorker := NewPodWorker()
+	podWorker := NewPodWorker(pm.APIServer)
 	pm.PodWorkers[UID] = podWorker
 
 	// Create a go routine to run the pod worker
@@ -62,6 +64,7 @@ func (pm *podManager) AddPod(pod *apiobject_pod.Pod) error {
 }
 
 func (pm *podManager) UpdatePod(pod *apiobject_pod.Pod) error {
+	fmt.Println("Updating pod: ", pod.Metadata.Name, " with UID: ", pod.Metadata.UUID)
 	return nil
 }
 

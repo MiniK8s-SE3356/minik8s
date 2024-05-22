@@ -26,7 +26,7 @@ type EnvVar struct {
 	// digits, '_', '-', or '.', and must not start with a digit.
 	// When the RelaxedEnvironmentVariableValidation feature gate is enabled,
 	// this may contain any printable ASCII characters except '='.
-	Name string
+	Name string `yaml:"name" json:"name"`
 	// Optional: no more than one of the following may be specified.
 	// Optional: Defaults to ""; variable references $(VAR_NAME) are expanded
 	// using the previously defined environment variables in the container and
@@ -37,7 +37,7 @@ type EnvVar struct {
 	// "$(VAR_NAME)".  Escaped references will never be expanded,
 	// regardless of whether the variable exists or not.
 	// +optional
-	Value string
+	Value string `yaml:"value" json:"value"`
 	// Optional: Specifies a source the value of this var should come from.
 	// +optional
 	// ValueFrom *EnvVarSource
@@ -59,22 +59,24 @@ type ContainerPort struct {
 	// Optional: If specified, this must be an IANA_SVC_NAME  Each named port
 	// in a pod must have a unique name.
 	// +optional
-	Name string
+	Name string `yaml:"name" json:"name"`
 	// Optional: If specified, this must be a valid port number, 0 < x < 65536.
 	// If HostNetwork is specified, this must match ContainerPort.
 	// +optional
-	HostPort int32
+	HostPort int32 `yaml:"hostPort" json:"hostPort"`
 	// Required: This must be a valid port number, 0 < x < 65536.
-	ContainerPort int32
+	ContainerPort int32 `yaml:"containerPort" json:"containerPort"`
 	// Required: Supports "TCP", "UDP" and "SCTP"
 	// +optional
-	Protocol Protocol
+	Protocol Protocol `yaml:"protocol" json:"protocol"`
 	// Optional: What host IP to bind the external port to.
 	// +optional
-	HostIP string
+	HostIP string `yaml:"hostIP" json:"hostIP"`
 }
 
 type Container struct {
+	Id string `yaml:"id" json:"id"`
+
 	Name string `yaml:"name" json:"name"`
 
 	Image string `yaml:"image" json:"image"`
