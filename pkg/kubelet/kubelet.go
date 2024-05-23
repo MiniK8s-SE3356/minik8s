@@ -126,7 +126,7 @@ func (k *Kubelet) HeartBeat() {
 
 	request_url := fmt.Sprintf("http://%s:%s%s", k.kubeletConfig.APIServerIP, k.kubeletConfig.APIServerPort, url.NodeHeartBeat)
 	request_body := make(map[string]interface{})
-	request_body["node"] = k.Node
+	request_body["nodeStatus"] = k.Node.Status
 	request_body["pods"] = pods
 	request_body_data, _ := json.Marshal(request_body)
 	response, err := httpRequest.PostRequest(
