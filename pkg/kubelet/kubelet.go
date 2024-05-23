@@ -3,11 +3,14 @@ package kubelet
 import (
 	"encoding/json"
 	"fmt"
+	"time"
 
+	"github.com/MiniK8s-SE3356/minik8s/pkg/apiserver/url"
 	msgproxy "github.com/MiniK8s-SE3356/minik8s/pkg/kubelet/msg_proxy"
 	kubelet_worker "github.com/MiniK8s-SE3356/minik8s/pkg/kubelet/worker"
 	minik8s_node "github.com/MiniK8s-SE3356/minik8s/pkg/types/node"
 	httpRequest "github.com/MiniK8s-SE3356/minik8s/pkg/utils/httpRequest"
+	"github.com/MiniK8s-SE3356/minik8s/pkg/utils/poller"
 )
 
 type Kubelet struct {
@@ -98,6 +101,45 @@ func (k *Kubelet) RegisterNode() error {
 	return nil
 }
 
+func (k *Kubelet) GetNodeStatus() (minik8s_node.NodeStatus, error) {
+	nodeStatus, err := kubelet_worker.NodeRuntimeMangaer.GetNodeStatus()
+	if err != nil {
+		return minik8s_node.NodeStatus{}, err
+	}
+
+	nodeStatus.NumPods = k.podManager.GetPodNum()
+
+	return nodeStatus, nil
+}
+
+func (k *Kubelet) HeartBeat() {
+	nodeStatus, err := k.GetNodeStatus()
+	if err != nil {
+		return
+	}
+	k.Node.Status = nodeStatus
+
+	pods, err := k.podManager.FetchLocalPods()
+	if err != nil {
+		return
+	}
+
+	request_url := fmt.Sprintf("http://%s:%s%s", k.kubeletConfig.APIServerIP, k.kubeletConfig.APIServerPort, url.NodeHeartBeat)
+	request_body := make(map[string]interface{})
+	request_body["node"] = k.Node
+	request_body["pods"] = pods
+	request_body_data, _ := json.Marshal(request_body)
+	response, err := httpRequest.PostRequest(
+		request_url,
+		request_body_data,
+	)
+	if err != nil {
+		fmt.Println("Error posting request: ", err)
+		return
+	}
+	fmt.Println("\nHeartbeat response: ", response)
+}
+
 func (k *Kubelet) Run() {
 	// TODO: run a cAdvisor container to monitor the node and container status
 	forever := make(chan bool)
@@ -109,6 +151,12 @@ func (k *Kubelet) Run() {
 
 	go k.Proxy()
 	go k.msgProxy.Run()
+
+	go poller.PollerStaticPeriod(
+		time.Duration(10*time.Second),
+		k.HeartBeat,
+		true,
+	)
 
 	<-forever
 }

@@ -33,6 +33,8 @@ func main() {
 	pflag.StringArrayVar(&labels, "label", []string{}, "Node labels")
 	pflag.Parse()
 
+	// TODO : Run cAdvisor container
+
 	kubeletConfig := minik8s_kubelet.KubeletConfig{
 		MQConfig: minik8s_message.MQConfig{
 			User:       "guest",

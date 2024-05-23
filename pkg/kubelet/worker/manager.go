@@ -14,6 +14,8 @@ type PodManager interface {
 	GetPods() ([]*apiobject_pod.Pod, error)
 	GetPodByUID(uid string) (*apiobject_pod.Pod, error)
 	GetPodByName(namespace, name string) (*apiobject_pod.Pod, error)
+	GetPodNum() int
+	FetchLocalPods() ([]apiobject_pod.Pod, error)
 }
 
 // podManager is the default implementation of PodManager.
@@ -100,4 +102,18 @@ func (pm *podManager) GetPodByUID(uid string) (*apiobject_pod.Pod, error) {
 
 func (pm *podManager) GetPodByName(namespace, name string) (*apiobject_pod.Pod, error) {
 	return nil, nil
+}
+
+func (pm *podManager) GetPodNum() int {
+	return len(pm.PodWorkers)
+}
+
+func (pm *podManager) FetchLocalPods() ([]apiobject_pod.Pod, error) {
+	result := make([]apiobject_pod.Pod, 0)
+	for _, podWorker := range pm.PodWorkers {
+		fmt.Println("Fetching local pods")
+		podWorker.FetchandUpdateLocalPod()
+		result = append(result, podWorker.LocalPod)
+	}
+	return result, nil
 }

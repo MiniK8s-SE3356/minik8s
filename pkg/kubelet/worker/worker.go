@@ -6,6 +6,7 @@ import (
 
 	apiobject_pod "github.com/MiniK8s-SE3356/minik8s/pkg/apiObject/pod"
 	minik8s_runtime "github.com/MiniK8s-SE3356/minik8s/pkg/runtime"
+	cadvisorutils "github.com/MiniK8s-SE3356/minik8s/pkg/utils/cAdvisorUtils"
 	"github.com/MiniK8s-SE3356/minik8s/pkg/utils/httpRequest"
 )
 
@@ -30,6 +31,8 @@ type PodWorker struct {
 
 	// Queue of tasks to be executed of one pod.
 	TaskQueue chan *Task
+
+	LocalPod apiobject_pod.Pod
 
 	// AddTaskHandler func(*apiobject_pod.Pod) (string, error)
 	// TODO: Implement the following handlers
@@ -77,6 +80,9 @@ func (p *PodWorker) AddTaskHandler(pod *apiobject_pod.Pod) (string, error) {
 		return "", err
 	}
 
+	// Set local pod
+	p.LocalPod = *pod
+
 	// Send http request to the API server to update the pod status.
 	request_url := fmt.Sprintf("http://%s:%s/api/v1/UpdatePod", p.APIServer.IP, p.APIServer.Port)
 	requestBody := make(map[string]interface{})
@@ -115,4 +121,24 @@ func (p *PodWorker) RemoveTaskHandler(pod *apiobject_pod.Pod) error {
 	}
 
 	return nil
+}
+
+func (p *PodWorker) FetchandUpdateLocalPod() {
+	// calculate cpu and memory usage for one pod
+	podCPUUsage := 0.0
+	podMemUsage := 0.0
+
+	for _, container := range p.LocalPod.Spec.Containers {
+		cpuUsage, memoryUsage := cadvisorutils.GetContainerCPUandMemory(
+			"localhost",
+			// TODO: change port
+			"8081",
+			container.Name,
+		)
+		podCPUUsage += cpuUsage
+		podMemUsage += memoryUsage
+	}
+
+	p.LocalPod.Status.CPUUsage = podCPUUsage
+	p.LocalPod.Status.MemoryUsage = podMemUsage
 }

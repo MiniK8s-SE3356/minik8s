@@ -8,5 +8,14 @@ import (
 
 func TestMain(m *testing.M) {
 	cadvisorutils.GetMachineInfo()
-	cadvisorutils.GetContainerInfo()
+	// cadvisorutils.GetContainerInfo(
+	// 	"localhost",
+	// 	"8080",
+	// 	"some-rabbit",
+	// )
+	cadvisorutils.GetContainerCPUandMemory(
+		"localhost",
+		"8080",
+		"some-rabbit",
+	)
 }

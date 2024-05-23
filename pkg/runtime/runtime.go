@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"time"
 
 	minik8s_pod "github.com/MiniK8s-SE3356/minik8s/pkg/apiObject/pod"
 	runtime_container "github.com/MiniK8s-SE3356/minik8s/pkg/runtime/container"
@@ -11,6 +12,7 @@ import (
 	minik8s_container "github.com/MiniK8s-SE3356/minik8s/pkg/types/container"
 	minik8s_node "github.com/MiniK8s-SE3356/minik8s/pkg/types/node"
 	"github.com/MiniK8s-SE3356/minik8s/pkg/utils/nettools"
+	nodestatusutils "github.com/MiniK8s-SE3356/minik8s/pkg/utils/nodeStatusUtils"
 	"github.com/docker/go-connections/nat"
 )
 
@@ -242,4 +244,27 @@ func (rm *RuntimeManager) GetNodeStatus() (minik8s_node.NodeStatus, error) {
 		minik8s_node.NODE_Ready,
 	}
 
+	cpuPercent := nodestatusutils.GetNodeCpuPercent()
+	memPercent := nodestatusutils.GetNodeMemPercent()
+
+	updateTime := time.Now().String()
+
+	// TODO: Number of pods should be filled in the kubelet, the length of map in podManager
+
+	return minik8s_node.NodeStatus{
+		Hostname:   hostName,
+		Ip:         nodeIp,
+		Condition:  nodeConditions,
+		CpuPercent: cpuPercent,
+		MemPercent: memPercent,
+		NumPods:    0,
+		UpdateTime: updateTime,
+	}, nil
+
 }
+
+// func (rm *RuntimeManager) RuncAdvicorContainer() {
+// 	containerConfig := &minik8s_container.CreateContainerConfig{
+// 		Image: "gcr.nju.edu.cn/cadvisor/cadvisor:v0.49.1",
+// 	}
+// }
