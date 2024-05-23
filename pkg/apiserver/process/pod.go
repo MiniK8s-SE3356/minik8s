@@ -7,6 +7,7 @@ import (
 	"github.com/MiniK8s-SE3356/minik8s/pkg/apiObject/pod"
 	"github.com/MiniK8s-SE3356/minik8s/pkg/apiObject/yaml"
 	"github.com/MiniK8s-SE3356/minik8s/pkg/utils/idgenerate"
+	"github.com/MiniK8s-SE3356/minik8s/pkg/utils/message"
 )
 
 func AddPod(namespace string, desc *yaml.PodDesc) (string, error) {
@@ -95,7 +96,7 @@ func RemovePod(namespace string, name string) (string, error) {
 	}
 	// 这里有一个假设是一定能够删除成功
 	msgBody := make(map[string]interface{})
-	msgBody["type"] = "create_pod"
+	msgBody["type"] = message.RemovePod
 	msgBody["content"] = r
 	jsonData, err := json.Marshal(msgBody)
 	if err != nil {
