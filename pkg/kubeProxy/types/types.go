@@ -14,3 +14,9 @@ type KpServicesStatus struct {
 	ClusterIP map[string]KpClusterIP `json:"clusterIP" yaml:"clusterIP"`
 	NodePort  map[string]KpNodePort  `json:"nodePort" yaml:"nodePort"`
 }
+
+type KpDns struct {
+	Version int `json:"version" yaml:"version"`
+}
+
+type KpDnsStatus map[string]KpDns

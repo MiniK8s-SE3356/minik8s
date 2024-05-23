@@ -33,7 +33,7 @@ func (ec *EndpointsController) Init() {
 
 func (ec *EndpointsController) Run() {
 	fmt.Printf("Run EndpointsController ...\n")
-	poller.PollerStaticPeriod(1*time.Second, ec.routine, true)
+	poller.PollerStaticPeriod(10*time.Second, ec.routine, true)
 }
 
 func isSameNameList(old_nl *[]string, new_nl *[]string) bool {
