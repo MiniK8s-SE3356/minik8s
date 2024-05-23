@@ -14,6 +14,11 @@ import (
 	"github.com/moby/term"
 )
 
+const (
+	PauseContainerImage    = "registry.aliyuncs.com/google_containers/pause:3.9"
+	cAdvisorContainerImage = "gcr.nju.edu.cn/cadvisor/cadvisor:v0.49.1"
+)
+
 type ImageManager struct{}
 
 func (im *ImageManager) PullImage(imageName string) (string, error) {

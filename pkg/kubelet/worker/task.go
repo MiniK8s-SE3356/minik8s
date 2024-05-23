@@ -6,12 +6,14 @@ type TaskType string
 
 // TODO: add more task types
 const (
-	Task_Add    TaskType = "Add"
-	Task_Remove TaskType = "Remove"
-	Task_Update TaskType = "Update"
+	Task_Add     TaskType = "Add"
+	Task_Remove  TaskType = "Remove"
+	Task_Update  TaskType = "Update"
+	Task_Restart TaskType = "Restart"
 )
 
 type Task struct {
-	Type TaskType
-	Pod  *apiobject_pod.Pod
+	Type     TaskType
+	Pod      *apiobject_pod.Pod
+	Callback func(arg interface{})
 }

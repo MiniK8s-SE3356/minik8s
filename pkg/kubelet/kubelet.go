@@ -43,12 +43,12 @@ func (k *Kubelet) Proxy() {
 		switch update.Type {
 		case kubelet_worker.Task_Add:
 			fmt.Println("Kubelet Add pod")
-			k.podManager.AddPod(update.Pod)
+			k.podManager.AddPod(update.Pod, nil)
 		case kubelet_worker.Task_Update:
-			k.podManager.UpdatePod(update.Pod)
+			k.podManager.UpdatePod(update.Pod, nil)
 		case kubelet_worker.Task_Remove:
 			fmt.Println("Kubelet Remove pod")
-			k.podManager.RemovePod(update.Pod)
+			k.podManager.RemovePod(update.Pod, nil)
 		}
 	}
 }

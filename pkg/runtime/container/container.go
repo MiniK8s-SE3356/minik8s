@@ -171,6 +171,22 @@ func (cm *ContainerManager) StartContainer(id string) (string, error) {
 	return id, nil
 }
 
+func (cm *ContainerManager) RestartContainer(id string) (string, error) {
+	// Restart a container
+	err := docker.DockerClient.ContainerRestart(
+		context.Background(),
+		id,
+		// We will wait the container for 10 seconds, then kill it
+		container.StopOptions{},
+	)
+
+	if err != nil {
+		return "", err
+	}
+
+	return id, nil
+}
+
 func (cm *ContainerManager) StopContainer(id string) (string, error) {
 	// Stop a container
 	err := docker.DockerClient.ContainerStop(
@@ -187,4 +203,34 @@ func (cm *ContainerManager) StopContainer(id string) (string, error) {
 	}
 
 	return id, nil
+}
+
+// Get the first container with the name
+func (cm *ContainerManager) GetContainerByName(name string) (*types.Container, error) {
+	filterArgs := filters.NewArgs()
+	filterArgs.Add("name", name)
+
+	containers, err := docker.DockerClient.ContainerList(
+		context.Background(),
+		container.ListOptions{
+			All:     true,
+			Filters: filterArgs,
+		},
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, container := range containers {
+		for _, containerName := range container.Names {
+			if containerName == "/"+name {
+				return &container, nil
+			}
+		}
+		// if container.Names[0] == "/"+name {
+		// 	return &container, nil
+		// }
+	}
+
+	return nil, fmt.Errorf("container with name %s not found", name)
 }

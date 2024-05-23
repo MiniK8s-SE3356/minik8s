@@ -54,7 +54,7 @@ func GetContainerInfo(cAdvisorIP string, cAdvisorPort string, containerName stri
 	}
 }
 
-func GetContainerCPUandMemory(cAdvisorIP string, cAdvisorPort string, containerName string) (float64, float64) {
+func GetContainerCPUandMemory(cAdvisorIP string, cAdvisorPort string, containerName string) (float64, float64, error) {
 	request_url := fmt.Sprintf("http://%s:%s/api/v1.3/docker/%s", cAdvisorIP, cAdvisorPort, containerName)
 	var containerInfo map[string]ContainerInfo
 
@@ -65,6 +65,7 @@ func GetContainerCPUandMemory(cAdvisorIP string, cAdvisorPort string, containerN
 	)
 	if err != nil {
 		fmt.Println("Get container info failed")
+		return 0.0, 0.0, err
 	}
 
 	fmt.Println("Get container info response status: ", responseStatus)
@@ -113,7 +114,7 @@ func GetContainerCPUandMemory(cAdvisorIP string, cAdvisorPort string, containerN
 		fmt.Println("Average CPU Usage: ", averageCPUUsage)
 		fmt.Println("Memory Usage Percentage: ", memUsePercentage)
 
-		return averageCPUUsage, memUsePercentage
+		return averageCPUUsage, memUsePercentage, nil
 	}
-	return 0.0, 0.0
+	return 0.0, 0.0, fmt.Errorf("no container info found")
 }
