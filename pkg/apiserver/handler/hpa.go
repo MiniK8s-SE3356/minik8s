@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/MiniK8s-SE3356/minik8s/pkg/apiObject/hpa"
 	"github.com/MiniK8s-SE3356/minik8s/pkg/apiObject/yaml"
 	"github.com/MiniK8s-SE3356/minik8s/pkg/apiserver/process"
 
@@ -21,7 +22,14 @@ func AddHPA(c *gin.Context) {
 		return
 	}
 
-	process.AddHPA(requestMsg.Namespace, &requestMsg.Desc)
+	result, err := process.AddHPA(requestMsg.Namespace, &requestMsg.Desc)
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, result)
 }
 
 func RemoveHPA(c *gin.Context) {
@@ -51,15 +59,25 @@ func RemoveHPA(c *gin.Context) {
 	c.JSON(http.StatusOK, result)
 }
 
-// func ModifyHPA(c *gin.Context) {
-// 	var namespace string
-// 	var name string
+func UpdateHPA(c *gin.Context) {
+	var requestMsg struct {
+		Namespace string
+		hpa       hpa.HPA
+	}
+	if err := c.ShouldBindJSON(&requestMsg); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
 
-// 	err := process.ModifyHPA(namespace, name)
-// 	if err != nil {
-// 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-// 	}
-// }
+	result, err := process.UpdateHPA(requestMsg.Namespace, requestMsg.hpa)
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, result)
+}
 
 func GetHPA(c *gin.Context) {
 	// namespace := c.Query("namespace")

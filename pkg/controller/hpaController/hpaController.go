@@ -126,6 +126,27 @@ func removePod(namespace string, name string) error {
 	return nil
 }
 
+func updateHPA(hpa hpa.HPA) error {
+	req := make(map[string]interface{})
+	req["namespace"] = process.DefaultNamespace
+	req["hpa"] = hpa
+
+	jsonData, err := json.Marshal(req)
+	if err != nil {
+		fmt.Println("failed to translate into json")
+		return err
+	}
+	result, err := httpRequest.PostRequest(url.RootURL+url.UpdateHPA, jsonData)
+	if err != nil {
+		fmt.Println("error when post request")
+		return err
+	}
+
+	fmt.Println(result)
+
+	return nil
+}
+
 func rscTask() {
 	// 从APIserver获取全体pod和全体hpa
 	pods, err := getPodsFromServer()
@@ -149,6 +170,7 @@ func rscTask() {
 		if time.Since(hpa.Status.LastUpdateTime) < hpa.Spec.TimeInterval {
 			continue
 		}
+		hpa.Status.LastUpdateTime = time.Now()
 
 		for _, p := range pods {
 			if checkMatchedPod(p.Metadata.Labels, hpa.Spec.Selector.MatchLabels) {

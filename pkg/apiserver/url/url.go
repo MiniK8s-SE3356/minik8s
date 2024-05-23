@@ -36,6 +36,7 @@ const (
 	AddHPA    = prefix + "/AddHPA"
 	RemoveHPA = prefix + "/RemoveHPA"
 	GetHPA    = prefix + "/GetHPA"
+	UpdateHPA = prefix + "/updateHPA"
 
 	GetAllEndpoint      = prefix + "/AddAllEndpoint"
 	UpdateEndpointBatch = prefix + "/UpdateEndpointBatch"

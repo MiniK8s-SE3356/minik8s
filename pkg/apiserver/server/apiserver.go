@@ -43,6 +43,7 @@ func bind(r *gin.Engine) {
 	r.POST(url.AddHPA, handler.AddHPA)
 	r.GET(url.GetHPA, handler.GetHPA)
 	r.POST(url.RemoveHPA, handler.RemoveHPA)
+	r.POST(url.UpdateHPA, handler.UpdateHPA)
 
 	r.POST(url.AddService, handler.AddService)
 	r.GET(url.GetAllService, handler.GetAllService)

@@ -175,18 +175,21 @@ func NodeHeartBeat(nodeStatus node.NodeStatus, pods []pod.Pod, nodePorts []servi
 		podInfo, err := EtcdCli.Get(podPrefix + ns + "/" + name)
 		if err != nil || len(podInfo) == 0 {
 			fmt.Println("failed to get node from etcd")
-			return "failed to get node from etcd", err
+			continue
+			// return "failed to get node from etcd", err
 		}
 		var tmp pod.Pod
 		err = json.Unmarshal(podInfo, &tmp)
 		if err != nil {
 			fmt.Println("failed to unmarshal")
-			return "failed to unmarshal", err
+			continue
+			// return "failed to unmarshal", err
 		}
 		tmp.Status = p.Status
 		podInfo, err = json.Marshal(tmp)
 		if err != nil {
 			fmt.Println("failed to marshal")
+			continue
 			// return "failed to marshal", err
 		}
 		err = EtcdCli.Put(podPrefix+ns+"/"+name, string(podInfo))
