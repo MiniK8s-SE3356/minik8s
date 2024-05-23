@@ -84,17 +84,18 @@ func GetNode(c *gin.Context) {
 }
 
 func NodeHeartBeat(c *gin.Context) {
-	var param map[string]interface{}
+	var param struct {
+		NodeStatus node.NodeStatus `json:"nodeStatus"`
+		Pods       []pod.Pod       `json:"pods"`
+	}
 	if err := c.ShouldBindJSON(&param); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	nodeStatus := param["nodeStatus"].(node.NodeStatus)
-	podStatus := param["nodeStatus"].([]pod.Pod)
 	// nodePortStatus := param["nodePortStatus"].([]service.NodePort)
 
-	process.NodeHeartBeat(nodeStatus, podStatus, []service.NodePort{})
+	process.NodeHeartBeat(param.NodeStatus, param.Pods, []service.NodePort{})
 
 }
 
