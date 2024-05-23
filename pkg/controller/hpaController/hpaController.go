@@ -1,12 +1,12 @@
-package replicasetcontroller
+package hpacontroller
 
 import (
 	"encoding/json"
 	"fmt"
 	"time"
 
+	"github.com/MiniK8s-SE3356/minik8s/pkg/apiObject/hpa"
 	"github.com/MiniK8s-SE3356/minik8s/pkg/apiObject/pod"
-	"github.com/MiniK8s-SE3356/minik8s/pkg/apiObject/replicaset"
 	"github.com/MiniK8s-SE3356/minik8s/pkg/apiObject/yaml"
 	"github.com/MiniK8s-SE3356/minik8s/pkg/apiserver/process"
 	"github.com/MiniK8s-SE3356/minik8s/pkg/apiserver/url"
@@ -14,12 +14,12 @@ import (
 	"github.com/MiniK8s-SE3356/minik8s/pkg/utils/idgenerate"
 )
 
-type ReplicasetController struct {
+type HPAController struct {
 }
 
-func NewReplicasetController() *(ReplicasetController) {
-	fmt.Printf("New ReplicasetController...\n")
-	return &ReplicasetController{}
+func NewHPAController() *(HPAController) {
+	fmt.Printf("New HPAController...\n")
+	return &HPAController{}
 }
 
 func checkMatchedPod(podLabels map[string]string, selector map[string]string) bool {
@@ -56,17 +56,17 @@ func getPodsFromServer() ([]pod.Pod, error) {
 	return result, nil
 }
 
-func getReplicasetsFromServer() ([]replicaset.Replicaset, error) {
-	var result []replicaset.Replicaset
+func getHPAsFromServer() ([]hpa.HPA, error) {
+	var result []hpa.HPA
 
-	jsonData, err := httpRequest.GetRequest(url.RootURL + url.GetReplicaset)
+	jsonData, err := httpRequest.GetRequest(url.RootURL + url.GetHPA)
 	fmt.Println(string(jsonData))
 	if err != nil {
 		fmt.Println("error in get request")
 		return result, err
 	}
 
-	var rsMap map[string]replicaset.Replicaset
+	var rsMap map[string]hpa.HPA
 	err = json.Unmarshal([]byte(jsonData), &rsMap)
 	if err != nil {
 		fmt.Println("failed to unmarshal")
@@ -74,8 +74,8 @@ func getReplicasetsFromServer() ([]replicaset.Replicaset, error) {
 		return result, err
 	}
 
-	for _, rs := range rsMap {
-		result = append(result, rs)
+	for _, hpa := range rsMap {
+		result = append(result, hpa)
 	}
 
 	return result, nil
@@ -127,35 +127,81 @@ func removePod(namespace string, name string) error {
 }
 
 func rscTask() {
-	// 从APIserver获取全体pod和全体replicaset
+	// 从APIserver获取全体pod和全体hpa
 	pods, err := getPodsFromServer()
 	if err != nil {
 		fmt.Println("failed to get pod from server", err)
 		return
 	}
 
-	replicasets, err := getReplicasetsFromServer()
+	hpas, err := getHPAsFromServer()
 	if err != nil {
-		fmt.Println("failed to get replicaset from server", err)
+		fmt.Println("failed to get hpa from server", err)
 	}
 
-	replicasetNames := make(map[string]bool, 0)
-	// 利用label找到replicaset对应的pod
-	for _, rs := range replicasets {
-		replicasetNames[rs.Metadata.Name] = true
+	hpaNames := make(map[string]bool, 0)
+	// 利用label找到hpa对应的pod
+	for _, hpa := range hpas {
+		hpaNames[hpa.Metadata.Name] = true
 		var matchedPod []pod.Pod
 
+		// 先检查hpa是否到了timeInterval，如果没有就跳过
+		if time.Since(hpa.Status.LastUpdateTime) < hpa.Spec.TimeInterval {
+			continue
+		}
+
 		for _, p := range pods {
-			if checkMatchedPod(p.Metadata.Labels, rs.Spec.Selector.MatchLabels) {
+			if checkMatchedPod(p.Metadata.Labels, hpa.Spec.Selector.MatchLabels) {
 				matchedPod = append(matchedPod, p)
 			}
 		}
 
 		// 比对pod数量和期望数量
+		change := 0
 
-		if len(matchedPod) > rs.Spec.Replicas {
+		if len(matchedPod) > hpa.Spec.MaxReplicas {
+			// 大于maxReplicas
 			// delete some pod
-			for i := 0; i < len(matchedPod)-rs.Spec.Replicas; i++ {
+			change = -1
+		} else if len(matchedPod) < hpa.Spec.MinReplicas {
+			// 小于minReplicas
+			// add some pod
+			// for i := 0; i < hpa.Spec.MinReplicas-len(matchedPod); i++ {
+			change = 1
+
+		} else {
+			// 根据pod平均资源使用率计算
+			averageCPU := 0.0
+			averageMem := 0.0
+			for _, p := range matchedPod {
+				averageCPU += p.Status.CPUUsage
+				averageMem += p.Status.MemoryUsage
+			}
+			averageCPU /= float64(len(matchedPod))
+			averageMem /= float64(len(matchedPod))
+
+			if (averageCPU > hpa.Spec.Metrics.CPUPercent || averageMem > hpa.Spec.Metrics.MemPercent) && len(matchedPod)+1 <= hpa.Spec.MaxReplicas {
+				change = 1
+			} else if (averageCPU < hpa.Spec.Metrics.CPUPercent || averageMem < hpa.Spec.Metrics.MemPercent) && len(matchedPod)-1 >= hpa.Spec.MinReplicas {
+				change = -1
+			}
+		}
+
+		if change == 1 {
+			var podDesc yaml.PodDesc
+			podDesc.ApiVersion = "v1"
+			podDesc.Kind = "Pod"
+			newId, _ := idgenerate.GenerateID()
+			podDesc.Metadata.Name = hpa.Metadata.Name + "-" + newId[:8]
+			podDesc.Metadata.Labels = make(map[string]string)
+			podDesc.Metadata.Labels["hpa"] = hpa.Metadata.Name
+			podDesc.Spec.Containers = hpa.Spec.Template.Spec.Containers
+			err := applyPod(podDesc)
+			if err != nil {
+				fmt.Println("failed to apply pod")
+			}
+		} else if change == -1 {
+			for i := 0; i < 1; i++ {
 				ns := matchedPod[i].Metadata.Namespace
 				name := matchedPod[i].Metadata.Name
 				err := removePod(ns, name)
@@ -163,47 +209,30 @@ func rscTask() {
 					fmt.Println("failed to delete pod", err)
 				}
 			}
-		} else if len(matchedPod) < rs.Spec.Replicas {
-			// add some pod
-			for i := 0; i < rs.Spec.Replicas-len(matchedPod); i++ {
-				var podDesc yaml.PodDesc
-				podDesc.ApiVersion = "v1"
-				podDesc.Kind = "Pod"
-				newId, _ := idgenerate.GenerateID()
-				podDesc.Metadata.Name = rs.Metadata.Name + "-" + newId[:8]
-				podDesc.Metadata.Labels = make(map[string]string)
-				podDesc.Metadata.Labels["replicaset"] = rs.Metadata.Name
-				podDesc.Spec.Containers = rs.Spec.Template.Spec.Containers
-				err := applyPod(podDesc)
-				if err != nil {
-					fmt.Println("failed to apply pod")
-				}
-			}
 		}
 	}
 
 	// 处理孤儿pod
-	// 从replicaset创建的Pod都带有与replicaset对应的label
+	// 从hpa创建的Pod都带有与hpa对应的label
 	for _, p := range pods {
-		value1, ok1 := p.Metadata.Labels["replicaset"]
+		value1, ok1 := p.Metadata.Labels["hpa"]
 		if ok1 {
-			_, ok2 := replicasetNames[value1]
+			_, ok2 := hpaNames[value1]
 			if !ok2 {
 				removePod(p.Metadata.Namespace, p.Metadata.Name)
 
 			}
 		}
 	}
+}
+
+func (sc *HPAController) Init() {
+	fmt.Printf("Init HPAController ...\n")
 
 }
 
-func (sc *ReplicasetController) Init() {
-	fmt.Printf("Init ReplicasetController ...\n")
-
-}
-
-func (sc *ReplicasetController) Run() {
-	fmt.Printf("Run ReplicasetController ...\n")
+func (sc *HPAController) Run() {
+	fmt.Printf("Run HPAController ...\n")
 
 	for {
 

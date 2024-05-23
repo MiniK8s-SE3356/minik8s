@@ -3,7 +3,9 @@ package cmdline
 import (
 	"fmt"
 
+	"github.com/MiniK8s-SE3356/minik8s/pkg/apiserver/process"
 	"github.com/MiniK8s-SE3356/minik8s/pkg/apiserver/url"
+	"github.com/MiniK8s-SE3356/minik8s/pkg/utils/httpRequest"
 	"github.com/spf13/cobra"
 )
 
@@ -12,6 +14,7 @@ var GetFuncTable = map[string]func(namespace string, name string) (string, error
 	"Pod":        getPod,
 	"Service":    getService,
 	"Replicaset": getReplicaSet,
+	"HPA":        getHPA,
 	"Namespace":  getNamespace,
 }
 
@@ -42,7 +45,7 @@ func GetCmdHandler(cmd *cobra.Command, args []string) {
 
 	// 没有指定namespace，使用default
 	if name != "" && namespace == "" {
-		namespace = defaultNamespace
+		namespace = process.DefaultNamespace
 	}
 
 	result, err := getFunc(namespace, name)
@@ -56,7 +59,7 @@ func GetCmdHandler(cmd *cobra.Command, args []string) {
 
 func getNode(namespace string, name string) (string, error) {
 	// 实际上无论namespace和name是什么，getNode都会获取所有的node
-	result, err := GetRequest(url.RootURL + url.GetNode)
+	result, err := httpRequest.GetRequest(url.RootURL + url.GetNode)
 	if err != nil {
 		fmt.Println("error in getNode", err.Error())
 		return "", err
@@ -71,7 +74,7 @@ func getPod(namespace string, name string) (string, error) {
 		"name":      name,
 	}
 
-	result, err := GetRequestWithParams(url.RootURL+url.GetPod, params)
+	result, err := httpRequest.GetRequestWithParams(url.RootURL+url.GetPod, params)
 	if err != nil {
 		fmt.Println("error in get pod ", err.Error())
 		return "", err
@@ -86,7 +89,7 @@ func getService(namespace string, name string) (string, error) {
 		"name":      name,
 	}
 
-	result, err := GetRequestWithParams(url.RootURL+url.GetService, params)
+	result, err := httpRequest.GetRequestWithParams(url.RootURL+url.GetService, params)
 	if err != nil {
 		fmt.Println("error in get service ", err.Error())
 		return "", err
@@ -101,9 +104,24 @@ func getReplicaSet(namespace string, name string) (string, error) {
 		"name":      name,
 	}
 
-	result, err := GetRequestWithParams(url.RootURL+url.GetReplicaset, params)
+	result, err := httpRequest.GetRequestWithParams(url.RootURL+url.GetReplicaset, params)
 	if err != nil {
 		fmt.Println("error in get replicaset ", err.Error())
+		return "", err
+	}
+
+	return result, nil
+}
+
+func getHPA(namespace string, name string) (string, error) {
+	params := map[string]string{
+		"namespace": namespace,
+		"name":      name,
+	}
+
+	result, err := httpRequest.GetRequestWithParams(url.RootURL+url.GetHPA, params)
+	if err != nil {
+		fmt.Println("error in get HPA ", err.Error())
 		return "", err
 	}
 
@@ -117,7 +135,7 @@ func getNamespace(namespace string, name string) (string, error) {
 		"name": name,
 	}
 
-	result, err := GetRequestWithParams(url.RootURL+url.GetNamespace, params)
+	result, err := httpRequest.GetRequestWithParams(url.RootURL+url.GetNamespace, params)
 	if err != nil {
 		fmt.Println("error in get namespace ", err.Error())
 		return "", err

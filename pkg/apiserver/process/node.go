@@ -145,18 +145,57 @@ func NodeHeartBeat(nodeStatus node.NodeStatus, pods []pod.Pod, nodePorts []servi
 	defer mu.Unlock()
 
 	name := nodeStatus.Hostname + "@" + nodeStatus.Ip
-	// 检查是否已经存在
-	existed, err := EtcdCli.Exist(nodePrefix + name)
+
+	nodeInfo, err := EtcdCli.Get(nodePrefix + name)
+	if err != nil || len(nodeInfo) == 0 {
+		fmt.Println("failed to get node from etcd")
+		return "failed to get node from etcd", err
+	}
+	var tmp node.Node
+	err = json.Unmarshal(nodeInfo, &tmp)
 	if err != nil {
-		return "failed to check existence in etcd", err
+		fmt.Println("failed to unmarshal")
+		return "failed to unmarshal", err
+	}
+	tmp.Status = nodeStatus
+	nodeInfo, err = json.Marshal(tmp)
+	if err != nil {
+		fmt.Println("failed to marshal")
+		return "failed to marshal", err
+	}
+	err = EtcdCli.Put(nodePrefix+name, string(nodeInfo))
+	if err != nil {
+		fmt.Println("failed to write node to etcd")
+		return "failed to write node to etcd", err
 	}
 
-	if !existed {
-		return "node not existed", nil
-	}
+	for _, p := range pods {
+		ns := DefaultNamespace
+		name := p.Metadata.Name
+		podInfo, err := EtcdCli.Get(podPrefix + ns + "/" + name)
+		if err != nil || len(podInfo) == 0 {
+			fmt.Println("failed to get node from etcd")
+			return "failed to get node from etcd", err
+		}
+		var tmp pod.Pod
+		err = json.Unmarshal(podInfo, &tmp)
+		if err != nil {
+			fmt.Println("failed to unmarshal")
+			return "failed to unmarshal", err
+		}
+		tmp.Status = p.Status
+		podInfo, err = json.Marshal(tmp)
+		if err != nil {
+			fmt.Println("failed to marshal")
+			// return "failed to marshal", err
+		}
+		err = EtcdCli.Put(podPrefix+ns+"/"+name, string(podInfo))
+		if err != nil {
+			fmt.Println("failed to write node to etcd")
+			// return "failed to write pod to etcd", err
+		}
 
-	// for _, pod := range pods {
-	// }
+	}
 
 	return "", nil
 }

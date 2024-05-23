@@ -6,8 +6,11 @@ import (
 	"os"
 
 	minik8s_yaml "github.com/MiniK8s-SE3356/minik8s/pkg/apiObject/yaml"
+	"github.com/MiniK8s-SE3356/minik8s/pkg/apiserver/process"
 	"github.com/MiniK8s-SE3356/minik8s/pkg/apiserver/url"
+	"github.com/MiniK8s-SE3356/minik8s/pkg/utils/httpRequest"
 	"github.com/spf13/cobra"
+
 	"gopkg.in/yaml.v3"
 )
 
@@ -16,6 +19,7 @@ var applyFuncTable = map[string]func(namespace string, b []byte) error{
 	"Service":    applyService,
 	"Replicaset": applyReplicaSet,
 	"Namespace":  applyNamespace,
+	"HPA":        applyHPA,
 }
 
 func ApplyCmdHandler(cmd *cobra.Command, args []string) {
@@ -62,7 +66,7 @@ func ApplyCmdHandler(cmd *cobra.Command, args []string) {
 
 	// 没有指定namespace，使用default
 	if namespace == "" {
-		namespace = defaultNamespace
+		namespace = process.DefaultNamespace
 	}
 
 	// 根据kind跳转到相应的处理函数，相当于switch
@@ -90,7 +94,7 @@ func applyPod(namespace string, b []byte) error {
 		return err
 	}
 	// fmt.Println(podDesc.Spec.Containers)
-	result, err := PostRequest(url.RootURL+url.AddPod, jsonData)
+	result, err := httpRequest.PostRequest(url.RootURL+url.AddPod, jsonData)
 	if err != nil {
 		fmt.Println("error when post request")
 		return err
@@ -163,7 +167,7 @@ func applyService(namespace string, b []byte) error {
 		}
 	}
 
-	result, err := PostRequest(url.RootURL+url.AddService, jsonData)
+	result, err := httpRequest.PostRequest(url.RootURL+url.AddService, jsonData)
 	if err != nil {
 		fmt.Println("error when post request ", err.Error())
 		return err
@@ -194,7 +198,7 @@ func applyReplicaSet(namespace string, b []byte) error {
 	}
 	fmt.Println(string(jsonData))
 
-	result, err := PostRequest(url.RootURL+url.AddReplicaset, jsonData)
+	result, err := httpRequest.PostRequest(url.RootURL+url.AddReplicaset, jsonData)
 	if err != nil {
 		fmt.Println("error when post request ", err.Error())
 		return err
@@ -219,7 +223,7 @@ func applyNamespace(namespace string, b []byte) error {
 		fmt.Println("failed to translate into json")
 		return err
 	}
-	result, err := PostRequest(url.RootURL+url.AddNamespace, jsonData)
+	result, err := httpRequest.PostRequest(url.RootURL+url.AddNamespace, jsonData)
 	if err != nil {
 		fmt.Println("error when post request")
 		return err
@@ -228,6 +232,38 @@ func applyNamespace(namespace string, b []byte) error {
 	fmt.Println(result)
 
 	return nil
+}
+
+func applyHPA(namespace string, b []byte) error {
+	var request struct {
+		Namespace string
+		Desc      minik8s_yaml.HPADesc
+	}
+	request.Namespace = namespace
+
+	err := yaml.Unmarshal(b, &request.Desc)
+	if err != nil {
+		fmt.Println("failed to unmarshal HPA yaml ", err.Error())
+		return err
+	}
+
+	jsonData, err := json.Marshal(request)
+	if err != nil {
+		fmt.Println("failed to translate into json ", err.Error())
+		return err
+	}
+	fmt.Println(string(jsonData))
+
+	result, err := httpRequest.PostRequest(url.RootURL+url.AddHPA, jsonData)
+	if err != nil {
+		fmt.Println("error when post request ", err.Error())
+		return err
+	}
+
+	fmt.Println(result)
+
+	return nil
+
 }
 
 func checkFilePath(args []string) bool {

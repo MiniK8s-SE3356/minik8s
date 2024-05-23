@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: HPA
+metadata:
+  name: testHpa
+spec:
+  minReplicas: 2
+  maxReplicas: 4
+  selector:
+    matchLabels:
+      labelkey1: labelvalue1
+  template:
+    metadata:
+      labels:
+        labelkey1: labelvalue1
+    spec:
+      containers:
+      - name: testContainer-1
+        image: docker.io/library/nginx
+        ImagePullPolicy: IfNotPresent
+  adjustInterval: 30s
+  metrics:
+    cpuPercent: 0.05
+    memPercent: 0.05

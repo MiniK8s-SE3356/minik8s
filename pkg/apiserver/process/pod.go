@@ -19,27 +19,28 @@ func AddPod(namespace string, desc *yaml.PodDesc) (string, error) {
 	}
 
 	// 构建然后转json
-	pod := &pod.Pod{}
-	pod.APIVersion = desc.ApiVersion
-	pod.Kind = desc.Kind
-	pod.Metadata.Name = desc.Metadata.Name
-	pod.Metadata.Namespace = namespace
-	pod.Metadata.UUID = id
-	pod.Metadata.Labels = desc.Metadata.Labels
-	pod.Spec = desc.Spec
+	pod_ := &pod.Pod{}
+	pod_.APIVersion = desc.ApiVersion
+	pod_.Kind = desc.Kind
+	pod_.Status.Phase = pod.PodPending
+	pod_.Metadata.Name = desc.Metadata.Name
+	pod_.Metadata.Namespace = namespace
+	pod_.Metadata.UUID = id
+	pod_.Metadata.Labels = desc.Metadata.Labels
+	pod_.Spec = desc.Spec
 	// for _, c := range desc.Spec.Containers {
 	// var tmp container.Container
 	// pod.Spec.Containers = append(pod.Spec.Containers, )
 	// }
 
-	value, err := json.Marshal(pod)
+	value, err := json.Marshal(pod_)
 	if err != nil {
 		fmt.Println("failed to translate into json ", err.Error())
 		return "failed to translate into json ", err
 	}
 
 	// 先查看一下key是否已经存在
-	tmp, err := EtcdCli.Exist(podPrefix + namespace + "/" + pod.Metadata.Name)
+	tmp, err := EtcdCli.Exist(podPrefix + namespace + "/" + pod_.Metadata.Name)
 	if err != nil {
 		fmt.Println("failed to check existence in etcd")
 		return "failed to check existence in etcd", err
@@ -49,7 +50,7 @@ func AddPod(namespace string, desc *yaml.PodDesc) (string, error) {
 		return "pod has existed", nil
 	}
 	// 然后存入etcd
-	err = EtcdCli.Put(podPrefix+namespace+"/"+pod.Metadata.Name, string(value))
+	err = EtcdCli.Put(podPrefix+namespace+"/"+pod_.Metadata.Name, string(value))
 	if err != nil {
 		fmt.Println("failed to write to etcd ", err.Error())
 		return "failed to write to etcd", err
@@ -57,7 +58,7 @@ func AddPod(namespace string, desc *yaml.PodDesc) (string, error) {
 
 	msgBody := make(map[string]interface{})
 	msgBody["type"] = "create_pod"
-	msgBody["content"] = pod
+	msgBody["content"] = pod_
 	jsonData, err := json.Marshal(msgBody)
 	if err != nil {
 		fmt.Println("failed to construct msgBody")
@@ -101,7 +102,7 @@ func RemovePod(namespace string, name string) (string, error) {
 		fmt.Println("failed to construct msgBody")
 		return "failed to construct msgBody", err
 	}
-	err = Mq.Publish("minik8s", "scheduler", "application/json", jsonData)
+	err = Mq.Publish("minik8s", r.Spec.NodeName, "application/json", jsonData)
 	if err != nil {
 		fmt.Println("failed to send to mq")
 		return "failed to send to mq", err

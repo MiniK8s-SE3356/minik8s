@@ -112,7 +112,7 @@ func GetPod(c *gin.Context) {
 		result, err = process.GetPods(namespace)
 	}
 	// 4. 均不为空 获取指定的
-	if namespace != "" && name == "" {
+	if namespace != "" && name != "" {
 		result, err = process.GetPod(namespace, name)
 	}
 

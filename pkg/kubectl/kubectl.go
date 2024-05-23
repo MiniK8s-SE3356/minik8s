@@ -1,12 +1,11 @@
-package cmdline
+package kubectl
 
 import (
 	"fmt"
 
+	"github.com/MiniK8s-SE3356/minik8s/pkg/kubectl/cmdline"
 	"github.com/spf13/cobra"
 )
-
-const defaultNamespace = "Default"
 
 var kubectlCmd = &cobra.Command{
 	Use:   "kubectl",
@@ -20,35 +19,27 @@ var applyCmd = &cobra.Command{
 	Use:   "apply",
 	Short: "apply",
 	Long:  `apply`,
-	Run:   ApplyCmdHandler,
+	Run:   cmdline.ApplyCmdHandler,
 }
 
 var getCmd = &cobra.Command{
 	Use:   "get",
 	Short: "get",
 	Long:  `get`,
-	Run:   GetCmdHandler,
+	Run:   cmdline.GetCmdHandler,
 }
 
 var deleteCmd = &cobra.Command{
 	Use:   "delete",
 	Short: "delete",
 	Long:  `delete`,
-	Run:   DeleteCmdHandler,
-}
-
-var describeCmd = &cobra.Command{
-	Use:   "describe",
-	Short: "describe",
-	Long:  "describe",
-	Run:   DescribeCmdHandler,
+	Run:   cmdline.DeleteCmdHandler,
 }
 
 func init() {
 	kubectlCmd.AddCommand(applyCmd)
 	kubectlCmd.AddCommand(getCmd)
 	kubectlCmd.AddCommand(deleteCmd)
-	kubectlCmd.AddCommand(describeCmd)
 }
 
 func Exec() {

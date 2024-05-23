@@ -92,9 +92,9 @@ func NodeHeartBeat(c *gin.Context) {
 
 	nodeStatus := param["nodeStatus"].(node.NodeStatus)
 	podStatus := param["nodeStatus"].([]pod.Pod)
-	nodePortStatus := param["nodePortStatus"].([]service.NodePort)
+	// nodePortStatus := param["nodePortStatus"].([]service.NodePort)
 
-	process.NodeHeartBeat(nodeStatus, podStatus, nodePortStatus)
+	process.NodeHeartBeat(nodeStatus, podStatus, []service.NodePort{})
 
 }
 

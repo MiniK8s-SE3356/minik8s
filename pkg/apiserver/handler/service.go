@@ -163,7 +163,7 @@ func DescribeService(c *gin.Context) {
 		result, err = process.DescribeServices(namespace)
 	}
 	// 4. 均不为空 获取指定的
-	if namespace != "" && name == "" {
+	if namespace != "" && name != "" {
 		result, err = process.DescribeService(namespace, name)
 	}
 
