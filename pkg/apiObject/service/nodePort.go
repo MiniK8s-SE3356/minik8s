@@ -35,13 +35,13 @@ type NodePortSpec struct {
 
 type NodePortPortInfo struct {
 	NodePort   uint16 `json:"nodePort" yaml:"nodePort"`
-	Protocal   string `json:"protocal" yaml:"protocal"`
+	Protocol   string `json:"protocol" yaml:"protocol"`
 	Port       uint16 `json:"port" yaml:"port"`
 	TargetPort uint16 `json:"targetPort" yaml:"targetPort"`
 }
 
 type NodePortStatus struct {
-	Phase       string `json:"phase" yaml:"phase"` /*READY or NOTREADY*/
-	Version     int    `json:"version" yaml:"version"`
+	Phase       string `json:"phase" yaml:"phase"` /*READY or NOTREADY，初始为NOTREADY*/
+	Version     int    `json:"version" yaml:"version"`	/*初始为0*/
 	ClusterIPID string `json:"clusterIPID" yaml:"clusterIPID"`
 }

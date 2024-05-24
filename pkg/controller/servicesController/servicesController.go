@@ -32,7 +32,7 @@ func (sc *ServicesController) Init() {
 
 func (sc *ServicesController) Run() {
 	fmt.Printf("Run ServicesController ...\n")
-	poller.PollerStaticPeriod(3*time.Second, sc.routine, true)
+	poller.PollerStaticPeriod(5*time.Second, sc.routine, true)
 	// can not reach here
 }
 

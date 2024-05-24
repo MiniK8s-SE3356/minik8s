@@ -276,7 +276,7 @@ func (ic *IptablesController) SyncConfig(slist *httpobject.HTTPResponse_GetAllSe
 				sid := getSid(clusterip.Metadata.Id, port_info.Port)
 				new_sid2smeta[sid] = metadata{
 					ip:       clusterip.Metadata.Ip,
-					protocol: port_info.Protocal,
+					protocol: port_info.Protocol,
 					port:     key,
 				}
 				new_sid2eid[sid] = port_eid_list

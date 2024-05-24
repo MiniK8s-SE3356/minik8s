@@ -28,7 +28,7 @@ type ClusterIPMetadata struct {
 	Name      string            `json:"name" yaml:"name"`
 	Namespace string            `json:"namespace" yaml:"namespace"`
 	Labels    map[string]string `json:"labels" yaml:"labels"`
-	Ip        string            `json:"ip" yaml:"ip"`
+	Ip        string            `json:"ip" yaml:"ip"`			/*初始为空字符串*/
 	Id        string            `json:"id" yaml:"id"`
 }
 
@@ -39,14 +39,14 @@ type ClusterIPSpec struct {
 }
 
 type ClusterIPPortInfo struct {
-	Protocal   string `json:"protocal" yaml:"protocal"`
+	Protocol   string `json:"protocol" yaml:"protocol"`
 	Port       uint16 `json:"port" yaml:"port"`
 	TargetPort uint16 `json:"targetPort" yaml:"targetPort"`
 }
 
 type ClusterIPStatus struct {
-	Phase          string              `json:"phase" yaml:"phase"`     /*READY or NOTREADY */
-	Version        int                 `json:"version" yaml:"version"` /* 版本号 */
+	Phase          string              `json:"phase" yaml:"phase"`     /*READY or NOTREADY，初始为NOT READY */
+	Version        int                 `json:"version" yaml:"version"` /* 版本号 初始为0*/
 	ServicesStatus map[uint16][]string `json:"servicesStatus" yaml:"servicesStatus"`
 }
 
@@ -66,7 +66,7 @@ func NodePort2ClusterIP(np *NodePort) ClusterIP {
 	result.Spec.Selector = np.Spec.Selector
 	for _, v := range np.Spec.Ports {
 		result.Spec.Ports = append(result.Spec.Ports, ClusterIPPortInfo{
-			Protocal:   v.Protocal,
+			Protocol:   v.Protocol,
 			Port:       v.Port,
 			TargetPort: v.TargetPort,
 		})

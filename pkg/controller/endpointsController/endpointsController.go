@@ -135,7 +135,7 @@ func (ec *EndpointsController) routine() {
 				// 创建新ep
 				new_endpoint := service.EndPoint{
 					Id:       uuid.NewString(),
-					Protocol: port_info.Protocal,
+					Protocol: port_info.Protocol,
 					PodID:    pod_list[podname].Metadata.UUID,
 					PodIP:    pod_list[podname].Status.PodIP,
 					PodPort:  port_info.TargetPort,
