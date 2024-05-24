@@ -15,7 +15,7 @@ func TestMain(m *testing.M) {
 	// )
 	cadvisorutils.GetContainerCPUandMemory(
 		"localhost",
-		"8080",
+		"8090",
 		"some-rabbit",
 	)
 }

@@ -16,13 +16,15 @@ import (
 	"github.com/docker/go-connections/nat"
 )
 
+var NodeRuntimeMangaer = NewRuntimeManager()
+
 type RuntimeManager struct {
 	containerManager *runtime_container.ContainerManager
 	imageManager     *runtime_image.ImageManager
 }
 
-func NewRuntimeManager() *RuntimeManager {
-	return &RuntimeManager{
+func NewRuntimeManager() RuntimeManager {
+	return RuntimeManager{
 		containerManager: &runtime_container.ContainerManager{},
 		imageManager:     &runtime_image.ImageManager{},
 	}
@@ -95,11 +97,11 @@ func (rm *RuntimeManager) CreatePod(pod *minik8s_pod.Pod) (string, error) {
 			Memory:      container.Resources.Limits.Memory,
 		}
 		containerId, err := rm.containerManager.CreateContainer(container.Name, containerConfig)
-		pod.Spec.Containers[i].Id = containerId
 		if err != nil {
 			fmt.Println("Failed to create container", err)
 			return "", err
 		}
+		pod.Spec.Containers[i].Id = containerId
 		// Start the container
 		_, err = rm.containerManager.StartContainer(containerId)
 		if err != nil {
@@ -134,12 +136,13 @@ func (rm *RuntimeManager) RemovePod(pod *minik8s_pod.Pod) error {
 
 func (rm *RuntimeManager) CreateAndStartPauseContainer(pod *minik8s_pod.Pod) (string, error) {
 	// First, try to pull pause container's image
-	_, err := rm.imageManager.PullImage("registry.aliyuncs.com/google_containers/pause:3.9")
+	_, err := rm.imageManager.PullImage(runtime_image.PauseContainerImage)
 	if err != nil {
 		return "", err
 	}
 
 	uuid := pod.Metadata.UUID
+	// A pod's pause container is named as "pause-<pod-uuid>"
 	pauseName := "pause-" + uuid
 
 	// Create a container for pause
@@ -202,7 +205,7 @@ func (rm *RuntimeManager) CreateAndStartPauseContainer(pod *minik8s_pod.Pod) (st
 	}
 
 	pauseContainerId, err := rm.containerManager.CreateContainer(pauseName, &minik8s_container.CreateContainerConfig{
-		Image:        "registry.aliyuncs.com/google_containers/pause:3.9",
+		Image:        runtime_image.PauseContainerImage,
 		IpcMode:      "shareable",
 		PortBindings: PodPortBindings,
 		ExposedPorts: PodExposedPorts,
@@ -260,11 +263,109 @@ func (rm *RuntimeManager) GetNodeStatus() (minik8s_node.NodeStatus, error) {
 		NumPods:    0,
 		UpdateTime: updateTime,
 	}, nil
-
 }
 
-// func (rm *RuntimeManager) RuncAdvicorContainer() {
-// 	containerConfig := &minik8s_container.CreateContainerConfig{
-// 		Image: "gcr.nju.edu.cn/cadvisor/cadvisor:v0.49.1",
-// 	}
-// }
+func (rm *RuntimeManager) RestartPod(pod *minik8s_pod.Pod) (string, error) {
+
+	fmt.Println("Restarting pod for ", pod.Metadata.Name, " with UUID ", pod.Metadata.UUID)
+	// Check this pod's pause container exists or not
+	pauseName := "pause-" + pod.Metadata.UUID
+	pauseContainer, err := rm.containerManager.GetContainerByName(pauseName)
+	var pauseContainerId string
+	if err != nil {
+		// This means the pause container does not exist, we have to create it again
+		pauseContainerId, err = rm.CreateAndStartPauseContainer(pod)
+		if err != nil {
+			return "", err
+		}
+	} else {
+		pauseContainerId, err = rm.containerManager.RestartContainer(pauseContainer.ID)
+		if err != nil {
+			return "", err
+		}
+	}
+
+	// Pause container's IP address maybe changed, we have to update the pod's IP address
+	pod.Status.PodIP, err = rm.containerManager.GetContainerIpAddress(pauseContainerId)
+	if err != nil {
+		return "", err
+	}
+
+	// Restart all containers in the pod
+	for i, container := range pod.Spec.Containers {
+		// Check this container exists or not
+		realContainer, err := rm.containerManager.GetContainerByName(container.Name)
+		if err != nil {
+			env := []string{}
+			for _, envVar := range container.Env {
+				env = append(env, fmt.Sprintf("%s=%s", envVar.Name, envVar.Value))
+			}
+
+			// TODO: parse command
+
+			volumeBinds := rm.GetVolumeBinds(&pod.Spec.Volumes, &container.VolumeMounts)
+			for _, volumeBind := range volumeBinds {
+				fmt.Println("Volume bind: ", volumeBind)
+			}
+
+			containerConfig := &minik8s_container.CreateContainerConfig{
+				Image:       container.Image,
+				NetworkMode: "container:" + pauseContainerId,
+				IpcMode:     "container:" + pauseContainerId,
+				PidMode:     "container:" + pauseContainerId,
+				Env:         env,
+				Binds:       volumeBinds,
+				CPU:         container.Resources.Limits.CPU,
+				Memory:      container.Resources.Limits.Memory,
+			}
+			containerId, err := rm.containerManager.CreateContainer(container.Name, containerConfig)
+			if err != nil {
+				fmt.Println("Failed to create container", err)
+				return "", err
+			}
+			pod.Spec.Containers[i].Id = containerId
+			// Start the container
+			_, err = rm.containerManager.StartContainer(containerId)
+			if err != nil {
+				fmt.Println("Failed to start container", err)
+				return "", err
+			}
+		} else {
+			_, err = rm.containerManager.RestartContainer(realContainer.ID)
+			if err != nil {
+				fmt.Println("Failed to restart container: ", err)
+				return "", err
+			}
+		}
+	}
+
+	pod.Status.Phase = minik8s_pod.PodRunning
+
+	return pod.Metadata.UUID, nil
+}
+
+func (rm *RuntimeManager) RuncAdvicorContainer() {
+	// Check the cAdvisor container exits or not
+	cAdvisorContainerName := "cadvisor"
+	cAdvisorContainer, err := rm.containerManager.GetContainerByName(cAdvisorContainerName)
+	if err == nil {
+		if cAdvisorContainer.State == "running" {
+			// cAdvisor has already been running
+			fmt.Println("cAdvisor container has already been running! ID: ", cAdvisorContainer.ID)
+			return
+		} else {
+			cAdvisorId, err := rm.containerManager.RestartContainer(cAdvisorContainer.ID)
+			if err == nil {
+				fmt.Println("cAdvisor container restart success! ID: ", cAdvisorId)
+				return
+			}
+		}
+	}
+
+	cAdvisorId, err := rm.containerManager.RunDefaultcAdvisorContainer()
+	if err != nil {
+		fmt.Println("RunDefaultcAdvisorContainer failed")
+		return
+	}
+	fmt.Println("cAdvisor container start success! ID: ", cAdvisorId)
+}

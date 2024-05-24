@@ -7,6 +7,7 @@ import (
 	"time"
 
 	minik8s_kubelet "github.com/MiniK8s-SE3356/minik8s/pkg/kubelet"
+	minik8s_runtime "github.com/MiniK8s-SE3356/minik8s/pkg/runtime"
 	minik8s_message "github.com/MiniK8s-SE3356/minik8s/pkg/utils/message"
 	"github.com/MiniK8s-SE3356/minik8s/pkg/utils/nettools"
 	"github.com/spf13/pflag"
@@ -33,7 +34,8 @@ func main() {
 	pflag.StringArrayVar(&labels, "label", []string{}, "Node labels")
 	pflag.Parse()
 
-	// TODO : Run cAdvisor container
+	// run a cAdvisor container to monitor the node and container status
+	minik8s_runtime.NodeRuntimeMangaer.RuncAdvicorContainer()
 
 	kubeletConfig := minik8s_kubelet.KubeletConfig{
 		MQConfig: minik8s_message.MQConfig{

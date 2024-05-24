@@ -8,14 +8,15 @@ import (
 
 // PodManager will receive pod requests from the kubelet and manage pod workers to handle them.
 type PodManager interface {
-	AddPod(pod *apiobject_pod.Pod) error
-	UpdatePod(pod *apiobject_pod.Pod) error
-	RemovePod(pod *apiobject_pod.Pod) error
+	AddPod(pod *apiobject_pod.Pod, callback func(arg interface{})) error
+	UpdatePod(pod *apiobject_pod.Pod, callback func(arg interface{})) error
+	RemovePod(pod *apiobject_pod.Pod, callback func(arg interface{})) error
 	GetPods() ([]*apiobject_pod.Pod, error)
 	GetPodByUID(uid string) (*apiobject_pod.Pod, error)
 	GetPodByName(namespace, name string) (*apiobject_pod.Pod, error)
 	GetPodNum() int
 	FetchLocalPods() ([]apiobject_pod.Pod, error)
+	RemovePodCallback(arg interface{})
 }
 
 // podManager is the default implementation of PodManager.
@@ -32,7 +33,7 @@ func NewPodManager(apiServer APIServer) PodManager {
 	}
 }
 
-func (pm *podManager) AddPod(pod *apiobject_pod.Pod) error {
+func (pm *podManager) AddPod(pod *apiobject_pod.Pod, callback func(arg interface{})) error {
 	fmt.Println(pod.Metadata.Name + " is added to the pod manager.")
 	UID := pod.Metadata.UUID
 	fmt.Println("UID: " + UID)
@@ -52,8 +53,9 @@ func (pm *podManager) AddPod(pod *apiobject_pod.Pod) error {
 
 	// Create add task for the pod worker
 	addTask := &Task{
-		Type: Task_Add,
-		Pod:  pod,
+		Type:     Task_Add,
+		Pod:      pod,
+		Callback: callback,
 	}
 
 	// Add the task to the pod worker's queue
@@ -65,12 +67,12 @@ func (pm *podManager) AddPod(pod *apiobject_pod.Pod) error {
 	return nil
 }
 
-func (pm *podManager) UpdatePod(pod *apiobject_pod.Pod) error {
+func (pm *podManager) UpdatePod(pod *apiobject_pod.Pod, callback func(arg interface{})) error {
 	fmt.Println("Updating pod: ", pod.Metadata.Name, " with UID: ", pod.Metadata.UUID)
 	return nil
 }
 
-func (pm *podManager) RemovePod(pod *apiobject_pod.Pod) error {
+func (pm *podManager) RemovePod(pod *apiobject_pod.Pod, callback func(arg interface{})) error {
 	fmt.Println("Removing pod: ", pod.Metadata.Name, " with UID: ", pod.Metadata.UUID)
 	UID := pod.Metadata.UUID
 
@@ -80,8 +82,9 @@ func (pm *podManager) RemovePod(pod *apiobject_pod.Pod) error {
 	}
 
 	removeTask := &Task{
-		Type: Task_Remove,
-		Pod:  pod,
+		Type:     Task_Remove,
+		Pod:      pod,
+		Callback: callback,
 	}
 
 	err := pm.PodWorkers[UID].AddTask(removeTask)
@@ -116,4 +119,12 @@ func (pm *podManager) FetchLocalPods() ([]apiobject_pod.Pod, error) {
 		result = append(result, podWorker.LocalPod)
 	}
 	return result, nil
+}
+
+func (pm *podManager) RemovePodCallback(arg interface{}) {
+	if UID, ok := arg.(string); ok {
+		delete(pm.PodWorkers, UID)
+	} else {
+		fmt.Println("Error removing pod worker")
+	}
 }
