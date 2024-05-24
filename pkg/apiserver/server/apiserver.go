@@ -43,6 +43,13 @@ func bind(r *gin.Engine) {
 	r.POST(url.AddHPA, handler.AddHPA)
 	r.GET(url.GetHPA, handler.GetHPA)
 	r.POST(url.RemoveHPA, handler.RemoveHPA)
+	r.POST(url.UpdateHPA, handler.UpdateHPA)
+
+	r.POST(url.AddDNS, handler.AddDNS)
+	r.GET(url.GetDNS, handler.GetDNS)
+	r.POST(url.RemoveDNS, handler.RemoveDNS)
+	r.POST(url.UpdateDNS, handler.UpdateDNS)
+	r.POST(url.GetAllDNS, handler.GetAllDNS)
 
 	r.POST(url.AddService, handler.AddService)
 	r.GET(url.GetAllService, handler.GetAllService)
@@ -75,6 +82,7 @@ func Start() {
 		return
 	}
 
+	go process.CheckNodeWrapper()
 	r := gin.Default()
 	bind(r)
 	r.Run() // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")

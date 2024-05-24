@@ -3,6 +3,7 @@ package process
 import (
 	"encoding/json"
 	"fmt"
+	"time"
 
 	"github.com/MiniK8s-SE3356/minik8s/pkg/apiObject/pod"
 	"github.com/MiniK8s-SE3356/minik8s/pkg/apiObject/service"
@@ -158,6 +159,7 @@ func NodeHeartBeat(nodeStatus node.NodeStatus, pods []pod.Pod, nodePorts []servi
 		return "failed to unmarshal", err
 	}
 	tmp.Status = nodeStatus
+	tmp.Status.UpdateTime = time.Now()
 	nodeInfo, err = json.Marshal(tmp)
 	if err != nil {
 		fmt.Println("failed to marshal")
@@ -175,18 +177,21 @@ func NodeHeartBeat(nodeStatus node.NodeStatus, pods []pod.Pod, nodePorts []servi
 		podInfo, err := EtcdCli.Get(podPrefix + ns + "/" + name)
 		if err != nil || len(podInfo) == 0 {
 			fmt.Println("failed to get node from etcd")
-			return "failed to get node from etcd", err
+			continue
+			// return "failed to get node from etcd", err
 		}
 		var tmp pod.Pod
 		err = json.Unmarshal(podInfo, &tmp)
 		if err != nil {
 			fmt.Println("failed to unmarshal")
-			return "failed to unmarshal", err
+			continue
+			// return "failed to unmarshal", err
 		}
 		tmp.Status = p.Status
 		podInfo, err = json.Marshal(tmp)
 		if err != nil {
 			fmt.Println("failed to marshal")
+			continue
 			// return "failed to marshal", err
 		}
 		err = EtcdCli.Put(podPrefix+ns+"/"+name, string(podInfo))
@@ -198,4 +203,67 @@ func NodeHeartBeat(nodeStatus node.NodeStatus, pods []pod.Pod, nodePorts []servi
 	}
 
 	return "", nil
+}
+
+func checkNode() {
+	mu.Lock()
+	defer mu.RLock()
+	pairs, err := EtcdCli.GetWithPrefix(nodePrefix)
+	if err != nil {
+		fmt.Println("failed to get nodes from etcd")
+
+	}
+	invalidNodeSet := make(map[string]bool, 0)
+	for _, p := range pairs {
+		var tmp node.Node
+		err := json.Unmarshal([]byte(p.Value), &tmp)
+		if err != nil {
+			fmt.Println("failed to unmarshal")
+			continue
+		}
+
+		if time.Since(tmp.Status.UpdateTime) > 60*time.Second {
+			// node超时
+			invalidNodeSet[tmp.Metadata.Name] = true
+		}
+	}
+
+	if len(invalidNodeSet) == 0 {
+		return
+	}
+
+	pairs, err = EtcdCli.GetWithPrefix(podPrefix)
+	if err != nil {
+		fmt.Println("failed to get pods from etcd")
+	}
+
+	for _, p := range pairs {
+		var tmp pod.Pod
+		err := json.Unmarshal([]byte(p.Value), &tmp)
+		if err != nil {
+			fmt.Println("failed to unmarshal")
+			continue
+		}
+
+		if invalidNodeSet[tmp.Spec.NodeName] {
+			err := EtcdCli.Del(podPrefix + tmp.Metadata.Namespace + "/" + tmp.Metadata.Name)
+			if err != nil {
+				fmt.Println("failed to delete pod in etcd")
+			}
+		}
+	}
+
+	for n := range invalidNodeSet {
+		err := EtcdCli.Del(nodePrefix + n)
+		if err != nil {
+			fmt.Println("failed to delete node in etcd")
+		}
+	}
+}
+
+func CheckNodeWrapper() {
+	for {
+		checkNode()
+		<-time.After(60 * time.Second)
+	}
 }

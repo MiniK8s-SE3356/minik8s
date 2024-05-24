@@ -4,25 +4,25 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/MiniK8s-SE3356/minik8s/pkg/apiObject/hpa"
+	"github.com/MiniK8s-SE3356/minik8s/pkg/apiObject/dns"
 	"github.com/MiniK8s-SE3356/minik8s/pkg/apiObject/yaml"
 	"github.com/MiniK8s-SE3356/minik8s/pkg/apiserver/process"
 
 	"github.com/gin-gonic/gin"
 )
 
-// gin server的 /api/v1/addHPA对应的方法
-func AddHPA(c *gin.Context) {
+// gin server的 /api/v1/addDNS对应的方法
+func AddDNS(c *gin.Context) {
 	var requestMsg struct {
 		Namespace string
-		Desc      yaml.HPADesc
+		Desc      yaml.DNSDesc
 	}
 	if err := c.ShouldBindJSON(&requestMsg); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	result, err := process.AddHPA(requestMsg.Namespace, &requestMsg.Desc)
+	result, err := process.AddDNS(requestMsg.Namespace, &requestMsg.Desc)
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -32,7 +32,7 @@ func AddHPA(c *gin.Context) {
 	c.JSON(http.StatusOK, result)
 }
 
-func RemoveHPA(c *gin.Context) {
+func RemoveDNS(c *gin.Context) {
 	var param map[string]string
 	if err := c.ShouldBindJSON(&param); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -50,26 +50,26 @@ func RemoveHPA(c *gin.Context) {
 		return
 	}
 
-	result, err := process.RemoveHPA(namespace, name)
+	result, err := process.RemoveDNS(namespace, name)
 	if err != nil {
-		fmt.Println("error in process.RemoveHPA ", err)
+		fmt.Println("error in process.RemoveDNS ", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 	}
 
 	c.JSON(http.StatusOK, result)
 }
 
-func UpdateHPA(c *gin.Context) {
+func UpdateDNS(c *gin.Context) {
 	var requestMsg struct {
 		Namespace string
-		hpa       hpa.HPA
+		dns       dns.DNS
 	}
 	if err := c.ShouldBindJSON(&requestMsg); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	result, err := process.UpdateHPA(requestMsg.Namespace, requestMsg.hpa)
+	result, err := process.UpdateDNS(requestMsg.Namespace, requestMsg.dns)
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -79,41 +79,41 @@ func UpdateHPA(c *gin.Context) {
 	c.JSON(http.StatusOK, result)
 }
 
-func GetHPA(c *gin.Context) {
+func GetDNS(c *gin.Context) {
 	// namespace := c.Query("namespace")
 	namespace := process.DefaultNamespace
 	name := c.Query("name")
 
 	// 四种情况
-	// 1. namespace name均为空 获取全部hpa
+	// 1. namespace name均为空 获取全部dns
 	if namespace == "" && name == "" {
-		result, err := process.GetAllHPAs()
+		result, err := process.GetAllDNSs()
 
 		if err != nil {
-			fmt.Println("error in process.GetHPA ", err)
+			fmt.Println("error in process.GetDNS ", err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		}
 
 		c.JSON(http.StatusOK, result)
 	}
-	// 2. namespace为空，name不为空 获取Default下的hpa
+	// 2. namespace为空，name不为空 获取Default下的dns
 	if namespace == "" && name != "" {
 		namespace = "Default"
-		result, err := process.GetHPA(namespace, name)
+		result, err := process.GetDNS(namespace, name)
 
 		if err != nil {
-			fmt.Println("error in process.GetHPA ", err)
+			fmt.Println("error in process.GetDNS ", err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		}
 
 		c.JSON(http.StatusOK, result)
 	}
-	// 3. namespace不为空，name为空 获取namespace下的全部hpa
+	// 3. namespace不为空，name为空 获取namespace下的全部dns
 	if namespace != "" && name == "" {
-		result, err := process.GetHPAs(namespace)
+		result, err := process.GetDNSs(namespace)
 
 		if err != nil {
-			fmt.Println("error in process.GetHPA ", err)
+			fmt.Println("error in process.GetDNS ", err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		}
 
@@ -121,10 +121,10 @@ func GetHPA(c *gin.Context) {
 	}
 	// 4. 均不为空 获取指定的
 	if namespace != "" && name != "" {
-		result, err := process.GetHPA(namespace, name)
+		result, err := process.GetDNS(namespace, name)
 
 		if err != nil {
-			fmt.Println("error in process.GetHPA ", err)
+			fmt.Println("error in process.GetDNS ", err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		}
 
@@ -133,7 +133,17 @@ func GetHPA(c *gin.Context) {
 
 }
 
-// func DescribeHPA(c *gin.Context) {
+func GetAllDNS(c *gin.Context) {
+	result, err := process.GetAllDNSs()
+	if err != nil {
+		fmt.Println("error in process.GetAllDNSs ", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	}
+
+	c.JSON(http.StatusOK, result)
+}
+
+// func DescribeDNS(c *gin.Context) {
 // 	var param map[string]string
 // 	if err := c.ShouldBindJSON(&param); err != nil {
 // 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -147,26 +157,26 @@ func GetHPA(c *gin.Context) {
 // 	var result string
 // 	var err error
 // 	// 四种情况
-// 	// 1. namespace name均为空 获取全部hpa
+// 	// 1. namespace name均为空 获取全部dns
 // 	if namespace == "" && name == "" {
-// 		result, err = process.DescribeAllHPAs()
+// 		result, err = process.DescribeAllDNSs()
 // 	}
-// 	// 2. namespace为空，name不为空 获取Default下的hpa
+// 	// 2. namespace为空，name不为空 获取Default下的dns
 // 	if namespace == "" && name != "" {
 // 		namespace = "Default"
-// 		result, err = process.DescribeHPA(namespace, name)
+// 		result, err = process.DescribeDNS(namespace, name)
 // 	}
-// 	// 3. namespace不为空，name为空 获取namespace下的全部hpa
+// 	// 3. namespace不为空，name为空 获取namespace下的全部dns
 // 	if namespace != "" && name == "" {
-// 		result, err = process.DescribeHPAs(namespace)
+// 		result, err = process.DescribeDNSs(namespace)
 // 	}
 // 	// 4. 均不为空 获取指定的
 // 	if namespace != "" && name == "" {
-// 		result, err = process.DescribeHPA(namespace, name)
+// 		result, err = process.DescribeDNS(namespace, name)
 // 	}
 
 // 	if err != nil {
-// 		fmt.Println("error in process.DescribeHPA ", err)
+// 		fmt.Println("error in process.DescribeDNS ", err)
 // 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 // 	}
 

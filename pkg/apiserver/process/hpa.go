@@ -77,8 +77,32 @@ func RemoveHPA(namespace string, name string) (string, error) {
 	return "del successfully", nil
 }
 
-func ModifyHPA(namespace string, name string) error {
-	return nil
+func UpdateHPA(namespace string, hpa hpa.HPA) (string, error) {
+	// 先检查是否存在
+	mu.Lock()
+	defer mu.Unlock()
+	existed, err := EtcdCli.Exist(hpaPrefix + namespace + "/" + hpa.Metadata.Name)
+	if err != nil {
+		return "failed to check existence in etcd", err
+	}
+	if !existed {
+		return "hpa not exist", errors.New("hpa existed")
+	}
+
+	value, err := json.Marshal(hpa)
+	if err != nil {
+		fmt.Println("failed to marshal hpa")
+		return "failed to marshal hpa", err
+	}
+
+	err = EtcdCli.Put(hpaPrefix+namespace+"/"+hpa.Metadata.Name, string(value))
+	if err != nil {
+		fmt.Println("failed to write to etcd ", err.Error())
+		return "failed to write to etcd", err
+	}
+
+	return "update hpa success", nil
+
 }
 
 func GetHPA(namespace string, name string) (hpa.HPA, error) {
