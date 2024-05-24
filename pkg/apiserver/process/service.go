@@ -29,6 +29,8 @@ func AddService(namespace string, serviceType string, content string) (string, e
 		clusterIP := service.ClusterIP{}
 		id, _ := idgenerate.GenerateID()
 		clusterIP.Metadata.Id = id
+		clusterIP.ApiVersion = desc.ApiVersion
+		clusterIP.Kind = desc.Kind
 		clusterIP.Metadata.Namespace = namespace
 		clusterIP.Metadata.Name = desc.Metadata.Name
 		clusterIP.Metadata.Ip = ""
@@ -71,6 +73,8 @@ func AddService(namespace string, serviceType string, content string) (string, e
 		id, _ := idgenerate.GenerateID()
 		nodePort.Metadata.Id = id
 		nodePort.Metadata.Name = desc.Metadata.Name
+		nodePort.ApiVersion = desc.ApiVersion
+		nodePort.Kind = desc.Kind
 		nodePort.Metadata.Labels = desc.Metadata.Labels
 		nodePort.Metadata.Namespace = namespace
 		nodePort.Spec = desc.Spec
