@@ -26,6 +26,7 @@ func AddService(namespace string, desc interface{}) (string, error) {
 			clusterIP.Metadata.Id = id
 		}
 		clusterIP.Metadata.Namespace = namespace
+		clusterIP.Metadata.Ip = ""
 		clusterIP.Status.Phase = service.CLUSTERIP_NOTREADY
 		clusterIP.Status.Version = 0
 

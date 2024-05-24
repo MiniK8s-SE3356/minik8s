@@ -19,7 +19,7 @@ func AddService(c *gin.Context) {
 		return
 	}
 
-	result, err := process.AddService(requestMsg.Namespace, &requestMsg.Desc)
+	result, err := process.AddService(requestMsg.Namespace, requestMsg.Desc)
 	if err != nil {
 		fmt.Println("error in process.AddService ", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
