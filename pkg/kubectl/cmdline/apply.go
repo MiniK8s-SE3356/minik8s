@@ -115,7 +115,7 @@ func applyService(namespace string, b []byte) error {
 	}
 
 	// 这里要区分service下面的子类型
-	serviceType, ok := ServiceDesc.Spec["type"].(string)
+	serviceType, ok := ServiceDesc.Spec.(map[string]interface{})["type"].(string)
 	fmt.Println(serviceType)
 	if !ok {
 		// 默认是ClusterIP
@@ -123,50 +123,60 @@ func applyService(namespace string, b []byte) error {
 	}
 
 	var jsonData []byte
-	if serviceType == "ClusterIP" {
-		var requestMsg struct {
-			Namespace string
-			Desc      minik8s_yaml.ServiceClusterIPDesc
-		}
-
-		var desc minik8s_yaml.ServiceClusterIPDesc
-		err := yaml.Unmarshal(b, &desc)
-		if err != nil {
-			fmt.Println("failed to unmarshal clusterIP service ", err.Error())
-			return err
-		}
-
-		requestMsg.Desc = desc
-		requestMsg.Namespace = namespace
-
-		jsonData, err = json.Marshal(requestMsg)
-		if err != nil {
-			fmt.Println("failed to marshal clusterIP service", err.Error())
-			return err
-		}
-	} else if serviceType == "NodePort" {
-		var requestMsg struct {
-			Namespace string
-			Desc      minik8s_yaml.ServiceNodePortDesc
-		}
-
-		var desc minik8s_yaml.ServiceNodePortDesc
-		err := yaml.Unmarshal(b, &desc)
-		if err != nil {
-			fmt.Println("failed to unmarshal NodePort service ", err.Error())
-			return err
-		}
-
-		requestMsg.Desc = desc
-		requestMsg.Namespace = namespace
-
-		jsonData, err = json.Marshal(requestMsg)
-		if err != nil {
-			fmt.Println("failed to marshal NodePort service", err.Error())
-			return err
-		}
+	var requestMsg struct {
+		Namespace string `json:"namespace"`
+		Ty        string `json:"ty"`
+		Content   string `json:"content"`
 	}
+	requestMsg.Namespace = namespace
+	requestMsg.Ty = serviceType
+	requestMsg.Content = string(b)
 
+	// if serviceType == "ClusterIP" {
+	// 	var requestMsg struct {
+	// 		Namespace string
+	// 		Desc      minik8s_yaml.ServiceClusterIPDesc
+	// 	}
+
+	// 	var desc minik8s_yaml.ServiceClusterIPDesc
+	// 	err := yaml.Unmarshal(b, &desc)
+	// 	if err != nil {
+	// 		fmt.Println("failed to unmarshal clusterIP service ", err.Error())
+	// 		return err
+	// 	}
+
+	// 	requestMsg.Desc = desc
+	// 	requestMsg.Namespace = namespace
+
+	// 	jsonData, err = json.Marshal(requestMsg)
+	// 	if err != nil {
+	// 		fmt.Println("failed to marshal clusterIP service", err.Error())
+	// 		return err
+	// 	}
+	// } else if serviceType == "NodePort" {
+	// 	var requestMsg struct {
+	// 		Namespace string
+	// 		Desc      minik8s_yaml.ServiceNodePortDesc
+	// 	}
+
+	// 	var desc minik8s_yaml.ServiceNodePortDesc
+	// 	err := yaml.Unmarshal(b, &desc)
+	// 	if err != nil {
+	// 		fmt.Println("failed to unmarshal NodePort service ", err.Error())
+	// 		return err
+	// 	}
+
+	// 	requestMsg.Desc = desc
+	// 	requestMsg.Namespace = namespace
+
+	// 	jsonData, err = json.Marshal(requestMsg)
+	// 	if err != nil {
+	// 		fmt.Println("failed to marshal NodePort service", err.Error())
+	// 		return err
+	// 	}
+	// }
+
+	fmt.Println(string(jsonData))
 	result, err := httpRequest.PostRequest(url.RootURL+url.AddService, jsonData)
 	if err != nil {
 		fmt.Println("error when post request ", err.Error())

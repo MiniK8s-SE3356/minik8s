@@ -11,15 +11,16 @@ import (
 // POST 参数类型ServiceDesc
 func AddService(c *gin.Context) {
 	var requestMsg struct {
-		Namespace string
-		Desc      map[string]interface{}
+		Namespace string `json:"namespace"`
+		Ty        string `json:"ty"`
+		Content   string `json:"content"`
 	}
 	if err := c.ShouldBindJSON(&requestMsg); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	result, err := process.AddService(requestMsg.Namespace, requestMsg.Desc)
+	result, err := process.AddService(requestMsg.Namespace, requestMsg.Ty, requestMsg.Content)
 	if err != nil {
 		fmt.Println("error in process.AddService ", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})

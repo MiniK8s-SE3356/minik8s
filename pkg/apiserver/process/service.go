@@ -6,27 +6,33 @@ import (
 	"fmt"
 
 	"github.com/MiniK8s-SE3356/minik8s/pkg/apiObject/service"
+	"github.com/MiniK8s-SE3356/minik8s/pkg/apiObject/yaml"
 	"github.com/MiniK8s-SE3356/minik8s/pkg/utils/idgenerate"
 )
 
-func AddService(namespace string, desc interface{}) (string, error) {
+func AddService(namespace string, serviceType string, content string) (string, error) {
 	mu.Lock()
 	defer mu.Unlock()
-	serviceType, ok := desc.(map[string]interface{})["Spec"].(map[string]interface{})["type"].(string)
 	fmt.Println(serviceType)
-	if !ok {
+	if serviceType == "" {
 		// 默认是ClusterIP
 		serviceType = "ClusterIP"
 	}
 
 	if serviceType == "ClusterIP" {
-		clusterIP := desc.(service.ClusterIP)
-		if clusterIP.Metadata.Id == "" {
-			id, _ := idgenerate.GenerateID()
-			clusterIP.Metadata.Id = id
+		var desc yaml.ServiceClusterIPDesc
+		err := json.Unmarshal([]byte(content), &desc)
+		if err != nil {
+			fmt.Println("failed to unmarshal")
+			return "failed to unmarshal", err
 		}
+		clusterIP := service.ClusterIP{}
+		id, _ := idgenerate.GenerateID()
+		clusterIP.Metadata.Id = id
 		clusterIP.Metadata.Namespace = namespace
 		clusterIP.Metadata.Ip = ""
+		clusterIP.Metadata.Labels = desc.Metadata.Labels
+		clusterIP.Spec = desc.Spec
 		clusterIP.Status.Phase = service.CLUSTERIP_NOTREADY
 		clusterIP.Status.Version = 0
 
@@ -53,13 +59,20 @@ func AddService(namespace string, desc interface{}) (string, error) {
 		return "add successfully", nil
 
 	} else if serviceType == "NodePort" {
-		nodePort := desc.(service.NodePort)
-
-		if nodePort.Metadata.Id == "" {
-			id, _ := idgenerate.GenerateID()
-			nodePort.Metadata.Id = id
+		var desc yaml.ServiceNodePortDesc
+		err := json.Unmarshal([]byte(content), &desc)
+		if err != nil {
+			fmt.Println("failed to unmarshal")
+			return "failed to unmarshal", err
 		}
+
+		nodePort := service.NodePort{}
+		id, _ := idgenerate.GenerateID()
+		nodePort.Metadata.Id = id
+		nodePort.Metadata.Name = desc.Metadata.Name
+		nodePort.Metadata.Labels = desc.Metadata.Labels
 		nodePort.Metadata.Namespace = namespace
+		nodePort.Spec = desc.Spec
 		nodePort.Status.Phase = service.NODEPORT_NOTREADY
 		nodePort.Status.Version = 0
 
