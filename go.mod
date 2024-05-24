@@ -7,8 +7,8 @@ require (
 	github.com/gin-gonic/gin v1.9.1
 	github.com/shirou/gopsutil v3.21.11+incompatible
 	github.com/spf13/cobra v1.8.0
-	github.com/txn2/txeh v1.5.5
 	github.com/spf13/pflag v1.0.5
+	github.com/txn2/txeh v1.5.5
 	go.etcd.io/etcd/client/v3 v3.5.13
 	gopkg.in/yaml.v3 v3.0.1
 )

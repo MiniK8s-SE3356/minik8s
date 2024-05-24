@@ -250,7 +250,7 @@ func (rm *RuntimeManager) GetNodeStatus() (minik8s_node.NodeStatus, error) {
 	cpuPercent := nodestatusutils.GetNodeCpuPercent()
 	memPercent := nodestatusutils.GetNodeMemPercent()
 
-	updateTime := time.Now().String()
+	updateTime := time.Now()
 
 	// TODO: Number of pods should be filled in the kubelet, the length of map in podManager
 

@@ -31,15 +31,15 @@ func AddDNS(namespace string, desc *yaml.DNSDesc) (string, error) {
 	}
 
 	// 构建然后转json
-	rs := &dns.DNS{}
-	rs.APIVersion = desc.ApiVersion
+	rs := &dns.Dns{}
+	rs.ApiVersion = desc.ApiVersion
 	rs.Kind = desc.Kind
-	rs.Metadata.UUID = id
+	rs.Metadata.Id = id
 	rs.Metadata.Name = desc.Metadata.Name
 	rs.Metadata.Namespace = namespace
-	rs.Metadata.Labels = desc.Metadata.Labels
+	// rs.Metadata.Labels = desc.Metadata.Labels
 	rs.Spec = desc.Spec
-	rs.Status = dns.DNSStatus{}
+	rs.Status = dns.DnsStatus{}
 
 	value, err := json.Marshal(rs)
 	if err != nil {
@@ -76,7 +76,7 @@ func RemoveDNS(namespace string, name string) (string, error) {
 	return "del successfully", nil
 }
 
-func UpdateDNS(namespace string, dns dns.DNS) (string, error) {
+func UpdateDNS(namespace string, dns dns.Dns) (string, error) {
 	// 先检查是否存在
 	mu.Lock()
 	defer mu.Unlock()
@@ -104,10 +104,10 @@ func UpdateDNS(namespace string, dns dns.DNS) (string, error) {
 
 }
 
-func GetDNS(namespace string, name string) (dns.DNS, error) {
+func GetDNS(namespace string, name string) (dns.Dns, error) {
 	mu.RLock()
 	defer mu.RUnlock()
-	var rs dns.DNS
+	var rs dns.Dns
 
 	v, err := EtcdCli.Get(dnsPrefix + namespace + "/" + name)
 	if err != nil {
@@ -123,10 +123,10 @@ func GetDNS(namespace string, name string) (dns.DNS, error) {
 	return rs, nil
 }
 
-func GetDNSs(namespace string) (map[string]dns.DNS, error) {
+func GetDNSs(namespace string) (map[string]dns.Dns, error) {
 	mu.RLock()
 	defer mu.RUnlock()
-	rsmap := make(map[string]dns.DNS, 0)
+	rsmap := make(map[string]dns.Dns, 0)
 
 	pairs, err := EtcdCli.GetWithPrefix(dnsPrefix + namespace)
 	if err != nil {
@@ -135,7 +135,7 @@ func GetDNSs(namespace string) (map[string]dns.DNS, error) {
 	}
 
 	for _, p := range pairs {
-		var tmp dns.DNS
+		var tmp dns.Dns
 		err := json.Unmarshal([]byte(p.Value), &tmp)
 		if err != nil {
 			fmt.Println("failed to translate into json")
@@ -147,10 +147,10 @@ func GetDNSs(namespace string) (map[string]dns.DNS, error) {
 	return rsmap, nil
 }
 
-func GetAllDNSs() ([]dns.DNS, error) {
+func GetAllDNSs() ([]dns.Dns, error) {
 	mu.RLock()
 	defer mu.RUnlock()
-	rsmap := make([]dns.DNS, 0)
+	rsmap := make([]dns.Dns, 0)
 
 	pairs, err := EtcdCli.GetWithPrefix(dnsPrefix)
 	if err != nil {
@@ -159,7 +159,7 @@ func GetAllDNSs() ([]dns.DNS, error) {
 	}
 
 	for _, p := range pairs {
-		var tmp dns.DNS
+		var tmp dns.Dns
 		err := json.Unmarshal([]byte(p.Value), &tmp)
 		if err != nil {
 			fmt.Println("failed to translate into json")

@@ -7,11 +7,12 @@ const (
 )
 
 type Dns struct {
-	ApiVersion string      `json:"apiVersion" yaml:"apiVersion"`
-	Kind       string      `json:"kind" yaml:"kind"`
-	Metadata   DnsMetadata `json:"metadata" yaml:"metadata"`
-	Spec       DnsSpec     `json:"spec" yaml:"spec"`
-	Status     DnsStatus   `json:"status" yaml:"status"`
+	ApiVersion string `json:"apiVersion" yaml:"apiVersion"`
+	Kind       string `json:"kind" yaml:"kind"`
+	// TODO: Use which type for Metadata?
+	Metadata DnsMetadata `json:"metadata" yaml:"metadata"`
+	Spec     DnsSpec     `json:"spec" yaml:"spec"`
+	Status   DnsStatus   `json:"status" yaml:"status"`
 }
 
 type DnsMetadata struct {

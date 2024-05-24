@@ -62,7 +62,7 @@ func RemoveDNS(c *gin.Context) {
 func UpdateDNS(c *gin.Context) {
 	var requestMsg struct {
 		Namespace string
-		dns       dns.DNS
+		dns       dns.Dns
 	}
 	if err := c.ShouldBindJSON(&requestMsg); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
