@@ -30,6 +30,7 @@ func AddService(namespace string, serviceType string, content string) (string, e
 		id, _ := idgenerate.GenerateID()
 		clusterIP.Metadata.Id = id
 		clusterIP.Metadata.Namespace = namespace
+		clusterIP.Metadata.Name = desc.Metadata.Name
 		clusterIP.Metadata.Ip = ""
 		clusterIP.Metadata.Labels = desc.Metadata.Labels
 		clusterIP.Spec = desc.Spec
