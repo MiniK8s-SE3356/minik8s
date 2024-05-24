@@ -8,6 +8,7 @@ import (
 	"github.com/MiniK8s-SE3356/minik8s/pkg/apiserver/url"
 	msgproxy "github.com/MiniK8s-SE3356/minik8s/pkg/kubelet/msg_proxy"
 	kubelet_worker "github.com/MiniK8s-SE3356/minik8s/pkg/kubelet/worker"
+	minik8s_runtime "github.com/MiniK8s-SE3356/minik8s/pkg/runtime"
 	minik8s_node "github.com/MiniK8s-SE3356/minik8s/pkg/types/node"
 	httpRequest "github.com/MiniK8s-SE3356/minik8s/pkg/utils/httpRequest"
 	"github.com/MiniK8s-SE3356/minik8s/pkg/utils/poller"
@@ -102,7 +103,7 @@ func (k *Kubelet) RegisterNode() error {
 }
 
 func (k *Kubelet) GetNodeStatus() (minik8s_node.NodeStatus, error) {
-	nodeStatus, err := kubelet_worker.NodeRuntimeMangaer.GetNodeStatus()
+	nodeStatus, err := minik8s_runtime.NodeRuntimeMangaer.GetNodeStatus()
 	if err != nil {
 		return minik8s_node.NodeStatus{}, err
 	}
@@ -141,7 +142,6 @@ func (k *Kubelet) HeartBeat() {
 }
 
 func (k *Kubelet) Run() {
-	// TODO: run a cAdvisor container to monitor the node and container status
 	forever := make(chan bool)
 
 	err := k.RegisterNode()

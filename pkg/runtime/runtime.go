@@ -16,13 +16,15 @@ import (
 	"github.com/docker/go-connections/nat"
 )
 
+var NodeRuntimeMangaer = NewRuntimeManager()
+
 type RuntimeManager struct {
 	containerManager *runtime_container.ContainerManager
 	imageManager     *runtime_image.ImageManager
 }
 
-func NewRuntimeManager() *RuntimeManager {
-	return &RuntimeManager{
+func NewRuntimeManager() RuntimeManager {
+	return RuntimeManager{
 		containerManager: &runtime_container.ContainerManager{},
 		imageManager:     &runtime_image.ImageManager{},
 	}
@@ -264,6 +266,8 @@ func (rm *RuntimeManager) GetNodeStatus() (minik8s_node.NodeStatus, error) {
 }
 
 func (rm *RuntimeManager) RestartPod(pod *minik8s_pod.Pod) (string, error) {
+
+	fmt.Println("Restarting pod for ", pod.Metadata.Name, " with UUID ", pod.Metadata.UUID)
 	// Check this pod's pause container exists or not
 	pauseName := "pause-" + pod.Metadata.UUID
 	pauseContainer, err := rm.containerManager.GetContainerByName(pauseName)
@@ -340,8 +344,28 @@ func (rm *RuntimeManager) RestartPod(pod *minik8s_pod.Pod) (string, error) {
 	return pod.Metadata.UUID, nil
 }
 
-// func (rm *RuntimeManager) RuncAdvicorContainer() {
-// 	containerConfig := &minik8s_container.CreateContainerConfig{
-// 		Image: "gcr.nju.edu.cn/cadvisor/cadvisor:v0.49.1",
-// 	}
-// }
+func (rm *RuntimeManager) RuncAdvicorContainer() {
+	// Check the cAdvisor container exits or not
+	cAdvisorContainerName := "cadvisor"
+	cAdvisorContainer, err := rm.containerManager.GetContainerByName(cAdvisorContainerName)
+	if err == nil {
+		if cAdvisorContainer.State == "running" {
+			// cAdvisor has already been running
+			fmt.Println("cAdvisor container has already been running! ID: ", cAdvisorContainer.ID)
+			return
+		} else {
+			cAdvisorId, err := rm.containerManager.RestartContainer(cAdvisorContainer.ID)
+			if err == nil {
+				fmt.Println("cAdvisor container restart success! ID: ", cAdvisorId)
+				return
+			}
+		}
+	}
+
+	cAdvisorId, err := rm.containerManager.RunDefaultcAdvisorContainer()
+	if err != nil {
+		fmt.Println("RunDefaultcAdvisorContainer failed")
+		return
+	}
+	fmt.Println("cAdvisor container start success! ID: ", cAdvisorId)
+}

@@ -11,7 +11,7 @@ import (
 	"github.com/MiniK8s-SE3356/minik8s/pkg/utils/httpRequest"
 )
 
-var NodeRuntimeMangaer = minik8s_runtime.NewRuntimeManager()
+// var NodeRuntimeMangaer = minik8s_runtime.NewRuntimeManager()
 
 type APIServer struct {
 	IP   string
@@ -83,7 +83,7 @@ func (p *PodWorker) AddTaskHandler(pod *apiobject_pod.Pod) (string, error) {
 	p.Lock.Lock()
 	defer p.Lock.Unlock()
 
-	_, err := NodeRuntimeMangaer.CreatePod(pod)
+	_, err := minik8s_runtime.NodeRuntimeMangaer.CreatePod(pod)
 	if err != nil {
 		fmt.Println("Add Task Error!")
 		return "", err
@@ -128,7 +128,7 @@ func (p *PodWorker) RemoveTaskHandler(pod *apiobject_pod.Pod, callback func(arg 
 	// If remove pod success, send http request to the API server to update the pod status.
 	// and stop the pod worker. Remove the pod worker from the pod manager map.
 
-	err := NodeRuntimeMangaer.RemovePod(pod)
+	err := minik8s_runtime.NodeRuntimeMangaer.RemovePod(pod)
 	if err != nil {
 		fmt.Println("Remove Task Error!")
 		return err
@@ -143,7 +143,7 @@ func (p *PodWorker) RestartTaskHandler(pod *apiobject_pod.Pod) error {
 	p.Lock.Lock()
 	defer p.Lock.Unlock()
 
-	_, err := NodeRuntimeMangaer.RestartPod(pod)
+	_, err := minik8s_runtime.NodeRuntimeMangaer.RestartPod(pod)
 	if err != nil {
 		fmt.Println("Restart Task Error!")
 		return err
@@ -190,7 +190,7 @@ func (p *PodWorker) FetchandUpdateLocalPod() {
 		cpuUsage, memoryUsage, err := cadvisorutils.GetContainerCPUandMemory(
 			"localhost",
 			// TODO: change port
-			"8081",
+			"8090",
 			container.Name,
 		)
 		if err != nil {
