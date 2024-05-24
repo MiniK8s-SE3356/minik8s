@@ -49,7 +49,7 @@ func (k *Kubelet) Proxy() {
 			k.podManager.UpdatePod(update.Pod, nil)
 		case kubelet_worker.Task_Remove:
 			fmt.Println("Kubelet Remove pod")
-			k.podManager.RemovePod(update.Pod, nil)
+			k.podManager.RemovePod(update.Pod, k.podManager.RemovePodCallback)
 		}
 	}
 }
@@ -69,6 +69,7 @@ func (k *Kubelet) RegisterNode() error {
 	}
 
 	// TODO: response target should include error message?
+	fmt.Println("Register node: \n", node)
 	var responseNode minik8s_node.Node
 	_, err := httpRequest.PostRequestByObject(
 		url,

@@ -146,13 +146,20 @@ func rscTask() {
 		var matchedPod []pod.Pod
 
 		for _, p := range pods {
-			if checkMatchedPod(p.Metadata.Labels, rs.Spec.Selector.MatchLabels) {
+			if p.Metadata.Labels["replicaset"] == rs.Metadata.Name {
 				matchedPod = append(matchedPod, p)
 			}
 		}
 
 		// 比对pod数量和期望数量
-
+		fmt.Println("...................[]................")
+		rsJSON, _ := json.Marshal(rs)
+		podsJSON, _ := json.Marshal(pods)
+		matchedPodJSON, _ := json.Marshal(matchedPod)
+		fmt.Println(string(rsJSON))
+		fmt.Println(string(podsJSON))
+		fmt.Println(string(matchedPodJSON))
+		fmt.Println("...................[]................")
 		if len(matchedPod) > rs.Spec.Replicas {
 			// delete some pod
 			for i := 0; i < len(matchedPod)-rs.Spec.Replicas; i++ {
@@ -208,6 +215,6 @@ func (sc *ReplicasetController) Run() {
 	for {
 
 		rscTask()
-		<-time.After(100 * time.Second)
+		<-time.After(30 * time.Second)
 	}
 }

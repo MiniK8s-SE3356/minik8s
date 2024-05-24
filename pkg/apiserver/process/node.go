@@ -207,7 +207,7 @@ func NodeHeartBeat(nodeStatus node.NodeStatus, pods []pod.Pod, nodePorts []servi
 
 func checkNode() {
 	mu.Lock()
-	defer mu.RLock()
+	defer mu.Unlock()
 	pairs, err := EtcdCli.GetWithPrefix(nodePrefix)
 	if err != nil {
 		fmt.Println("failed to get nodes from etcd")
