@@ -38,6 +38,12 @@ const (
 	GetHPA    = prefix + "/GetHPA"
 	UpdateHPA = prefix + "/updateHPA"
 
+	AddDNS    = prefix + "/AddDNS"
+	RemoveDNS = prefix + "/RemoveDNS"
+	GetDNS    = prefix + "/GetDNS"
+	UpdateDNS = prefix + "/updateDNS"
+	GetAllDNS = prefix + "/GetAllDNS"
+
 	GetAllEndpoint      = prefix + "/AddAllEndpoint"
 	UpdateEndpointBatch = prefix + "/UpdateEndpointBatch"
 	AddorDeleteEndpoint = prefix + "/AddorDeleteEndpoint"

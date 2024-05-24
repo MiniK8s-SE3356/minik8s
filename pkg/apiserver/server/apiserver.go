@@ -45,6 +45,12 @@ func bind(r *gin.Engine) {
 	r.POST(url.RemoveHPA, handler.RemoveHPA)
 	r.POST(url.UpdateHPA, handler.UpdateHPA)
 
+	r.POST(url.AddDNS, handler.AddDNS)
+	r.GET(url.GetDNS, handler.GetDNS)
+	r.POST(url.RemoveDNS, handler.RemoveDNS)
+	r.POST(url.UpdateDNS, handler.UpdateDNS)
+	r.POST(url.GetAllDNS, handler.GetAllDNS)
+
 	r.POST(url.AddService, handler.AddService)
 	r.GET(url.GetAllService, handler.GetAllService)
 	r.GET(url.GetService, handler.GetService)

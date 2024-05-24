@@ -159,6 +159,7 @@ func NodeHeartBeat(nodeStatus node.NodeStatus, pods []pod.Pod, nodePorts []servi
 		return "failed to unmarshal", err
 	}
 	tmp.Status = nodeStatus
+	tmp.Status.UpdateTime = time.Now()
 	nodeInfo, err = json.Marshal(tmp)
 	if err != nil {
 		fmt.Println("failed to marshal")
