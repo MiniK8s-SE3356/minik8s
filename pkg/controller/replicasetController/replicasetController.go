@@ -150,6 +150,7 @@ func rscTask() {
 				matchedPod = append(matchedPod, p)
 			}
 		}
+		fmt.Println(pods, rs, matchedPod)
 
 		// 比对pod数量和期望数量
 		fmt.Println("...................[]................")
