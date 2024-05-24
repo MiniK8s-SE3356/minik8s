@@ -86,6 +86,21 @@ func (mq *MQConnection) Publish(exchange string, routingKey string, contentType 
 	}
 	defer ch.Close()
 
+	// Check exchange exists, if not create exchange
+	err = ch.ExchangeDeclare(
+		exchange,
+		"topic",
+		true,
+		false,
+		false,
+		false,
+		nil,
+	)
+	if err != nil {
+		fmt.Println("Failed to declare an exchange, error message: ", err)
+		return err
+	}
+
 	// Check queue exists, if not create queue
 	queue, err := ch.QueueDeclare(
 		routingKey,
