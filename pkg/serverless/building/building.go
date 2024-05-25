@@ -5,7 +5,7 @@ import (
 	"os"
 	"path"
 
-	"github.com/MiniK8s-SE3356/minik8s/pkg/serveless/types/function"
+	"github.com/MiniK8s-SE3356/minik8s/pkg/serverless/types/function"
 	minik8s_zip "github.com/MiniK8s-SE3356/minik8s/pkg/utils/zip"
 )
 

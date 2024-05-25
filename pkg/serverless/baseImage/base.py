@@ -5,8 +5,8 @@ from flask import Flask, request
 app = Flask(__name__)
 
 @app.route('/', methods=['GET'])
-def hello_minik8s_serveless():
-    return 'Hello, Welcome to Minik8s Serveless!'
+def hello_minik8s_serverless():
+    return 'Hello, Welcome to Minik8s Serverless!'
 
 @app.route('/callfunc', methods=['POST'])
 def callfunc():
