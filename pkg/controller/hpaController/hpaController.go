@@ -173,7 +173,8 @@ func rscTask() {
 		hpa.Status.LastUpdateTime = time.Now()
 
 		for _, p := range pods {
-			if checkMatchedPod(p.Metadata.Labels, hpa.Spec.Selector.MatchLabels) {
+			if p.Metadata.Labels["hpa"] == hpa.Metadata.Name {
+				// if checkMatchedPod(p.Metadata.Labels, hpa.Spec.Selector.MatchLabels) {
 				matchedPod = append(matchedPod, p)
 			}
 		}
@@ -259,6 +260,6 @@ func (sc *HPAController) Run() {
 	for {
 
 		rscTask()
-		<-time.After(100 * time.Second)
+		<-time.After(20 * time.Second)
 	}
 }
