@@ -50,7 +50,8 @@ func (sc *ServicesController) routine() {
 		return
 	}
 
-	fmt.Println(response_object)
+	// fmt.Println(response_object.ClusterIP)
+	// fmt.Println(response_object.NodePort)
 
 	update_map := httpobject.HTTPRequest_UpdateServices{}
 

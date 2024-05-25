@@ -16,13 +16,12 @@ import (
 )
 
 var mutex sync.Mutex
-var services_status     kptype.KpServicesStatus
-var dns_status          kptype.KpDnsStatus
+var services_status kptype.KpServicesStatus
+var dns_status kptype.KpDnsStatus
 
 type KubeProxy struct {
 	iptables_controller *(iptablesController.IptablesController)
 	hosts_controller    *(hostsController.HostsController)
-
 }
 
 // var service_need_send bool = false
@@ -46,22 +45,22 @@ func (kp *KubeProxy) Init() {
 	fmt.Printf("Init KubeProxy ...\n")
 	kp.iptables_controller.Init()
 	kp.hosts_controller.Init()
-	mutex=sync.Mutex{}
-	services_status=kptype.KpServicesStatus{}
-	dns_status=kptype.KpDnsStatus{}
+	mutex = sync.Mutex{}
+	services_status = kptype.KpServicesStatus{}
+	dns_status = kptype.KpDnsStatus{}
 }
 
 func (kp *KubeProxy) Run() {
 	fmt.Printf("Run KubeProxy ...\n")
 
-	go poller.PollerStaticPeriod(10*time.Second, kp.syncServices, true)
+	go poller.PollerStaticPeriod(5*time.Second, kp.syncServices, true)
 	// go poller.PollerStaticPeriod(5*time.Second, kp.syncServicesAndDnsToKubelet, true)
-	go poller.PollerStaticPeriod(10*time.Second, kp.syncDns, true)
+	go poller.PollerStaticPeriod(5*time.Second, kp.syncDns, true)
 
 	// 打开一个http服务/api/v1/UpdateNodeNetworkStatus，用于将servicestatus提交给kubelet
-	r:=gin.Default()
+	r := gin.Default()
 	kp.bind(r)
-	r.Run()
+	r.Run(":9999")
 }
 
 func (kp *KubeProxy) syncDns() {
@@ -105,10 +104,16 @@ func (kp *KubeProxy) syncServices() {
 		return
 	}
 
+	fmt.Println(service_list.ClusterIP)
+	fmt.Println(services_status.NodePort)
+	fmt.Println(endpoint_list)
+
 	new_service, err := kp.iptables_controller.SyncConfig(&service_list, &endpoint_list)
 	if err != nil {
 		return
 	}
+
+	fmt.Println(new_service)
 
 	err = kp.iptables_controller.SyncIptables()
 	if err != nil {
@@ -122,21 +127,20 @@ func (kp *KubeProxy) syncServices() {
 
 }
 
-var url_UpdateNodeNetworkStatus string ="/api/v1/UpdateNodeNetworkStatus"
+var url_UpdateNodeNetworkStatus string = "/api/v1/UpdateNodeNetworkStatus"
 
-func (kp* KubeProxy)bind(r *gin.Engine){
-	r.GET(url_UpdateNodeNetworkStatus,updateNodeNetworkStatus)
+func (kp *KubeProxy) bind(r *gin.Engine) {
+	r.GET(url_UpdateNodeNetworkStatus, updateNodeNetworkStatus)
 }
 
 func updateNodeNetworkStatus(c *gin.Context) {
-	result:=kptype.HTTPServer_KpNetworkStatus{}
+	result := kptype.HTTPServer_KpNetworkStatus{}
 	mutex.Lock()
-	result.Service=services_status
-	result.Dns=dns_status
-	c.JSON(http.StatusOK,result)
+	result.Service = services_status
+	result.Dns = dns_status
+	c.JSON(http.StatusOK, result)
 	mutex.Unlock()
 }
-
 
 // func (kp *KubeProxy) syncServicesAndDnsToKubelet() {
 // 	// 向kubelet更新本机上的service信息

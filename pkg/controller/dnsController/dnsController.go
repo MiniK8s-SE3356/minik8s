@@ -68,8 +68,12 @@ func (dc *DnsController) routine() {
 		goto return_directly
 	}
 
+	fmt.Println(service_list.ClusterIP)
+	fmt.Println(dns_list)
+
 	// 根据service更新dns
 	// 作为工作队列中的协程，此线程会在退出时通知主线程，主线程也会在最后阻塞等待所有协程return
+	wg.Add(1)
 	go dc.syncNginx(&(dns_list), &wg)
 
 	// 针对clusterip建立name->point的map表
@@ -81,11 +85,18 @@ func (dc *DnsController) routine() {
 		clusterip_name_map[clusterip_item.Metadata.Name] = &clusterip_item
 	}
 
+	// fmt.Println(clusterip_name_map)
+
 	// 根据上述的clusterip数据结构更新dns,并将之前未READY,在本轮更新后READY的dns加入更新列表
 	for _, dns_item := range dns_list {
+		need_update := false
+		if(dns_item.Status.PathsStatus==nil){
+			need_update=true
+			dns_item.Status.PathsStatus=make(map[string]dns.DnsPathStatus)
+		}
 		// 目前的READY策略是，DNS只要有了下属的CLUSTERIP,就可以READY,后续状态会逐渐更新，version也会随之提升
 		// 如果后续发生dns对象status更改，则会设置need_update为true
-		need_update := false
+		
 		// 遍历所有的spec状态
 		for _, port_spec_item := range dns_item.Spec.Paths {
 			// 1.1 spec的clusterip存在
@@ -142,11 +153,15 @@ func (dc *DnsController) routine() {
 		}
 	}
 
-	// 将需要更新的dns更新回去
-	status, err = httpRequest.PostRequestByObject("http://192.168.1.6:8080/api/v1/UpdateDNS", dns_update_list, nil)
-	if status != http.StatusOK || err != nil {
-		fmt.Printf("EndpointsController routine error get, status %d, return\n", status)
-		goto return_with_sync_wokequeue
+	fmt.Println(dns_update_list)
+
+	if len(dns_update_list) > 0 {
+		// 将需要更新的dns更新回去
+		status, err = httpRequest.PostRequestByObject("http://192.168.1.6:8080/api/v1/UpdateDNS", dns_update_list, nil)
+		if status != http.StatusOK || err != nil {
+			fmt.Printf("EndpointsController routine error get, status %d, return\n", status)
+			goto return_with_sync_wokequeue
+		}
 	}
 
 	// 阻塞等待所有协程完成执行

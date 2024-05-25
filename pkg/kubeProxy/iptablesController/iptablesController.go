@@ -197,7 +197,6 @@ func getPortInfo(port uint16, port_info_list *([]service.ClusterIPPortInfo)) ser
 //	@param slist 请求下来的service list
 //	@param elist 请求下来的endpoint list
 func (ic *IptablesController) SyncConfig(slist *httpobject.HTTPResponse_GetAllServices, elist *httpobject.HTTPResponse_GetAllEndpoint) (kptype.KpServicesStatus, error) {
-	// TODO: 设计并完成SyncConfig
 	fmt.Printf("IptablesController sync config ...\n")
 
 	// 	// HACK: 一个简单的测试用例子，写入静态配置数据
@@ -223,7 +222,7 @@ func (ic *IptablesController) SyncConfig(slist *httpobject.HTTPResponse_GetAllSe
 
 	// ic.nodeport2sid[service1_nodeport] = service1ID
 	// ic.nodeport2sid[service2_nodeport] = service2ID
-	new_service_status := kptype.KpServicesStatus{}
+	new_service_status := kptype.KpServicesStatus{ClusterIP: make(map[string]kptype.KpClusterIP), NodePort: make(map[string]kptype.KpNodePort)}
 
 	// 创建新的数据结构，如果本轮更新成功，则替代原有的数据结构，否则保留原状
 	new_sid2eid := make(map[string]([]string))
@@ -308,7 +307,7 @@ func (ic *IptablesController) SyncConfig(slist *httpobject.HTTPResponse_GetAllSe
 		for _, nodeport_port := range nodeport.Spec.Ports {
 			sid := getSid(clusteripid, nodeport_port.Port)
 			if _, exist := new_sid2smeta[sid]; exist {
-				new_nodeport2sid[nodeport_port.Port] = sid
+				new_nodeport2sid[nodeport_port.NodePort] = sid
 
 				new_kpnp.Nports = append(new_kpnp.Nports, nodeport_port.Port)
 			}

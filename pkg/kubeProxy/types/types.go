@@ -21,7 +21,7 @@ type KpDns struct {
 
 type KpDnsStatus map[string]KpDns
 
-type HTTPServer_KpNetworkStatus struct{
-	Service 	KpServicesStatus	`json:"service" yaml:"service"`
-	Dns			KpDnsStatus	`json:"dns" yaml:"dns"`
+type HTTPServer_KpNetworkStatus struct {
+	Service KpServicesStatus `json:"service" yaml:"service"`
+	Dns     KpDnsStatus      `json:"dns" yaml:"dns"`
 }
