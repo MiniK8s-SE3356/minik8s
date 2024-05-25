@@ -9,7 +9,7 @@ import (
 	minik8s_zip "github.com/MiniK8s-SE3356/minik8s/pkg/utils/zip"
 )
 
-func BuildServelessFunctionImage(function *function.Function) error {
+func BuildServerlessFunctionImage(function *function.Function) error {
 	// Create a new directory for building the function image
 	err := os.Mkdir(function.Metadata.Name, 0777)
 	if err != nil {
@@ -24,7 +24,7 @@ func BuildServelessFunctionImage(function *function.Function) error {
 	}
 
 	err = os.WriteFile(
-		path.Join(pwd, function.Metadata.Name, "serveless.zip"),
+		path.Join(pwd, function.Metadata.Name, "serverless.zip"),
 		function.Spec.FileContent,
 		os.ModePerm,
 	)
@@ -34,7 +34,7 @@ func BuildServelessFunctionImage(function *function.Function) error {
 	}
 
 	err = minik8s_zip.DecompressZipFile(
-		path.Join(pwd, function.Metadata.Name, "serveless.zip"),
+		path.Join(pwd, function.Metadata.Name, "serverless.zip"),
 		path.Join(pwd, function.Metadata.Name),
 	)
 	if err != nil {
