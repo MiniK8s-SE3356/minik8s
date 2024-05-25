@@ -41,7 +41,7 @@ type NodePortPortInfo struct {
 }
 
 type NodePortStatus struct {
-	Phase       string `json:"phase" yaml:"phase"` /*READY or NOTREADY，初始为NOTREADY*/
-	Version     int    `json:"version" yaml:"version"`	/*初始为0*/
+	Phase       string `json:"phase" yaml:"phase"`     /*READY or NOTREADY，初始为NOTREADY*/
+	Version     int    `json:"version" yaml:"version"` /*初始为0*/
 	ClusterIPID string `json:"clusterIPID" yaml:"clusterIPID"`
 }

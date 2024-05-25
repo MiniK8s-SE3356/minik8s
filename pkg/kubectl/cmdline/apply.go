@@ -20,6 +20,7 @@ var applyFuncTable = map[string]func(namespace string, b []byte) error{
 	"Replicaset": applyReplicaSet,
 	"Namespace":  applyNamespace,
 	"HPA":        applyHPA,
+	"Dns":        applyDNS,
 }
 
 func ApplyCmdHandler(cmd *cobra.Command, args []string) {
@@ -254,6 +255,37 @@ func applyHPA(namespace string, b []byte) error {
 	fmt.Println(string(jsonData))
 
 	result, err := httpRequest.PostRequest(url.RootURL+url.AddHPA, jsonData)
+	if err != nil {
+		fmt.Println("error when post request ", err.Error())
+		return err
+	}
+
+	fmt.Println(result)
+
+	return nil
+}
+
+func applyDNS(namespace string, b []byte) error {
+	var request struct {
+		Namespace string
+		Desc      minik8s_yaml.DNSDesc
+	}
+	request.Namespace = namespace
+
+	err := yaml.Unmarshal(b, &request.Desc)
+	if err != nil {
+		fmt.Println("failed to unmarshal DNS yaml ", err.Error())
+		return err
+	}
+
+	jsonData, err := json.Marshal(request)
+	if err != nil {
+		fmt.Println("failed to translate into json ", err.Error())
+		return err
+	}
+	fmt.Println(string(jsonData))
+
+	result, err := httpRequest.PostRequest(url.RootURL+url.AddDNS, jsonData)
 	if err != nil {
 		fmt.Println("error when post request ", err.Error())
 		return err

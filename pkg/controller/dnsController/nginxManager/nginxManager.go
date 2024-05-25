@@ -25,20 +25,26 @@ func (nm *NginxManager) Init() {
 func (nm *NginxManager) SyncNginx(dns_list *httpobject.HTTPResponse_GetAllDns) {
 	fmt.Printf("NginxManager SyncNginx\n")
 
+	// fmt.Println((*dns_list))
+
 	whole_dns_server := ""
 
 	for _, dns_item := range *dns_list {
 		path_proxy_list := ""
 		for _, path_status_item := range dns_item.Status.PathsStatus {
 			path_proxy_item := fmt.Sprintf(custom_path_proxy, path_status_item.SubPath, path_status_item.SvcIP, int(path_status_item.SvcPort))
+			// fmt.Println(path_proxy_item)
 			path_proxy_list += path_proxy_item
+			// fmt.Println(path_proxy_list)
 		}
 
-		dns_server := fmt.Sprintf(custom_path_proxy, dns_item.Spec.Host, path_proxy_list)
+		dns_server := fmt.Sprintf(custom_server, dns_item.Spec.Host, path_proxy_list)
+		fmt.Println(dns_server)
 		whole_dns_server = whole_dns_server + dns_server
 	}
 
 	whole_content := fmt.Sprintf(nginx_default, whole_dns_server)
+	// fmt.Printf(whole_content)
 
 	// 字符串组装完成，写入对应的配置文件中
 	file, err := os.OpenFile(nginx_defconf_file, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)

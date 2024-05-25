@@ -36,6 +36,7 @@ func AddService(namespace string, serviceType string, content string) (string, e
 		clusterIP.Metadata.Ip = ""
 		clusterIP.Metadata.Labels = desc.Metadata.Labels
 		clusterIP.Spec = desc.Spec
+		clusterIP.Spec.Type = serviceType
 		clusterIP.Status.Phase = service.CLUSTERIP_NOTREADY
 		clusterIP.Status.Version = 0
 
@@ -78,6 +79,7 @@ func AddService(namespace string, serviceType string, content string) (string, e
 		nodePort.Metadata.Labels = desc.Metadata.Labels
 		nodePort.Metadata.Namespace = namespace
 		nodePort.Spec = desc.Spec
+		nodePort.Spec.Type = serviceType
 		nodePort.Status.Phase = service.NODEPORT_NOTREADY
 		nodePort.Status.Version = 0
 
@@ -94,6 +96,7 @@ func AddService(namespace string, serviceType string, content string) (string, e
 			fmt.Println("failed to marshal nodePort")
 			return "failed to marshal nodePort", err
 		}
+		fmt.Println(string(value))
 
 		err = EtcdCli.Put(servicePrefix+namespace+"/"+nodePort.Metadata.Name, string(value))
 		if err != nil {
@@ -194,7 +197,7 @@ func GetAllService() (map[string][]interface{}, error) {
 			if err != nil {
 				fmt.Println("failed to unmarshal")
 			} else {
-				clusterIPArray = append(clusterIPArray, tmp)
+				nodePortArray = append(nodePortArray, tmp)
 			}
 		} else {
 			fmt.Println("invalid service type")

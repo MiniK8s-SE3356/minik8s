@@ -28,7 +28,7 @@ type ClusterIPMetadata struct {
 	Name      string            `json:"name" yaml:"name"`
 	Namespace string            `json:"namespace" yaml:"namespace"`
 	Labels    map[string]string `json:"labels" yaml:"labels"`
-	Ip        string            `json:"ip" yaml:"ip"`			/*初始为空字符串*/
+	Ip        string            `json:"ip" yaml:"ip"` /*初始为空字符串*/
 	Id        string            `json:"id" yaml:"id"`
 }
 

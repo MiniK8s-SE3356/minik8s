@@ -35,15 +35,16 @@ func UpdateEndpointBatch(c *gin.Context) {
 }
 
 func AddorDeleteEndpoint(c *gin.Context) {
-	var desc map[string]interface{}
+	var desc struct {
+		Delete []string           `json:"delete"`
+		Add    []service.EndPoint `json:"add"`
+	}
 	if err := c.ShouldBindJSON(&desc); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	d := desc["Delete"].([]string)
-	a := desc["Add"].([]service.EndPoint)
 
-	process.AddorDeleteEndpoint(d, a)
+	process.AddorDeleteEndpoint(desc.Delete, desc.Add)
 
 	c.JSON(http.StatusOK, gin.H{})
 }

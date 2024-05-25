@@ -24,7 +24,7 @@ func GetAllEndpoint() (map[string]interface{}, error) {
 		if err != nil {
 			fmt.Println("failed to unmarshal endpoint")
 		} else {
-			result[p.Key] = tmp
+			result[tmp.Id] = tmp
 		}
 	}
 
@@ -100,7 +100,7 @@ func AddorDeleteEndpoint(d []string, a []service.EndPoint) {
 		}
 
 		// 然后存入etcd
-		err = EtcdCli.Put(nodePrefix+ep.Id, string(value))
+		err = EtcdCli.Put(endpointPrefix+ep.Id, string(value))
 		if err != nil {
 			fmt.Println("failed to write to etcd ", err.Error())
 		}

@@ -74,6 +74,10 @@ func (ec *EndpointsController) routine() {
 		return
 	}
 
+	// fmt.Println(service_list.ClusterIP)
+	// fmt.Println(service_list.NodePort)
+	// fmt.Println(pod_list)
+
 	// 待更新的service列表(请求状态)
 	renew_service_request := httpobject.HTTPRequest_UpdateServices{}
 	// 待更新的clusterip列表
@@ -96,12 +100,19 @@ func (ec *EndpointsController) routine() {
 		}
 
 		new_c2p := selectorUtils.SelectPodNameList(&clusterIP.Spec.Selector, &pod_list)
+		// TODO 如果new_c2p为空怎么处理？
+
 		if old_c2p, exist := ec.last_service2pod[clusterIP.Metadata.Id]; !exist {
-			// 之前不存在这个clusterip,是本轮新加入的
-			// 加入绑定集合
-			ec.last_service2pod[clusterIP.Metadata.Id] = new_c2p
-			// clusterip加入待更新集合
-			renew_clusterip_list = append(renew_clusterip_list, clusterIP)
+			if len(new_c2p) <= 0 {
+				// old没有，新的为空，直接不加入也不更新clusterIP
+			} else {
+				// 之前不存在这个clusterip,是本轮新加入的
+				// 加入绑定集合
+				ec.last_service2pod[clusterIP.Metadata.Id] = new_c2p
+				// clusterip加入待更新集合
+				renew_clusterip_list = append(renew_clusterip_list, clusterIP)
+			}
+
 		} else {
 			//之前已经存在这个clusterip,这轮需要查看是否更新
 			if isSameNameList(&old_c2p, &new_c2p) {
@@ -165,6 +176,10 @@ func (ec *EndpointsController) routine() {
 		json_byte, _ := json.Marshal(nodeport)
 		renew_service_request[nodeport.Metadata.Name] = string(json_byte)
 	}
+
+	// fmt.Println(renew_service_request)
+	// fmt.Println(endponits_list.Add)
+	// fmt.Println(endponits_list.Delete)
 
 	// 请求service更新
 	status, err = httpRequest.PostRequestByObject("http://192.168.1.6:8080/api/v1/UpdateService", renew_service_request, nil)

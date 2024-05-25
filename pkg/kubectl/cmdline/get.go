@@ -16,6 +16,7 @@ var GetFuncTable = map[string]func(namespace string, name string) (string, error
 	"Replicaset": getReplicaSet,
 	"HPA":        getHPA,
 	"Namespace":  getNamespace,
+	"Dns":        getDNS,
 }
 
 func GetCmdHandler(cmd *cobra.Command, args []string) {
@@ -120,6 +121,21 @@ func getHPA(namespace string, name string) (string, error) {
 	}
 
 	result, err := httpRequest.GetRequestWithParams(url.RootURL+url.GetHPA, params)
+	if err != nil {
+		fmt.Println("error in get HPA ", err.Error())
+		return "", err
+	}
+
+	return result, nil
+}
+
+func getDNS(namespace string, name string) (string, error) {
+	params := map[string]string{
+		"namespace": namespace,
+		"name":      name,
+	}
+
+	result, err := httpRequest.GetRequestWithParams(url.RootURL+url.GetDNS, params)
 	if err != nil {
 		fmt.Println("error in get HPA ", err.Error())
 		return "", err
