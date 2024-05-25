@@ -6,9 +6,64 @@ import (
 	"io"
 	"os"
 	"path"
+	"path/filepath"
 )
 
-func DecompressZipFile(zipFile string, targetDir string) error {
+func CompressZipFile(source, target string) error {
+	zipFile, err := os.Create(target)
+	if err != nil {
+		fmt.Println("Error creating zip file")
+		return err
+	}
+	defer zipFile.Close()
+
+	zipWriter := archive_zip.NewWriter(zipFile)
+	defer zipWriter.Close()
+
+	err = filepath.Walk(source, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			fmt.Println("Error walking through source directory")
+			return err
+		}
+
+		relativePath, err := filepath.Rel(source, path)
+		if err != nil {
+			fmt.Println("Error getting relative path")
+			return err
+		}
+
+		if info.IsDir() {
+			_, err := zipWriter.Create(relativePath + "/")
+			return err
+		}
+
+		file, err := os.Open(path)
+		if err != nil {
+			fmt.Println("Error opening file")
+			return err
+		}
+		defer file.Close()
+
+		zipFileWriter, err := zipWriter.Create(relativePath)
+		if err != nil {
+			fmt.Println("Error creating file in zip file")
+			return err
+		}
+
+		_, err = io.Copy(zipFileWriter, file)
+		return err
+	})
+
+	if err != nil {
+		fmt.Println("Error compressing zip file")
+	}
+
+	fmt.Println("Compressing zip file successfully")
+
+	return err
+}
+
+func DecompressZipFile(zipFile, targetDir string) error {
 	r, err := archive_zip.OpenReader(zipFile)
 	if err != nil {
 		fmt.Println("Error opening zip file")
