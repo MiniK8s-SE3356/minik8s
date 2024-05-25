@@ -70,6 +70,10 @@ func (rm *RuntimeManager) CreatePod(pod *minik8s_pod.Pod) (string, error) {
 
 	// Create containers for the pod
 	for i, container := range pod.Spec.Containers {
+
+		// Rename the container to pod-uuid-container-name
+		container.Name = pod.Metadata.UUID + "-" + container.Name
+
 		// parse environment variables
 		env := []string{}
 		for _, envVar := range container.Env {
@@ -101,7 +105,9 @@ func (rm *RuntimeManager) CreatePod(pod *minik8s_pod.Pod) (string, error) {
 			fmt.Println("Failed to create container", err)
 			return "", err
 		}
+		// Change pod's container id and name
 		pod.Spec.Containers[i].Id = containerId
+		pod.Spec.Containers[i].Name = container.Name
 		// Start the container
 		_, err = rm.containerManager.StartContainer(containerId)
 		if err != nil {
