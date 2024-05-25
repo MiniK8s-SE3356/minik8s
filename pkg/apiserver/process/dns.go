@@ -40,6 +40,7 @@ func AddDNS(namespace string, desc *yaml.DNSDesc) (string, error) {
 	// rs.Metadata.Labels = desc.Metadata.Labels
 	rs.Spec = desc.Spec
 	rs.Status = dns.DnsStatus{}
+	rs.Status.Phase = dns.DNS_NOTREADY
 
 	value, err := json.Marshal(rs)
 	if err != nil {
@@ -101,7 +102,34 @@ func UpdateDNS(namespace string, dns dns.Dns) (string, error) {
 	}
 
 	return "update dns success", nil
+}
 
+func UpdateDNSList(dnsList map[string]dns.Dns) (string, error) {
+	mu.Lock()
+	defer mu.Unlock()
+	for n, d := range dnsList {
+		existed, err := EtcdCli.Exist(dnsPrefix + DefaultNamespace + "/" + n)
+		if err != nil {
+			fmt.Println("failed to check existence in etcd", err)
+			continue
+		}
+		if !existed {
+			fmt.Println("dns not exist")
+			continue
+		}
+
+		value, err := json.Marshal(d)
+		if err != nil {
+			fmt.Println("failed to marshal dns")
+			continue
+		}
+
+		err = EtcdCli.Put(dnsPrefix+DefaultNamespace+"/"+d.Metadata.Name, string(value))
+		if err != nil {
+			fmt.Println("failed to write to etcd ", err.Error())
+		}
+	}
+	return "update dns success", nil
 }
 
 func GetDNS(namespace string, name string) (dns.Dns, error) {

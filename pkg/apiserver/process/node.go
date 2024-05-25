@@ -176,7 +176,7 @@ func NodeHeartBeat(nodeStatus node.NodeStatus, pods []pod.Pod, nodePorts []servi
 		name := p.Metadata.Name
 		podInfo, err := EtcdCli.Get(podPrefix + ns + "/" + name)
 		if err != nil || len(podInfo) == 0 {
-			fmt.Println("failed to get node from etcd")
+			fmt.Println("failed to get node from etcd", podPrefix+ns+"/"+name)
 			continue
 			// return "failed to get node from etcd", err
 		}

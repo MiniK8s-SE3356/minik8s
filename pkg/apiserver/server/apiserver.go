@@ -49,7 +49,7 @@ func bind(r *gin.Engine) {
 	r.GET(url.GetDNS, handler.GetDNS)
 	r.POST(url.RemoveDNS, handler.RemoveDNS)
 	r.POST(url.UpdateDNS, handler.UpdateDNS)
-	r.POST(url.GetAllDNS, handler.GetAllDNS)
+	r.GET(url.GetAllDNS, handler.GetAllDNS)
 
 	r.POST(url.AddService, handler.AddService)
 	r.GET(url.GetAllService, handler.GetAllService)
