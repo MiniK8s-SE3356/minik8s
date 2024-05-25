@@ -41,10 +41,10 @@ const (
 	AddDNS    = prefix + "/AddDNS"
 	RemoveDNS = prefix + "/RemoveDNS"
 	GetDNS    = prefix + "/GetDNS"
-	UpdateDNS = prefix + "/updateDNS"
+	UpdateDNS = prefix + "/UpdateDNS"
 	GetAllDNS = prefix + "/GetAllDNS"
 
-	GetAllEndpoint      = prefix + "/AddAllEndpoint"
+	GetAllEndpoint      = prefix + "/GetAllEndpoint"
 	UpdateEndpointBatch = prefix + "/UpdateEndpointBatch"
 	AddorDeleteEndpoint = prefix + "/AddorDeleteEndpoint"
 )

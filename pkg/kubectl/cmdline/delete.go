@@ -16,6 +16,7 @@ var deleteFuncTable = map[string]func(namespace string, name string) (string, er
 	"Replicaset": deleteReplicaSet,
 	"HPA":        deleteHPA,
 	"Namespace":  deleteNamespace,
+	"Dns":        deleteDNS,
 }
 
 func DeleteCmdHandler(cmd *cobra.Command, args []string) {
@@ -133,6 +134,26 @@ func deleteHPA(namespace string, name string) (string, error) {
 		return "", err
 	}
 	result, err := httpRequest.PostRequest(url.RootURL+url.RemoveHPA, jsonData)
+	if err != nil {
+		fmt.Println("error in delete HPA ", err.Error())
+		return "", err
+	}
+
+	return result, nil
+}
+
+func deleteDNS(namespace string, name string) (string, error) {
+	params := map[string]string{
+		"namespace": namespace,
+		"name":      name,
+	}
+
+	jsonData, err := json.Marshal(params)
+	if err != nil {
+		fmt.Println("failed to translate into json")
+		return "", err
+	}
+	result, err := httpRequest.PostRequest(url.RootURL+url.RemoveDNS, jsonData)
 	if err != nil {
 		fmt.Println("error in delete HPA ", err.Error())
 		return "", err

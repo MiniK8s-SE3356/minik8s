@@ -60,16 +60,13 @@ func RemoveDNS(c *gin.Context) {
 }
 
 func UpdateDNS(c *gin.Context) {
-	var requestMsg struct {
-		Namespace string
-		dns       dns.Dns
-	}
+	var requestMsg map[string]dns.Dns
 	if err := c.ShouldBindJSON(&requestMsg); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	result, err := process.UpdateDNS(requestMsg.Namespace, requestMsg.dns)
+	result, err := process.UpdateDNSList(requestMsg)
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
