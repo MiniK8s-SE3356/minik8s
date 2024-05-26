@@ -61,6 +61,102 @@ func (im *ImageManager) PullImage(imageName string) (string, error) {
 	return "", errors.New("failed to pull image")
 }
 
+func (im *ImageManager) PushImage(imageName string) error {
+	// Push an image
+	reader, err := docker.DockerClient.ImagePush(
+		context.Background(),
+		imageName,
+		image.PushOptions{},
+	)
+	if err != nil {
+		fmt.Println("Error pushing image")
+		return err
+	}
+
+	// Display the push progress
+	termFd, isTerm := term.GetFdInfo(os.Stderr)
+	jsonmessage.DisplayJSONMessagesStream(reader, os.Stderr, termFd, isTerm, nil)
+
+	fmt.Println("Image pushed successfully")
+	return nil
+}
+
+func (im *ImageManager) PullImageWithOptions(imageName string, options image.PullOptions) (string, error) {
+	// First, check if the image exists locally
+	images, err := im.ListImagesWithRef(imageName)
+	if err != nil {
+		return "", err
+	}
+	if len(images) > 0 {
+		// If the image exists locally, return the ID
+		return images[0].ID, nil
+	}
+
+	// Pull an image
+	reader, err := docker.DockerClient.ImagePull(
+		context.Background(),
+		imageName,
+		options,
+	)
+
+	if err != nil {
+		return "", err
+	}
+	defer reader.Close()
+
+	// Display the pull progress
+	termFd, isTerm := term.GetFdInfo(os.Stderr)
+	jsonmessage.DisplayJSONMessagesStream(reader, os.Stderr, termFd, isTerm, nil)
+	fmt.Println("Image pulled successfully")
+
+	// Check local images again
+	images, err = im.ListImagesWithRef(imageName)
+	if err != nil {
+		return "", err
+	}
+	if len(images) > 0 {
+		return images[0].ID, nil
+	}
+
+	return "", errors.New("failed to pull image")
+}
+
+func (im *ImageManager) PushImageWithOptions(imageName string, options image.PushOptions) error {
+	// Push an image
+	reader, err := docker.DockerClient.ImagePush(
+		context.Background(),
+		imageName,
+		options,
+	)
+	if err != nil {
+		fmt.Println("Error pushing image")
+		return err
+	}
+
+	// Display the push progress
+	termFd, isTerm := term.GetFdInfo(os.Stderr)
+	jsonmessage.DisplayJSONMessagesStream(reader, os.Stderr, termFd, isTerm, nil)
+
+	fmt.Println("Image pushed successfully")
+	return nil
+}
+
+func (im *ImageManager) TagImage(imageName, newImageName string) error {
+	err := docker.DockerClient.ImageTag(
+		context.Background(),
+		imageName,
+		newImageName,
+	)
+	if err != nil {
+		fmt.Println("Error tagging image")
+		return err
+	}
+
+	fmt.Println("Image tagged successfully")
+	return nil
+
+}
+
 func (im *ImageManager) ListAllImages() ([]image.Summary, error) {
 	images, err := docker.DockerClient.ImageList(
 		context.Background(),
@@ -107,4 +203,46 @@ func (im *ImageManager) ImageRefSwitch(ref string) string {
 	}
 
 	return ref
+}
+
+func (im *ImageManager) RemoveImage(imageId string) error {
+	_, err := docker.DockerClient.ImageRemove(
+		context.Background(),
+		imageId,
+		image.RemoveOptions{
+			Force:         true,
+			PruneChildren: true,
+		},
+	)
+	if err != nil {
+		fmt.Println("Error removing image")
+		return err
+	}
+
+	fmt.Println("Image removed successfully")
+	return nil
+}
+
+func (im *ImageManager) RemoveImageByName(imageName string) error {
+	images, err := im.ListImagesWithRef(imageName)
+	if err != nil {
+		return err
+	}
+
+	if len(images) == 0 {
+		fmt.Println("Image not found")
+		return nil
+	}
+
+	for _, image := range images {
+		err := im.RemoveImage(image.ID)
+		if err != nil {
+			fmt.Println("Error removing image")
+			return err
+		}
+	}
+
+	fmt.Println("Image removed successfully")
+
+	return nil
 }
