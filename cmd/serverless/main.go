@@ -4,6 +4,6 @@ import (
 	serverless_pkg "github.com/MiniK8s-SE3356/minik8s/pkg/serverless"
 )
 
-func main(){
+func main() {
 	serverless_pkg.StartServerless()
 }

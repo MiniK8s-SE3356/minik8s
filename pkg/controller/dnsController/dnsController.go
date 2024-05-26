@@ -90,13 +90,13 @@ func (dc *DnsController) routine() {
 	// 根据上述的clusterip数据结构更新dns,并将之前未READY,在本轮更新后READY的dns加入更新列表
 	for _, dns_item := range dns_list {
 		need_update := false
-		if(dns_item.Status.PathsStatus==nil){
-			need_update=true
-			dns_item.Status.PathsStatus=make(map[string]dns.DnsPathStatus)
+		if dns_item.Status.PathsStatus == nil {
+			need_update = true
+			dns_item.Status.PathsStatus = make(map[string]dns.DnsPathStatus)
 		}
 		// 目前的READY策略是，DNS只要有了下属的CLUSTERIP,就可以READY,后续状态会逐渐更新，version也会随之提升
 		// 如果后续发生dns对象status更改，则会设置need_update为true
-		
+
 		// 遍历所有的spec状态
 		for _, port_spec_item := range dns_item.Spec.Paths {
 			// 1.1 spec的clusterip存在
