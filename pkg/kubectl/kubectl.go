@@ -1,9 +1,12 @@
 package kubectl
 
 import (
+	"flag"
 	"fmt"
+	"time"
 
 	"github.com/MiniK8s-SE3356/minik8s/pkg/kubectl/cmdline"
+	minik8s_message "github.com/MiniK8s-SE3356/minik8s/pkg/utils/message"
 	"github.com/spf13/cobra"
 )
 
@@ -43,6 +46,23 @@ func init() {
 }
 
 func Exec() {
+	apiServerIP := flag.String("apiserverip", "127.0.0.1", "APIServer IP address")
+	mqConfig := minik8s_message.MQConfig{
+		User:       "guest",
+		Password:   "guest",
+		Host:       *apiServerIP,
+		Port:       "5672",
+		Vhost:      "/",
+		MaxRetry:   5,
+		RetryDelay: 5 * time.Second,
+	}
+	tmp, err := minik8s_message.NewMQConnection(&mqConfig)
+	if err != nil {
+		fmt.Println("failed to connect to mq", err)
+		return
+	}
+	cmdline.MqConn = tmp
+
 	if err := kubectlCmd.Execute(); err != nil {
 		fmt.Println(err)
 	}

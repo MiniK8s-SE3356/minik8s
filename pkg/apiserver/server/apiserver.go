@@ -61,6 +61,8 @@ func bind(r *gin.Engine) {
 	r.GET(url.GetAllEndpoint, handler.GetAllEndpoint)
 	r.POST(url.UpdateEndpointBatch, handler.UpdateEndpointBatch)
 	r.POST(url.AddorDeleteEndpoint, handler.AddorDeleteEndpoint)
+
+	r.GET(url.GetAllServerlessFunction, handler.GetAllServerlessFunction)
 }
 
 func Start() {

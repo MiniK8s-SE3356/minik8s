@@ -47,4 +47,6 @@ const (
 	GetAllEndpoint      = prefix + "/GetAllEndpoint"
 	UpdateEndpointBatch = prefix + "/UpdateEndpointBatch"
 	AddorDeleteEndpoint = prefix + "/AddorDeleteEndpoint"
+
+	GetAllServerlessFunction = prefix + "/GetAllServerlessFunction"
 )

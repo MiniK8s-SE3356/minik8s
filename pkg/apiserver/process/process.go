@@ -18,6 +18,7 @@ const (
 	replicasetPrefix = prefix + "/replicaset/"
 	hpaPrefix        = prefix + "/hpa/"
 	dnsPrefix        = prefix + "/dns/"
+	functionPrefix   = prefix + "/function/"
 )
 
 var EtcdCli *etcdclient.EtcdClient
