@@ -58,7 +58,7 @@ func (dc *DnsController) routine() {
 		goto return_directly
 	}
 
-	// 在正常请求下所有的数据后，一方面需要使用dns更新nginx,另一方面需要dns和service共同更新dns
+	// 在正常请求下所有的数据后，一方面需要使用dns更新nginx,另一方面需要dns和service共同更新下一轮的dns
 	// 我们将这两件事情并行去做，并阻塞式等待两者全部完成再退出函数
 
 	// 获得所有dns

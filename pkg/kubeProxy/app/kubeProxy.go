@@ -104,16 +104,16 @@ func (kp *KubeProxy) syncServices() {
 		return
 	}
 
-	fmt.Println(service_list.ClusterIP)
-	fmt.Println(services_status.NodePort)
-	fmt.Println(endpoint_list)
+	// fmt.Println(service_list.ClusterIP)
+	// fmt.Println(services_status.NodePort)
+	// fmt.Println(endpoint_list)
 
 	new_service, err := kp.iptables_controller.SyncConfig(&service_list, &endpoint_list)
 	if err != nil {
 		return
 	}
 
-	fmt.Println(new_service)
+	// fmt.Println(new_service)
 
 	err = kp.iptables_controller.SyncIptables()
 	if err != nil {

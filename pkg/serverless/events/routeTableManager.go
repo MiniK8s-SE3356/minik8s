@@ -5,12 +5,14 @@ import (
 	"net/http"
 	"sync"
 
+	"github.com/MiniK8s-SE3356/minik8s/pkg/apiObject/selector"
 	httpobject "github.com/MiniK8s-SE3356/minik8s/pkg/types/httpObject"
 	"github.com/MiniK8s-SE3356/minik8s/pkg/utils/httpRequest"
+	"github.com/MiniK8s-SE3356/minik8s/pkg/utils/selectorUtils"
 )
 
 const (
-	ROUTETABLE_NODEPOD = "NONE"
+	ROUTETABLE_NONEPOD = "NONE"
 )
 
 var routeTableMutex sync.Mutex
@@ -43,20 +45,55 @@ func (rm *RouteTableManager) SyncRoutine() {
 	var pod_list httpobject.HTTPResponse_GetAllPod
 	status, err := httpRequest.GetRequestByObject("http://192.168.1.6:8080/api/v1/GetAllPod", nil, &pod_list)
 	if status != http.StatusOK || err != nil {
-		fmt.Printf("Sync RouteTable Routine error Get, status %d, return\n", status)
+		fmt.Printf("routine error get,  status %d, return\n", status)
 		return
 	}
+
+	// 请求所有的serverless function name
+	var serverless_func_list httpobject.HTTPResponse_GetAllServerlessFunction
+	status, err = httpRequest.GetRequestByObject("http://192.168.1.6:8080/api/v1/GetAllServerlessFunction", nil, &serverless_func_list)
+	if status != http.StatusOK || err != nil {
+		fmt.Printf("routine error get, status %d, return\n", status)
+		return
+	}
+
 	// 创建new_route_table
-	new_route_table:=make(map[string]routeInfo)
+	new_route_table := make(map[string]routeInfo)
+	// 创建Selector
+	func_pod_selector := selector.Selector{}
+
+	// 为new_route_table填写内容
+	for _, serverless_func_name := range serverless_func_list {
+		// TODO：具体的标签筛选规则待商议
+		// 修改筛选器
+		func_pod_selector.MatchLabels["serverlessFuncName"] = serverless_func_name
+		// 复用之前的筛选工具，选出pod name list
+		new_f2p := selectorUtils.SelectPodNameList(&func_pod_selector, &pod_list)
+		// 根据pod name list,转化为pod ip list（允许为空）
+		new_podIP_list := []string{}
+		for _, pod_name := range new_f2p {
+			// FIXME: 如果podIP是null,会不会引发问题？
+			// FIXME: podIP是否可用，是否还要看pod的其他状态？
+			pip := pod_list[pod_name].Status.PodIP
+			if pip != "" {
+				new_podIP_list = append(new_podIP_list, pip)
+			}
+		}
+		// 为new_route_table填写一条条目
+		new_route_table[serverless_func_name] = routeInfo{
+			next:      0,
+			podIPList: new_podIP_list,
+		}
+	}
 
 	// 如果new_route_table正常，则用于更新
 	routeTableMutex.Lock()
-	rm.routeTable=new_route_table
+	rm.routeTable = new_route_table
 	routeTableMutex.Unlock()
 }
 
 func (rm *RouteTableManager) FunctionName2PodIP(funName string) string {
-	result := ROUTETABLE_NODEPOD
+	result := ROUTETABLE_NONEPOD
 	if va, ex := rm.routeTable[funName]; ex {
 		routeTableMutex.Lock()
 		if len(va.podIPList) <= 0 {

@@ -33,7 +33,8 @@ type WorkflowNode struct {
 	/* 只能为SERVERLESS_NODETYPE_CALCULATION/BRANCH/END*/
 	NodeType     string `json:"nodeType" yaml:"nodeType"`
 	FunctionName string `json:"functionName" yaml:"functionName"` /* 函数名 */
-	/* 当节点类型为calculation/end时，为空数组(尽量不要null)
+	/* 当节点类型为calculation时，只有一个nodename
+	当节点类型为end时，为空数组(尽量不要null)
 	当节点类型为branch时，至少指定两个NodeName，用于下一轮的分支  */
 	Branch []string `json:"branch" yaml:"branch"`
 }
