@@ -7,6 +7,7 @@ import (
 
 	"github.com/MiniK8s-SE3356/minik8s/pkg/etcdclient"
 	"github.com/MiniK8s-SE3356/minik8s/pkg/serverless/building"
+	"github.com/MiniK8s-SE3356/minik8s/pkg/serverless/config"
 	"github.com/MiniK8s-SE3356/minik8s/pkg/serverless/registry"
 	"github.com/MiniK8s-SE3356/minik8s/pkg/serverless/types/function"
 	"github.com/MiniK8s-SE3356/minik8s/pkg/serverless/types/workflow"
@@ -30,12 +31,11 @@ func triggerServerlessFunction(c *gin.Context) {
 		return
 	}
 
-	// result, err :=
-	result := ""
-	// if err != nil {
-	// 	fmt.Println("error in triggerServerlessWorkflow ", err)
-	// 	c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-	// }
+	result, err := config.TriggerServerlessFunction(desc.FunctionName, desc.Params, "")
+	if err != nil {
+		fmt.Println("error in triggerServerlessWorkflow ", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	}
 
 	c.JSON(http.StatusOK, result)
 }
@@ -51,6 +51,7 @@ func triggerServerlessWorkflow(c *gin.Context) {
 	}
 
 	// result, err :=
+	config.TriggerServerlessWorkflow(desc.Workflow, desc.MqName)
 	result := ""
 	// if err != nil {
 	// 	fmt.Println("error in triggerServerlessWorkflow ", err)
