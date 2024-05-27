@@ -42,6 +42,8 @@ func (em *EventsManager) Init() {
 	fmt.Printf("Init EventsManager\n")
 	em.route_table_manager.Init()
 	em.func_request_frequency_manager.Init()
+	//注册函数指针
+	
 }
 
 // func (em *EventsManager) Run() {
@@ -53,7 +55,7 @@ func (em *EventsManager) Init() {
 //
 //	@receiver em
 //	@return map
-func (em *EventsManager) GetFuncionPodRequestFrequency() map[string]float64 {
+func (em *EventsManager) getFuncionPodRequestFrequency() map[string]float64 {
 	result := em.func_request_frequency_manager.GetAllRecentRequestFrequency()
 	for funcname, funcfreq := range result {
 		podnum := em.route_table_manager.GetFunctionPodNum(funcname)
