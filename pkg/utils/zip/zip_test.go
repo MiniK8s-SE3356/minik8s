@@ -81,4 +81,10 @@ func TestMain(m *testing.M) {
 		println("Error removing directory")
 		panic(err)
 	}
+
+	// err = zip.CompressTarFile(dirPath, "example.tar")
+	// if err != nil {
+	// 	println("Error compressing tar file")
+	// 	panic(err)
+	// }
 }

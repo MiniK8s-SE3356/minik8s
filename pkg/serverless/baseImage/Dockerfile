@@ -3,7 +3,7 @@ FROM python:3.10-slim
 # Set the working directory to /app
 WORKDIR /app
 
-COPY ./ /app
+COPY ./ /app/
 
 RUN pip install --no-cache-dir -r requirements.txt
 
@@ -15,4 +15,4 @@ ENTRYPOINT ["python"]
 CMD ["base.py"]
 
 # To build the image, run the following command:
-# docker build -t serveless-base-image .
+# docker build -t serverless-base-image .

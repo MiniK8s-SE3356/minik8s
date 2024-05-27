@@ -129,6 +129,60 @@ func (cm *ContainerManager) CreateContainer(name string, config *minik8s_contain
 	return response.ID, nil
 }
 
+func (cm *ContainerManager) RunDefaultRegistryContainer() (string, error) {
+	imageManager := &image.ImageManager{}
+	_, err := imageManager.PullImage("registry:2")
+	if err != nil {
+		fmt.Println("Failed to pull image, err:", err)
+		return "", err
+	}
+
+	portBindings := nat.PortMap{}
+	portBindings["5000/tcp"] = []nat.PortBinding{
+		{
+			HostPort: "5000",
+		},
+	}
+	exposedPorts := nat.PortSet{}
+	exposedPorts["5000/tcp"] = struct{}{}
+
+	response, err := docker.DockerClient.ContainerCreate(
+		context.Background(),
+		&container.Config{
+			Image:        "registry:2",
+			ExposedPorts: exposedPorts,
+			Tty:          true,
+		},
+		&container.HostConfig{
+			PortBindings: portBindings,
+			RestartPolicy: container.RestartPolicy{
+				Name: "always",
+			},
+		},
+		nil,
+		nil,
+		"minik8s-registry",
+	)
+
+	if err != nil {
+		fmt.Println("Registry create failed")
+		return "", err
+	}
+
+	err = docker.DockerClient.ContainerStart(
+		context.Background(),
+		response.ID,
+		container.StartOptions{},
+	)
+
+	if err != nil {
+		fmt.Println("Registry start failed")
+		return "", err
+	}
+
+	return response.ID, nil
+}
+
 func (cm *ContainerManager) RunDefaultcAdvisorContainer() (string, error) {
 	imageManager := &image.ImageManager{}
 	_, err := imageManager.PullImage("gcr.nju.edu.cn/cadvisor/cadvisor:v0.49.1")
@@ -222,6 +276,39 @@ func (cm *ContainerManager) RemoveContainer(id string) (string, error) {
 		return "", err
 	}
 
+	fmt.Println("Container removed successfully")
+	return id, nil
+}
+
+func (cm *ContainerManager) ForceRemoveContainer(id string) (string, error) {
+	// Remove a container
+	containerInfo, err := cm.GetContainerInspect(id)
+
+	if err != nil {
+		return "", err
+	}
+
+	if (containerInfo.State != nil) && (containerInfo.State.Running) {
+		_, err = cm.StopContainer(id)
+
+		if err != nil {
+			return "", err
+		}
+	}
+
+	err = docker.DockerClient.ContainerRemove(
+		context.Background(),
+		id,
+		container.RemoveOptions{
+			Force: true,
+		},
+	)
+
+	if err != nil {
+		return "", err
+	}
+
+	fmt.Println("Container force removed successfully")
 	return id, nil
 }
 

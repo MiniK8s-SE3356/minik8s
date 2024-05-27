@@ -53,4 +53,12 @@ func TestMain(m *testing.M) {
 	// }
 	// fmt.Println(container.ID)
 	// fmt.Println(container.State)
+
+	//...test registry container...//
+	// registryContainerId, err := containerManager.RunDefaultRegistryContainer()
+	// if err != nil {
+	// 	println("Error running the registry container")
+	// 	panic(err)
+	// }
+	// println(registryContainerId)
 }
