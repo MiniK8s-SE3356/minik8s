@@ -12,6 +12,7 @@ const (
 	GetAllPod            = prefix + "/GetAllPod"
 	UpdatePod            = prefix + "/UpdatePod"
 	AddServerlessFuncPod = prefix + "/AddServerlessFuncPod"
+	GetServerlessFuncPod = prefix + "/GetServerlessFuncPod"
 
 	AddService         = prefix + "/AddService"
 	RemoveService      = prefix + "/RemoveService"

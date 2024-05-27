@@ -195,6 +195,19 @@ func AddServerlessFuncPod(c *gin.Context) {
 	c.JSON(http.StatusOK, result)
 }
 
+func GetServerlessFuncPod(c *gin.Context) {
+	funcName := c.Query("funcName")
+
+	result, err := process.GetServerlessFuncPod(funcName)
+	if err != nil {
+		fmt.Println(err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, result)
+}
+
 // func GetPods(c *gin.Context) {
 // 	var param map[string]string
 // 	if err := c.ShouldBindJSON(&param); err != nil {

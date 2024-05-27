@@ -298,6 +298,30 @@ func AddServerlessFuncPod(funcName string) (string, error) {
 	return "add pod to minik8s", nil
 }
 
+func GetServerlessFuncPod(funcName string) ([]pod.Pod, error) {
+	result := make([]pod.Pod, 0)
+	pairs, err := EtcdCli.GetWithPrefix(podPrefix)
+	if err != nil {
+		return result, err
+	}
+
+	for _, p := range pairs {
+		var tmp pod.Pod
+		err := json.Unmarshal([]byte(p.Value), &tmp)
+		if err != nil {
+			fmt.Println(err)
+			continue
+		}
+
+		n, ok := tmp.Metadata.Labels["serverlessFuncName"]
+		if ok && n == funcName {
+			result = append(result, tmp)
+		}
+	}
+
+	return result, nil
+}
+
 // func removePodByNode(nodeIP string) (string, error) {
 // 	mu.RLock()
 // 	defer mu.RUnlock()
