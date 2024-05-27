@@ -6,6 +6,7 @@ import (
 	"sync"
 
 	"github.com/MiniK8s-SE3356/minik8s/pkg/apiObject/selector"
+	"github.com/MiniK8s-SE3356/minik8s/pkg/serverless/config"
 	httpobject "github.com/MiniK8s-SE3356/minik8s/pkg/types/httpObject"
 	"github.com/MiniK8s-SE3356/minik8s/pkg/utils/httpRequest"
 	"github.com/MiniK8s-SE3356/minik8s/pkg/utils/selectorUtils"
@@ -43,7 +44,7 @@ func (rm *RouteTableManager) SyncRoutine() {
 	fmt.Printf("Sync RouteTable...\n")
 	// 请求所有的pod
 	var pod_list httpobject.HTTPResponse_GetAllPod
-	status, err := httpRequest.GetRequestByObject("http://192.168.1.6:8080/api/v1/GetAllPod", nil, &pod_list)
+	status, err := httpRequest.GetRequestByObject(config.HTTPURL_GetAllPod, nil, &pod_list)
 	if status != http.StatusOK || err != nil {
 		fmt.Printf("routine error get,  status %d, return\n", status)
 		return
@@ -51,7 +52,7 @@ func (rm *RouteTableManager) SyncRoutine() {
 
 	// 请求所有的serverless function name
 	var serverless_func_list httpobject.HTTPResponse_GetAllServerlessFunction
-	status, err = httpRequest.GetRequestByObject("http://192.168.1.6:8080/api/v1/GetAllServerlessFunction", nil, &serverless_func_list)
+	status, err = httpRequest.GetRequestByObject(config.HTTPURL_GetAllServerlessFunction, nil, &serverless_func_list)
 	if status != http.StatusOK || err != nil {
 		fmt.Printf("routine error get, status %d, return\n", status)
 		return

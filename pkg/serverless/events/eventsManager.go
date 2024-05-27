@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/MiniK8s-SE3356/minik8s/pkg/serverless/config"
 	"github.com/MiniK8s-SE3356/minik8s/pkg/serverless/types/workflow"
 	httpobject "github.com/MiniK8s-SE3356/minik8s/pkg/types/httpObject"
 	"github.com/MiniK8s-SE3356/minik8s/pkg/types/mqObject"
@@ -108,7 +109,7 @@ func (em *EventsManager) TriggerServerlessFunction(funcName string, params strin
 				Params: params,
 			}
 			var responsebody httpobject.HTTPResponse_callfunc = httpobject.HTTPResponse_callfunc{}
-			url := fmt.Sprintf("http://%s:5000/api/v1/callfunc", podIP)
+			url := fmt.Sprintf(config.HTTPURL_callfunc_Template, podIP)
 			status, err := httpRequest.PostRequestByObject(url, requestbody, &responsebody)
 			if status != http.StatusOK || err != nil {
 				// 请求错误
@@ -134,7 +135,7 @@ func (em *EventsManager) requestNewFuncPod(funcName string) {
 	requestbody := httpobject.HTTPRequest_AddServerlessFuncPod{
 		FuncName: funcName,
 	}
-	status, err := httpRequest.PostRequestByObject("http://192.168.1.6:8080/api/v1/AddServerlessFuncPod", requestbody, nil)
+	status, err := httpRequest.PostRequestByObject(config.HTTPURL_AddServerlessFuncPod, requestbody, nil)
 	if status != http.StatusOK || err != nil {
 		fmt.Printf("routine error Post, status %d, return\n", status)
 		return
