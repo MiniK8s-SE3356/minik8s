@@ -4,11 +4,14 @@ import (
 	"fmt"
 
 	"github.com/MiniK8s-SE3356/minik8s/pkg/serverless/events"
+
+	"github.com/MiniK8s-SE3356/minik8s/pkg/serverless/server"
 	minik8s_message "github.com/MiniK8s-SE3356/minik8s/pkg/utils/message"
 )
 
 type ServerlessServer struct {
 	events_manager (*events.EventsManager)
+	s              (*server.Server)
 }
 
 func NewServerlessServer() *ServerlessServer {
@@ -21,6 +24,7 @@ func NewServerlessServer() *ServerlessServer {
 func (ss *ServerlessServer) Init() {
 	fmt.Printf("Init Serverless Server...\n")
 	ss.events_manager.Init()
+	ss.s.Init()
 	// TODO： 为Serving模块做初始化
 	// TODO： 为Build模块做初始化
 }
@@ -31,9 +35,6 @@ func (ss *ServerlessServer) Run() {
 	// 启动路由表的轮询更新机制
 	go ss.events_manager.SyncRouteTableRoutine()
 
-	// TODO： 启动Serving，轮询执行routine,根据不同function的近期请求密度进行创建和回收
-
-	// NOTE： Build和Event只有在调用时才会触发，不长期运行
-
 	// TODO： 开启一些服务端口，用于接受来自kubectl的用户请求，并与api-server等组件进行交互
+	ss.s.Run()
 }

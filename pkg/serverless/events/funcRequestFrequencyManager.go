@@ -106,7 +106,7 @@ func (trb *timeRingBuffer) getRecentRequestFrequency(get_time time.Time) float64
 		time_interval = get_time.Sub(trb.buffer[copy_ptr]).Seconds()
 		if time_interval <= float64(timeWindowLength) {
 			left_len += 1
-			copy_ptr =(copy_ptr+1)%ringBufferCapacity
+			copy_ptr = (copy_ptr + 1) % ringBufferCapacity
 		} else {
 			break
 		}

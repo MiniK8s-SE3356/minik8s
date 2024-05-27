@@ -6,6 +6,8 @@ import (
 
 	"github.com/MiniK8s-SE3356/minik8s/pkg/apiObject/pod"
 	"github.com/MiniK8s-SE3356/minik8s/pkg/apiObject/yaml"
+	"github.com/MiniK8s-SE3356/minik8s/pkg/serverless/types/function"
+	"github.com/MiniK8s-SE3356/minik8s/pkg/types/container"
 	"github.com/MiniK8s-SE3356/minik8s/pkg/utils/idgenerate"
 	"github.com/MiniK8s-SE3356/minik8s/pkg/utils/message"
 )
@@ -220,6 +222,100 @@ func GetAllPods() (map[string]interface{}, error) {
 			fmt.Println("failed to translate into json")
 		} else {
 			result[p.Key] = tmp
+		}
+	}
+
+	return result, nil
+}
+
+func AddServerlessFuncPod(funcName string) (string, error) {
+	str, err := EtcdCli.Get(functionPrefix + funcName)
+	if err != nil {
+		fmt.Println(err)
+		return err.Error(), err
+	}
+
+	var tmp function.Function
+	err = json.Unmarshal(str, &tmp)
+	if err != nil {
+		fmt.Println(err)
+		return err.Error(), err
+	}
+
+	imageName := tmp.Spec.ImageName
+
+	id, _ := idgenerate.GenerateID()
+
+	// 构建然后转json
+	pod_ := &pod.Pod{}
+	pod_.APIVersion = tmp.APIVersion
+	pod_.Kind = "Pod"
+	pod_.Status.Phase = pod.PodPending
+	pod_.Metadata.Name = funcName + id[:8]
+	pod_.Metadata.Namespace = DefaultNamespace
+	pod_.Metadata.UUID = id
+	pod_.Metadata.Labels = make(map[string]string)
+	pod_.Metadata.Labels["serverlessFuncName"] = funcName
+	pod_.Spec.Containers = make([]container.Container, 0)
+	pod_.Spec.Containers = append(pod_.Spec.Containers, container.Container{
+		Name:  pod_.Metadata.Name,
+		Image: imageName,
+	})
+
+	value, err := json.Marshal(pod_)
+	if err != nil {
+		fmt.Println("failed to translate into json ", err.Error())
+		return "failed to translate into json ", err
+	}
+
+	// 先查看一下key是否已经存在
+	exist, err := EtcdCli.Exist(podPrefix + "Default" + "/" + pod_.Metadata.Name)
+	if err != nil {
+		fmt.Println("failed to check existence in etcd")
+		return "failed to check existence in etcd", err
+	}
+	if exist {
+		fmt.Println("pod has existed")
+		return "pod has existed", nil
+	}
+	// 然后存入etcd
+	err = EtcdCli.Put(podPrefix+"Default"+"/"+pod_.Metadata.Name, string(value))
+	if err != nil {
+		fmt.Println("failed to write to etcd ", err.Error())
+		return "failed to write to etcd", err
+	}
+
+	msgBody := make(map[string]interface{})
+	msgBody["type"] = "create_pod"
+	msgBody["content"] = pod_
+	jsonData, err := json.Marshal(msgBody)
+	if err != nil {
+		fmt.Println("failed to construct msgBody")
+		return "failed to construct msgBody", err
+	}
+	Mq.Publish("minik8s", "scheduler", "application/json", jsonData)
+
+	return "add pod to minik8s", nil
+}
+
+func GetServerlessFuncPod(funcName string) ([]pod.Pod, error) {
+	result := make([]pod.Pod, 0)
+	pairs, err := EtcdCli.GetWithPrefix(podPrefix)
+	if err != nil {
+		return result, err
+	}
+
+	for _, p := range pairs {
+		var tmp pod.Pod
+		err := json.Unmarshal([]byte(p.Value), &tmp)
+		if err != nil {
+			fmt.Println(err)
+			continue
+		}
+
+		n, ok := tmp.Metadata.Labels["serverlessFuncName"]
+		if ok && n == funcName {
+			result = append(result, tmp)
 		}
 	}
 

@@ -107,11 +107,11 @@ return_with_unlock:
 	return result
 }
 
-func (rm *RouteTableManager) GetFunctionPodNum(funcName string) int{
-	result:=0
+func (rm *RouteTableManager) GetFunctionPodNum(funcName string) int {
+	result := 0
 	rm.routeTableMutex.Lock()
 	if va, ex := rm.routeTable[funcName]; ex {
-		result=len(va.podIPList)
+		result = len(va.podIPList)
 	}
 	rm.routeTableMutex.Unlock()
 	return result

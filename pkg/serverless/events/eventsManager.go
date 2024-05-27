@@ -48,19 +48,19 @@ func (em *EventsManager) Init() {
 // 	fmt.Printf("Run EventsManager\n")
 // }
 
-
 // GetFuncionPodRequestFrequency 返回每个serverless function的每分钟每pod请求数，以便serving计算pod增减策略
-// 如果一个serverless的pod数为0,则对其的扩容应该由events manager负责，不必上交给serving 
-//  @receiver em 
-//  @return map 
+// 如果一个serverless的pod数为0,则对其的扩容应该由events manager负责，不必上交给serving
+//
+//	@receiver em
+//	@return map
 func (em *EventsManager) GetFuncionPodRequestFrequency() map[string]float64 {
 	result := em.func_request_frequency_manager.GetAllRecentRequestFrequency()
-	for funcname,funcfreq:=range(result){
-		podnum:=em.route_table_manager.GetFunctionPodNum(funcname)
-		if(podnum<=0){
-			delete(result,funcname)
-		}else{
-			result[funcname]=funcfreq/float64(podnum)
+	for funcname, funcfreq := range result {
+		podnum := em.route_table_manager.GetFunctionPodNum(funcname)
+		if podnum <= 0 {
+			delete(result, funcname)
+		} else {
+			result[funcname] = funcfreq / float64(podnum)
 		}
 	}
 	return result

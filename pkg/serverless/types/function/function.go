@@ -12,4 +12,6 @@ type Function struct {
 type FunctionSpec struct {
 	FileContent []byte `json:"fileContent" yaml:"fileContent"`
 	FilePath    string `json:"filePath" yaml:"filePath"`
+
+	ImageName string `json:"imageName" yaml:"imageName"`
 }
