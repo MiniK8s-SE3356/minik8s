@@ -43,7 +43,9 @@ func (em *EventsManager) Init() {
 	em.route_table_manager.Init()
 	em.func_request_frequency_manager.Init()
 	//注册函数指针
-	
+	config.GetFuncionPodRequestFrequency=em.getFuncionPodRequestFrequency
+	config.TriggerServerlessFunction=em.triggerServerlessFunction
+	config.TriggerServerlessWorkflow=em.triggerServerlessWorkflow
 }
 
 // func (em *EventsManager) Run() {
@@ -81,7 +83,7 @@ func (em *EventsManager) SyncRouteTableRoutine() {
 //	@param mqName 	**可以为空字符串**，此时不会发送消息
 //	@return string 	函数的返回值的序列化字符串
 //	@return error
-func (em *EventsManager) TriggerServerlessFunction(funcName string, params string, mqName string) (string, error) {
+func (em *EventsManager) triggerServerlessFunction(funcName string, params string, mqName string) (string, error) {
 	// 先为该函数加一条请求记录
 	em.func_request_frequency_manager.AddOneRequest(funcName)
 
@@ -149,7 +151,7 @@ func (em *EventsManager) TriggerServerlessFunction(funcName string, params strin
 	}
 }
 
-func (em *EventsManager) TriggerServerlessWorkflow(workflowObject workflow.Workflow, mqName string) {
+func (em *EventsManager) triggerServerlessWorkflow(workflowObject workflow.Workflow, mqName string) {
 	// 在执行这个workflow时，外部需要确保此workflow的所有serverless函数已经存在
 	// FIXME: 如果workflow不能正常退出，引发线程僵死无法回收，如何解决？
 	go em.workflowComputeRoutine(workflowObject, mqName)
@@ -188,7 +190,7 @@ func (em *EventsManager) workflowComputeRoutine(workflowObject workflow.Workflow
 					Isdone:        false,
 					DataOrMessage: fmt.Sprintf("[BRANCH] Step %d, node name %s...", step, currentNodeName),
 				})
-				branchResult, err := em.TriggerServerlessFunction(currentNode.FunctionName, currentParams, mqName)
+				branchResult, err := em.triggerServerlessFunction(currentNode.FunctionName, currentParams, mqName)
 				if err != nil {
 					em.publishMessage(mqName, mqObject.MQmessage_Workflow{
 						Isdone:        true,
@@ -212,7 +214,7 @@ func (em *EventsManager) workflowComputeRoutine(workflowObject workflow.Workflow
 					Isdone:        false,
 					DataOrMessage: fmt.Sprintf("[CALCULATION] Step %d, node name %s...", step, currentNodeName),
 				})
-				currentParams, err = em.TriggerServerlessFunction(currentNode.FunctionName, currentParams, mqName)
+				currentParams, err = em.triggerServerlessFunction(currentNode.FunctionName, currentParams, mqName)
 				if err != nil {
 					em.publishMessage(mqName, mqObject.MQmessage_Workflow{
 						Isdone:        true,
@@ -231,7 +233,7 @@ func (em *EventsManager) workflowComputeRoutine(workflowObject workflow.Workflow
 					Isdone:        false,
 					DataOrMessage: fmt.Sprintf("[END] Step %d, node name %s...", step, currentNodeName),
 				})
-				currentParams, err = em.TriggerServerlessFunction(currentNode.FunctionName, currentParams, mqName)
+				currentParams, err = em.triggerServerlessFunction(currentNode.FunctionName, currentParams, mqName)
 				if err != nil {
 					em.publishMessage(mqName, mqObject.MQmessage_Workflow{
 						Isdone:        true,
