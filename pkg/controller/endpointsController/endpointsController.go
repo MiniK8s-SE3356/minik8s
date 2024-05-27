@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/MiniK8s-SE3356/minik8s/pkg/apiObject/service"
+	"github.com/MiniK8s-SE3356/minik8s/pkg/controller/config"
 	httpobject "github.com/MiniK8s-SE3356/minik8s/pkg/types/httpObject"
 	"github.com/MiniK8s-SE3356/minik8s/pkg/utils/httpRequest"
 	"github.com/MiniK8s-SE3356/minik8s/pkg/utils/poller"
@@ -60,7 +61,7 @@ func (ec *EndpointsController) routine() {
 
 	// 获得所有service
 	var service_list httpobject.HTTPResponse_GetAllServices = httpobject.HTTPResponse_GetAllServices{}
-	status, err := httpRequest.GetRequestByObject("http://192.168.1.6:8080/api/v1/GetAllService", nil, &service_list)
+	status, err := httpRequest.GetRequestByObject(config.HTTPURL_GetAllService, nil, &service_list)
 	if status != http.StatusOK || err != nil {
 		fmt.Printf("EndpointsController routine error get, status %d, return\n", status)
 		return
@@ -68,7 +69,7 @@ func (ec *EndpointsController) routine() {
 
 	// 获得所有pod
 	var pod_list httpobject.HTTPResponse_GetAllPod
-	status, err = httpRequest.GetRequestByObject("http://192.168.1.6:8080/api/v1/GetAllPod", nil, &pod_list)
+	status, err = httpRequest.GetRequestByObject(config.HTTPURL_GetAllPod, nil, &pod_list)
 	if status != http.StatusOK || err != nil {
 		fmt.Printf("routine error get, status %d, return\n", status)
 		return
@@ -182,13 +183,13 @@ func (ec *EndpointsController) routine() {
 	// fmt.Println(endponits_list.Delete)
 
 	// 请求service更新
-	status, err = httpRequest.PostRequestByObject("http://192.168.1.6:8080/api/v1/UpdateService", renew_service_request, nil)
+	status, err = httpRequest.PostRequestByObject(config.HTTPURL_UpdateService, renew_service_request, nil)
 	if status != http.StatusOK || err != nil {
 		fmt.Printf("routine error get, status %d, return\n", status)
 		return
 	}
 	// 请求endpoints更新
-	status, err = httpRequest.PostRequestByObject("http://192.168.1.6:8080/api/v1/AddorDeleteEndpoint", endponits_list, nil)
+	status, err = httpRequest.PostRequestByObject(config.HTTPURL_AddorDeleteEndpoint, endponits_list, nil)
 	if status != http.StatusOK || err != nil {
 		fmt.Printf("routine error get, status %d, return\n", status)
 		return

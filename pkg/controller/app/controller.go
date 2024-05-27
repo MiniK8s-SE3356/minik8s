@@ -38,16 +38,16 @@ func (co *Controller) Init() {
 	fmt.Printf("Init Controller ...\n")
 	co.endpointsController.Init()
 	co.servicesController.Init()
-	// co.dnsController.Init()
+	co.dnsController.Init()
 }
 
 func (co *Controller) Run() {
 	fmt.Printf("Run Controller ...\n")
-	// go co.endpointsController.Run()
-	// go co.servicesController.Run()
-	// go co.replicasetController.Run()
+	go co.endpointsController.Run()
+	go co.servicesController.Run()
+	go co.replicasetController.Run()
 	go co.hpaController.Run()
-	// go co.dnsController.Run()
+	go co.dnsController.Run()
 	// TODO:主线程暂时没有要做的事情，先跑dnscontroller,后续需要补充
 	for {
 

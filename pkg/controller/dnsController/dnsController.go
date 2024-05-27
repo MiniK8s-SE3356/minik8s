@@ -8,6 +8,7 @@ import (
 
 	"github.com/MiniK8s-SE3356/minik8s/pkg/apiObject/dns"
 	"github.com/MiniK8s-SE3356/minik8s/pkg/apiObject/service"
+	"github.com/MiniK8s-SE3356/minik8s/pkg/controller/config"
 	"github.com/MiniK8s-SE3356/minik8s/pkg/controller/dnsController/nginxManager"
 	httpobject "github.com/MiniK8s-SE3356/minik8s/pkg/types/httpObject"
 	"github.com/MiniK8s-SE3356/minik8s/pkg/utils/httpRequest"
@@ -52,7 +53,7 @@ func (dc *DnsController) routine() {
 	var wg sync.WaitGroup
 
 	// 获得所有service
-	status, err := httpRequest.GetRequestByObject("http://192.168.1.6:8080/api/v1/GetAllService", nil, &service_list)
+	status, err := httpRequest.GetRequestByObject(config.HTTPURL_GetAllService, nil, &service_list)
 	if status != http.StatusOK || err != nil {
 		fmt.Printf("EndpointsController routine error get, status %d, return\n", status)
 		goto return_directly
@@ -62,7 +63,7 @@ func (dc *DnsController) routine() {
 	// 我们将这两件事情并行去做，并阻塞式等待两者全部完成再退出函数
 
 	// 获得所有dns
-	status, err = httpRequest.GetRequestByObject("http://192.168.1.6:8080/api/v1/GetAllDNS", nil, &dns_list)
+	status, err = httpRequest.GetRequestByObject(config.HTTPURL_GetAllDNS, nil, &dns_list)
 	if status != http.StatusOK || err != nil {
 		fmt.Printf("EndpointsController routine error get, status %d, return\n", status)
 		goto return_directly
@@ -157,7 +158,7 @@ func (dc *DnsController) routine() {
 
 	if len(dns_update_list) > 0 {
 		// 将需要更新的dns更新回去
-		status, err = httpRequest.PostRequestByObject("http://192.168.1.6:8080/api/v1/UpdateDNS", dns_update_list, nil)
+		status, err = httpRequest.PostRequestByObject(config.HTTPURL_UpdateDNS, dns_update_list, nil)
 		if status != http.StatusOK || err != nil {
 			fmt.Printf("EndpointsController routine error get, status %d, return\n", status)
 			goto return_with_sync_wokequeue

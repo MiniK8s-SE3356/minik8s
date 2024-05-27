@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/MiniK8s-SE3356/minik8s/pkg/apiObject/service"
+	"github.com/MiniK8s-SE3356/minik8s/pkg/controller/config"
 	"github.com/MiniK8s-SE3356/minik8s/pkg/controller/servicesController/ipAllocater"
 	httpobject "github.com/MiniK8s-SE3356/minik8s/pkg/types/httpObject"
 	"github.com/MiniK8s-SE3356/minik8s/pkg/utils/httpRequest"
@@ -43,7 +44,7 @@ func (sc *ServicesController) routine() {
 
 	var response_object httpobject.HTTPResponse_GetAllServices
 
-	status, err := httpRequest.GetRequestByObject("http://192.168.1.6:8080/api/v1/GetAllService", nil, &response_object)
+	status, err := httpRequest.GetRequestByObject(config.HTTPURL_GetAllService, nil, &response_object)
 
 	if status != http.StatusOK || err != nil {
 		fmt.Printf("routine error get, status %d, return\n", status)
@@ -82,7 +83,7 @@ func (sc *ServicesController) routine() {
 		}
 	}
 
-	status, err = httpRequest.PostRequestByObject("http://192.168.1.6:8080/api/v1/UpdateService", update_map, nil)
+	status, err = httpRequest.PostRequestByObject(config.HTTPURL_UpdateService, update_map, nil)
 	if status != http.StatusOK || err != nil {
 		fmt.Printf("routine error get, status %d, return\n", status)
 		return
