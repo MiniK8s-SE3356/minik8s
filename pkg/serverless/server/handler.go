@@ -6,6 +6,8 @@ import (
 	"net/http"
 
 	"github.com/MiniK8s-SE3356/minik8s/pkg/etcdclient"
+	"github.com/MiniK8s-SE3356/minik8s/pkg/serverless/building"
+	"github.com/MiniK8s-SE3356/minik8s/pkg/serverless/registry"
 	"github.com/MiniK8s-SE3356/minik8s/pkg/serverless/types/function"
 	"github.com/MiniK8s-SE3356/minik8s/pkg/serverless/types/workflow"
 	"github.com/MiniK8s-SE3356/minik8s/pkg/utils/idgenerate"
@@ -61,7 +63,7 @@ func triggerServerlessWorkflow(c *gin.Context) {
 func createFunction(c *gin.Context) {
 	var desc struct {
 		FunctionName string `json:"functionName"`
-		ZipContent   string `json:"zipContent"`
+		ZipContent   []byte `json:"zipContent"`
 	}
 	if err := c.ShouldBindJSON(&desc); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -74,7 +76,9 @@ func createFunction(c *gin.Context) {
 	f.Metadata.UUID = uuid
 	f.Metadata.Name = desc.FunctionName
 	f.Metadata.Namespace = "Default"
-	f.Spec.ImageName = ""
+	f.Spec.ImageName = registry.REGISTRY_IP + ":" + registry.REGISTRY_PORT + "/func-" + f.Metadata.UUID + ":latest"
+	f.Spec.FileContent = desc.ZipContent
+	f.Spec.FilePath = "function"
 	result, err := createFunctionProcess(f)
 	if err != nil {
 		fmt.Println(err)
@@ -94,6 +98,12 @@ func createFunctionProcess(f function.Function) (string, error) {
 
 	if existed {
 		return result, nil
+	}
+
+	err = building.BuildServerlessFunctionImage(&f)
+	if err != nil {
+		fmt.Println("failed to build function image ", err.Error())
+		return result, err
 	}
 
 	value, err := json.Marshal(f)
