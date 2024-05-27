@@ -8,6 +8,9 @@ import (
 	neturl "net/url"
 )
 
+var RootURL string = ""
+var ServerlessRootURL string = ""
+
 func GetRequest(url string) (string, error) {
 	resp, err := http.Get(url)
 	if err != nil {

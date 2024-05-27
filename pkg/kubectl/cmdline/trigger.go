@@ -65,7 +65,7 @@ func triggerFunction(functionName string, paramFile string) error {
 	desc.FunctionName = functionName
 	desc.Params = paramStr
 	jsonData, _ := json.Marshal(desc)
-	result, err := httpRequest.PostRequest(server.RootURL+server.TriggerServerlessFunction, jsonData)
+	result, err := httpRequest.PostRequest(ServerlessRootURL+server.TriggerServerlessFunction, jsonData)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -112,7 +112,7 @@ func triggerWorkflow(workflowFile string, paramFile string) error {
 	}
 
 	done := make(chan bool)
-	result, err := httpRequest.PostRequest(server.RootURL+server.TriggerServerlessWorkflow, jsonData)
+	result, err := httpRequest.PostRequest(ServerlessRootURL+server.TriggerServerlessWorkflow, jsonData)
 
 	if err != nil {
 		fmt.Println(err)

@@ -47,6 +47,13 @@ func init() {
 
 func Exec() {
 	apiServerIP := flag.String("apiserverip", "127.0.0.1", "APIServer IP address")
+	apiServerPort := flag.String("apiserverport", "8080", "APIServer port")
+	cmdline.RootURL = "http://" + *apiServerIP + ":" + *apiServerPort
+
+	serverlessIP := flag.String("serverlessip", "127.0.0.1", "serverlessip")
+	serverlessPort := flag.String("serverlessport", "8081", "serverlessip")
+	cmdline.ServerlessRootURL = "http://" + *serverlessIP + ":" + *serverlessPort
+
 	mqConfig := minik8s_message.MQConfig{
 		User:       "guest",
 		Password:   "guest",

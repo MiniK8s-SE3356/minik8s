@@ -13,6 +13,7 @@ func StartController() {
 	apiServerIP := flag.String("apiserverip", "127.0.0.1", "APIServer IP address")
 	apiServerPort := flag.String("apiserverport", "8080", "APIServer port")
 
+	config.HTTPURL = fmt.Sprintf(config.HTTPURL_Template, *apiServerIP, *apiServerPort)
 	config.HTTPURL_AddorDeleteEndpoint = fmt.Sprintf(config.HTTPURL_AddorDeleteEndpoint_Template, *apiServerIP, *apiServerPort)
 	config.HTTPURL_GetAllDNS = fmt.Sprintf(config.HTTPURL_GetAllDNS_Template, *apiServerIP, *apiServerPort)
 	config.HTTPURL_GetAllPod = fmt.Sprintf(config.HTTPURL_GetAllPod_Template, *apiServerIP, *apiServerPort)

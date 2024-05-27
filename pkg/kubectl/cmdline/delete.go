@@ -74,7 +74,7 @@ func deletePod(namespace string, name string) (string, error) {
 		fmt.Println("failed to translate into json")
 		return "", err
 	}
-	result, err := httpRequest.PostRequest(url.RootURL+url.RemovePod, jsonData)
+	result, err := httpRequest.PostRequest(RootURL+url.RemovePod, jsonData)
 	if err != nil {
 		fmt.Println("error in delete pod ", err.Error())
 		return "", err
@@ -93,7 +93,7 @@ func deleteService(namespace string, name string) (string, error) {
 		fmt.Println("failed to translate into json")
 		return "", err
 	}
-	result, err := httpRequest.PostRequest(url.RootURL+url.RemoveService, jsonData)
+	result, err := httpRequest.PostRequest(RootURL+url.RemoveService, jsonData)
 	if err != nil {
 		fmt.Println("error in delete service ", err.Error())
 		return "", err
@@ -113,7 +113,7 @@ func deleteReplicaSet(namespace string, name string) (string, error) {
 		fmt.Println("failed to translate into json")
 		return "", err
 	}
-	result, err := httpRequest.PostRequest(url.RootURL+url.RemoveReplicaset, jsonData)
+	result, err := httpRequest.PostRequest(RootURL+url.RemoveReplicaset, jsonData)
 	if err != nil {
 		fmt.Println("error in delete replicaset ", err.Error())
 		return "", err
@@ -133,7 +133,7 @@ func deleteHPA(namespace string, name string) (string, error) {
 		fmt.Println("failed to translate into json")
 		return "", err
 	}
-	result, err := httpRequest.PostRequest(url.RootURL+url.RemoveHPA, jsonData)
+	result, err := httpRequest.PostRequest(RootURL+url.RemoveHPA, jsonData)
 	if err != nil {
 		fmt.Println("error in delete HPA ", err.Error())
 		return "", err
@@ -153,7 +153,7 @@ func deleteDNS(namespace string, name string) (string, error) {
 		fmt.Println("failed to translate into json")
 		return "", err
 	}
-	result, err := httpRequest.PostRequest(url.RootURL+url.RemoveDNS, jsonData)
+	result, err := httpRequest.PostRequest(RootURL+url.RemoveDNS, jsonData)
 	if err != nil {
 		fmt.Println("error in delete HPA ", err.Error())
 		return "", err
@@ -172,7 +172,7 @@ func deleteNamespace(namespace string, name string) (string, error) {
 		return "", err
 	}
 
-	result, err := httpRequest.PostRequest(url.RootURL+url.RemoveNamespace, jsonData)
+	result, err := httpRequest.PostRequest(RootURL+url.RemoveNamespace, jsonData)
 	if err != nil {
 		fmt.Println("error in delete namespace ", err.Error())
 		return "", err

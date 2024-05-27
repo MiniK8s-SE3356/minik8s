@@ -95,7 +95,7 @@ func applyPod(namespace string, b []byte) error {
 		return err
 	}
 	// fmt.Println(podDesc.Spec.Containers)
-	result, err := httpRequest.PostRequest(url.RootURL+url.AddPod, jsonData)
+	result, err := httpRequest.PostRequest(RootURL+url.AddPod, jsonData)
 	if err != nil {
 		fmt.Println("error when post request")
 		return err
@@ -167,7 +167,7 @@ func applyService(namespace string, b []byte) error {
 	}
 
 	fmt.Println(string(jsonData))
-	result, err := httpRequest.PostRequest(url.RootURL+url.AddService, jsonData)
+	result, err := httpRequest.PostRequest(RootURL+url.AddService, jsonData)
 	if err != nil {
 		fmt.Println("error when post request ", err.Error())
 		return err
@@ -198,7 +198,7 @@ func applyReplicaSet(namespace string, b []byte) error {
 	}
 	fmt.Println(string(jsonData))
 
-	result, err := httpRequest.PostRequest(url.RootURL+url.AddReplicaset, jsonData)
+	result, err := httpRequest.PostRequest(RootURL+url.AddReplicaset, jsonData)
 	if err != nil {
 		fmt.Println("error when post request ", err.Error())
 		return err
@@ -223,7 +223,7 @@ func applyNamespace(namespace string, b []byte) error {
 		fmt.Println("failed to translate into json")
 		return err
 	}
-	result, err := httpRequest.PostRequest(url.RootURL+url.AddNamespace, jsonData)
+	result, err := httpRequest.PostRequest(RootURL+url.AddNamespace, jsonData)
 	if err != nil {
 		fmt.Println("error when post request")
 		return err
@@ -254,7 +254,7 @@ func applyHPA(namespace string, b []byte) error {
 	}
 	fmt.Println(string(jsonData))
 
-	result, err := httpRequest.PostRequest(url.RootURL+url.AddHPA, jsonData)
+	result, err := httpRequest.PostRequest(RootURL+url.AddHPA, jsonData)
 	if err != nil {
 		fmt.Println("error when post request ", err.Error())
 		return err
@@ -285,7 +285,7 @@ func applyDNS(namespace string, b []byte) error {
 	}
 	fmt.Println(string(jsonData))
 
-	result, err := httpRequest.PostRequest(url.RootURL+url.AddDNS, jsonData)
+	result, err := httpRequest.PostRequest(RootURL+url.AddDNS, jsonData)
 	if err != nil {
 		fmt.Println("error when post request ", err.Error())
 		return err

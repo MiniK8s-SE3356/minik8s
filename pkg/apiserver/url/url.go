@@ -1,9 +1,9 @@
 package url
 
+var RootURL string = "http://localhost:8080"
+
 const (
 	version = "v1"
-	// 这里暂时是localhost
-	RootURL = "http://localhost:8080"
 	prefix  = "/api/" + version
 
 	AddPod               = prefix + "/AddPod"

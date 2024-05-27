@@ -35,7 +35,7 @@ func CreateCmdHandler(cmd *cobra.Command, args []string) {
 	desc.FunctionName = functionName
 	desc.ZipContent = string(zipContent)
 	jsonData, _ := json.Marshal(desc)
-	result, err := httpRequest.PostRequest(server.RootURL+server.CreateFunction, jsonData)
+	result, err := httpRequest.PostRequest(ServerlessRootURL+server.CreateFunction, jsonData)
 	if err != nil {
 		fmt.Println(err)
 	}

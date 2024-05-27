@@ -10,6 +10,7 @@ import (
 	"github.com/MiniK8s-SE3356/minik8s/pkg/apiObject/yaml"
 	"github.com/MiniK8s-SE3356/minik8s/pkg/apiserver/process"
 	"github.com/MiniK8s-SE3356/minik8s/pkg/apiserver/url"
+	"github.com/MiniK8s-SE3356/minik8s/pkg/controller/config"
 	"github.com/MiniK8s-SE3356/minik8s/pkg/utils/httpRequest"
 	"github.com/MiniK8s-SE3356/minik8s/pkg/utils/idgenerate"
 )
@@ -35,7 +36,7 @@ func checkMatchedPod(podLabels map[string]string, selector map[string]string) bo
 func getPodsFromServer() ([]pod.Pod, error) {
 	var result []pod.Pod
 	var podMap map[string]pod.Pod
-	jsonData, err := httpRequest.GetRequest(url.RootURL + url.GetAllPod)
+	jsonData, err := httpRequest.GetRequest(config.HTTPURL + url.GetAllPod)
 	if err != nil {
 		fmt.Println("error in get request")
 		return result, err
@@ -59,7 +60,7 @@ func getPodsFromServer() ([]pod.Pod, error) {
 func getReplicasetsFromServer() ([]replicaset.Replicaset, error) {
 	var result []replicaset.Replicaset
 
-	jsonData, err := httpRequest.GetRequest(url.RootURL + url.GetReplicaset)
+	jsonData, err := httpRequest.GetRequest(config.HTTPURL + url.GetReplicaset)
 	fmt.Println(string(jsonData))
 	if err != nil {
 		fmt.Println("error in get request")
@@ -94,7 +95,7 @@ func applyPod(pod yaml.PodDesc) error {
 		return err
 	}
 	// fmt.Println(podDesc.Spec.Containers)
-	result, err := httpRequest.PostRequest(url.RootURL+url.AddPod, jsonData)
+	result, err := httpRequest.PostRequest(config.HTTPURL+url.AddPod, jsonData)
 	if err != nil {
 		fmt.Println("error when post request")
 		return err
@@ -116,7 +117,7 @@ func removePod(namespace string, name string) error {
 		fmt.Println("failed to translate into json")
 		return err
 	}
-	result, err := httpRequest.PostRequest(url.RootURL+url.RemovePod, jsonData)
+	result, err := httpRequest.PostRequest(config.HTTPURL+url.RemovePod, jsonData)
 	if err != nil {
 		fmt.Println("error in delete pod ", err.Error())
 		return err

@@ -1,6 +1,7 @@
 package config
 
 const (
+	HTTPURL_Template                     = "http://%s:%s"
 	HTTPURL_GetAllService_Template       = "http://%s:%s/api/v1/GetAllService"
 	HTTPURL_GetAllDNS_Template           = "http://%s:%s/api/v1/GetAllDNS"
 	HTTPURL_UpdateDNS_Template           = "http://%s:%s/api/v1/UpdateDNS"
@@ -9,6 +10,7 @@ const (
 	HTTPURL_AddorDeleteEndpoint_Template = "http://%s:%s/api/v1/AddorDeleteEndpoint"
 )
 
+var HTTPURL string
 var HTTPURL_GetAllService string
 var HTTPURL_GetAllDNS string
 var HTTPURL_UpdateDNS string
