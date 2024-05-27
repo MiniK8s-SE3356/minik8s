@@ -37,6 +37,6 @@ jobs:
         shell: bash
         
       - name: run go test script for CD
-        run: echo CD NOT READY!
+        run: echo "CD NOT READY!"
         shell: bash
 

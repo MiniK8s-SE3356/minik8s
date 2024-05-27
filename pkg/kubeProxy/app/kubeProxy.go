@@ -6,6 +6,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/MiniK8s-SE3356/minik8s/pkg/kubeProxy/config"
 	"github.com/MiniK8s-SE3356/minik8s/pkg/kubeProxy/hostsController"
 	"github.com/MiniK8s-SE3356/minik8s/pkg/kubeProxy/iptablesController"
 	kptype "github.com/MiniK8s-SE3356/minik8s/pkg/kubeProxy/types"
@@ -66,7 +67,7 @@ func (kp *KubeProxy) Run() {
 func (kp *KubeProxy) syncDns() {
 	// 获得所有dns
 	var dns_list httpobject.HTTPResponse_GetAllDns = httpobject.HTTPResponse_GetAllDns{}
-	status, err := httpRequest.GetRequestByObject("http://192.168.1.6:8080/api/v1/GetAllDNS", nil, &dns_list)
+	status, err := httpRequest.GetRequestByObject(config.HTTPURL_GetAllDNS, nil, &dns_list)
 	if status != http.StatusOK || err != nil {
 		fmt.Printf("EndpointsController routine error get, status %d, return\n", status)
 		return
@@ -89,7 +90,7 @@ func (kp *KubeProxy) syncServices() {
 	fmt.Printf("KubeProxy routine...\n")
 
 	var service_list httpobject.HTTPResponse_GetAllServices
-	status, err := httpRequest.GetRequestByObject("http://192.168.1.6:8080/api/v1/GetAllService", nil, &service_list)
+	status, err := httpRequest.GetRequestByObject(config.HTTPURL_GetAllService, nil, &service_list)
 
 	if status != http.StatusOK || err != nil {
 		fmt.Printf("routine error get, status %d, return\n", status)
@@ -97,7 +98,7 @@ func (kp *KubeProxy) syncServices() {
 	}
 
 	var endpoint_list httpobject.HTTPResponse_GetAllEndpoint
-	status, err = httpRequest.GetRequestByObject("http://192.168.1.6:8080/api/v1/GetAllEndpoint", nil, &endpoint_list)
+	status, err = httpRequest.GetRequestByObject(config.HTTPURL_GetAllEndpoint, nil, &endpoint_list)
 
 	if status != http.StatusOK || err != nil {
 		fmt.Printf("routine error get, status %d, return\n", status)

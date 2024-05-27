@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/MiniK8s-SE3356/minik8s/pkg/apiObject/dns"
+	"github.com/MiniK8s-SE3356/minik8s/pkg/kubeProxy/config"
 	kptype "github.com/MiniK8s-SE3356/minik8s/pkg/kubeProxy/types"
 	httpobject "github.com/MiniK8s-SE3356/minik8s/pkg/types/httpObject"
 	"github.com/txn2/txeh"
@@ -26,7 +27,7 @@ func (hc *HostsController) Init() {
 	// 	fmt.Printf("Can't create hosts by txeh\n")
 	// 	panic(err)
 	// }
-	hc.NginxIp = "192.168.1.6"
+	hc.NginxIp = config.NGINX_IP
 	// hc.Hosts=hosts
 }
 
