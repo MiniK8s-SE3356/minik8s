@@ -6,11 +6,12 @@ const (
 	RootURL = "http://localhost:8080"
 	prefix  = "/api/" + version
 
-	AddPod    = prefix + "/AddPod"
-	RemovePod = prefix + "/RemovePod"
-	GetPod    = prefix + "/GetPod"
-	GetAllPod = prefix + "/GetAllPod"
-	UpdatePod = prefix + "/UpdatePod"
+	AddPod               = prefix + "/AddPod"
+	RemovePod            = prefix + "/RemovePod"
+	GetPod               = prefix + "/GetPod"
+	GetAllPod            = prefix + "/GetAllPod"
+	UpdatePod            = prefix + "/UpdatePod"
+	AddServerlessFuncPod = prefix + "/AddServerlessFuncPod"
 
 	AddService         = prefix + "/AddService"
 	RemoveService      = prefix + "/RemoveService"

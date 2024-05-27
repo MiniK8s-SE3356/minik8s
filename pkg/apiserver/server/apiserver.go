@@ -26,6 +26,7 @@ func bind(r *gin.Engine) {
 	r.POST(url.RemovePod, handler.RemovePod)
 	r.POST(url.UpdatePod, handler.UpdatePod)
 	r.GET(url.GetAllPod, handler.GetAllPod)
+	r.POST(url.AddServerlessFuncPod, handler.AddServerlessFuncPod)
 
 	r.POST(url.AddNamespace, handler.AddNamespace)
 	r.GET(url.GetNamespace, handler.GetNamespace)

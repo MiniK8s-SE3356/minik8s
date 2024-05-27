@@ -176,6 +176,25 @@ func DescribePod(c *gin.Context) {
 	c.JSON(http.StatusOK, result)
 }
 
+func AddServerlessFuncPod(c *gin.Context) {
+	var req struct {
+		FuncName string `json:"funcName"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	result, err := process.AddServerlessFuncPod(req.FuncName)
+	if err != nil {
+		fmt.Println(err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, result)
+}
+
 // func GetPods(c *gin.Context) {
 // 	var param map[string]string
 // 	if err := c.ShouldBindJSON(&param); err != nil {

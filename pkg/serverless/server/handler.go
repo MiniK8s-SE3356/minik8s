@@ -8,6 +8,7 @@ import (
 	"github.com/MiniK8s-SE3356/minik8s/pkg/etcdclient"
 	"github.com/MiniK8s-SE3356/minik8s/pkg/serverless/types/function"
 	"github.com/MiniK8s-SE3356/minik8s/pkg/serverless/types/workflow"
+	"github.com/MiniK8s-SE3356/minik8s/pkg/utils/idgenerate"
 	"github.com/MiniK8s-SE3356/minik8s/pkg/utils/message"
 	"github.com/gin-gonic/gin"
 )
@@ -67,6 +68,13 @@ func createFunction(c *gin.Context) {
 		return
 	}
 	var f function.Function
+	f.APIVersion = "v1"
+	f.Kind = "Function"
+	uuid, _ := idgenerate.GenerateID()
+	f.Metadata.UUID = uuid
+	f.Metadata.Name = desc.FunctionName
+	f.Metadata.Namespace = "Default"
+	f.Spec.ImageName = ""
 	result, err := createFunctionProcess(f)
 	if err != nil {
 		fmt.Println(err)
