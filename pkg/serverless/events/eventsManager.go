@@ -18,8 +18,9 @@ import (
 )
 
 type EventsManager struct {
-	route_table_manager *RouteTableManager
-	mqConn              *minik8s_message.MQConnection
+	route_table_manager            *RouteTableManager
+	mqConn                         *minik8s_message.MQConnection
+	func_request_frequency_manager *FuncRequestFrequencyManager
 }
 
 func NewEventsManager(mqConfig *minik8s_message.MQConfig) *EventsManager {
@@ -31,19 +32,39 @@ func NewEventsManager(mqConfig *minik8s_message.MQConfig) *EventsManager {
 	}
 
 	return &EventsManager{
-		route_table_manager: NewRouteTableManager(),
-		mqConn:              newConn,
+		route_table_manager:            NewRouteTableManager(),
+		mqConn:                         newConn,
+		func_request_frequency_manager: NewFuncRequestFrequencyManager(),
 	}
 }
 
 func (em *EventsManager) Init() {
 	fmt.Printf("Init EventsManager\n")
 	em.route_table_manager.Init()
+	em.func_request_frequency_manager.Init()
 }
 
 // func (em *EventsManager) Run() {
 // 	fmt.Printf("Run EventsManager\n")
 // }
+
+
+// GetFuncionPodRequestFrequency 返回每个serverless function的每分钟每pod请求数，以便serving计算pod增减策略
+// 如果一个serverless的pod数为0,则对其的扩容应该由events manager负责，不必上交给serving 
+//  @receiver em 
+//  @return map 
+func (em *EventsManager) GetFuncionPodRequestFrequency() map[string]float64 {
+	result := em.func_request_frequency_manager.GetAllRecentRequestFrequency()
+	for funcname,funcfreq:=range(result){
+		podnum:=em.route_table_manager.GetFunctionPodNum(funcname)
+		if(podnum<=0){
+			delete(result,funcname)
+		}else{
+			result[funcname]=funcfreq/float64(podnum)
+		}
+	}
+	return result
+}
 
 func (em *EventsManager) SyncRouteTableRoutine() {
 	// Never Return
@@ -59,7 +80,8 @@ func (em *EventsManager) SyncRouteTableRoutine() {
 //	@return string 	函数的返回值的序列化字符串
 //	@return error
 func (em *EventsManager) TriggerServerlessFunction(funcName string, params string, mqName string) (string, error) {
-	// TODO: 为这个函数引入向mq发送消息的能力
+	// 先为该函数加一条请求记录
+	em.func_request_frequency_manager.AddOneRequest(funcName)
 
 	// 在执行这个function时，外部需要确保此serverless函数已经存在
 	/* faileCount记录失败次数，至多允许三次失败，如果发生三次失败，则认为请求失败 */

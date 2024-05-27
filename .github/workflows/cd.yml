@@ -4,14 +4,11 @@ name: MiniK8s CD
 
 # Controls when the workflow will run
 on:
+  # Triggers the workflow on push or pull request events but only for the "main" branch
   push:
-    branches:
-      - 'development*'
-      - 'main'
+    branches: '**'
   pull_request:
-    branches:
-      - 'development*'
-      - 'main'
+    branches: '**'
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -37,6 +34,6 @@ jobs:
         shell: bash
         
       - name: run go test script for CD
-        run: echo "CD NOT READY!"
+        run: sudo sh ./scripts/test_cd.sh 
         shell: bash
 

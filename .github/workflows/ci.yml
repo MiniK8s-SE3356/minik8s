@@ -34,6 +34,6 @@ jobs:
         shell: bash
         
       - name: run go test script for CI
-        run: sudo sh ./scripts/test_cicd.sh 
+        run: sudo sh ./scripts/test_ci.sh 
         shell: bash
 

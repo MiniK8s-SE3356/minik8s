@@ -16,28 +16,27 @@ const (
 	ROUTETABLE_NONEPOD = "NONE"
 )
 
-var routeTableMutex sync.Mutex
-
 type routeInfo struct {
 	next      int
 	podIPList []string
 }
 
+// RouteTableManagers是**线程安全**的
 type RouteTableManager struct {
 	/* 路由表，function name -> pod IP list */
-	routeTable map[string]routeInfo
+	routeTable      map[string]routeInfo
+	routeTableMutex sync.Mutex
 }
 
 func NewRouteTableManager() *RouteTableManager {
 	fmt.Printf("New RouteTableManager...\n")
-	return &RouteTableManager{
-		routeTable: make(map[string]routeInfo),
-	}
+	return &RouteTableManager{}
 }
 
 func (rm *RouteTableManager) Init() {
 	fmt.Printf("Init RouteTableManager...\n")
-	routeTableMutex = sync.Mutex{}
+	rm.routeTable = make(map[string]routeInfo)
+	rm.routeTableMutex = sync.Mutex{}
 }
 
 func (rm *RouteTableManager) SyncRoutine() {
@@ -88,23 +87,32 @@ func (rm *RouteTableManager) SyncRoutine() {
 	}
 
 	// 如果new_route_table正常，则用于更新
-	routeTableMutex.Lock()
+	rm.routeTableMutex.Lock()
 	rm.routeTable = new_route_table
-	routeTableMutex.Unlock()
+	rm.routeTableMutex.Unlock()
 }
 
-func (rm *RouteTableManager) FunctionName2PodIP(funName string) string {
+func (rm *RouteTableManager) FunctionName2PodIP(funcName string) string {
 	result := ROUTETABLE_NONEPOD
-	if va, ex := rm.routeTable[funName]; ex {
-		routeTableMutex.Lock()
+	rm.routeTableMutex.Lock()
+	if va, ex := rm.routeTable[funcName]; ex {
 		if len(va.podIPList) <= 0 {
 			goto return_with_unlock
 		}
 		va.next = (va.next + 1) % (len(va.podIPList))
 		result = va.podIPList[va.next]
-	return_with_unlock:
-		routeTableMutex.Unlock()
-		return result
 	}
+return_with_unlock:
+	rm.routeTableMutex.Unlock()
+	return result
+}
+
+func (rm *RouteTableManager) GetFunctionPodNum(funcName string) int{
+	result:=0
+	rm.routeTableMutex.Lock()
+	if va, ex := rm.routeTable[funcName]; ex {
+		result=len(va.podIPList)
+	}
+	rm.routeTableMutex.Unlock()
 	return result
 }
