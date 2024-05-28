@@ -12,7 +12,7 @@ import (
 
 func ScaleFunctionPod() {
 	frequency := config.GetFuncionPodRequestFrequency()
-
+	fmt.Println(frequency)
 	for funcName, f := range frequency {
 		fmt.Println("function name: ", funcName, " frequency: ", f)
 		if f > 3 {
