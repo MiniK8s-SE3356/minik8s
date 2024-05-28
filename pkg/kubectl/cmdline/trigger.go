@@ -119,6 +119,12 @@ func triggerWorkflow(workflowFile string, paramFile string) error {
 		return err
 	}
 
+	err = ch.QueueBind(desc.MqName, desc.MqName, "minik8s", false, nil)
+	if err != nil {
+		fmt.Println(err)
+		return err
+	}
+
 	done := make(chan bool)
 	result, err := httpRequest.PostRequest(ServerlessRootURL+server.TriggerServerlessWorkflow, jsonData)
 
