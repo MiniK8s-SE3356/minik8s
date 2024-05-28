@@ -1,7 +1,7 @@
 package httpobject
 
 type HTTPResponse_callfunc struct {
-	Data string `json:"data" yaml:"data"`
+	Result string `json:"result" yaml:"result"`
 }
 
 type HTTPRequest_callfunc struct {

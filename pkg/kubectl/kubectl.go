@@ -39,10 +39,26 @@ var deleteCmd = &cobra.Command{
 	Run:   cmdline.DeleteCmdHandler,
 }
 
+var createCmd = &cobra.Command{
+	Use:   "create",
+	Short: "create",
+	Long:  `create`,
+	Run:   cmdline.CreateCmdHandler,
+}
+
+var triggerCmd = &cobra.Command{
+	Use:   "trigger",
+	Short: "trigger",
+	Long:  `trigger`,
+	Run:   cmdline.TriggerCmdHandler,
+}
+
 func init() {
 	kubectlCmd.AddCommand(applyCmd)
 	kubectlCmd.AddCommand(getCmd)
 	kubectlCmd.AddCommand(deleteCmd)
+	kubectlCmd.AddCommand(createCmd)
+	kubectlCmd.AddCommand(triggerCmd)
 }
 
 func Exec() {

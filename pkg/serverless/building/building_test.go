@@ -2,6 +2,7 @@ package building_test
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 	"path/filepath"
 	"testing"
@@ -146,6 +147,7 @@ func TestMain(m *testing.M) {
 	requestMessage := Message{
 		Params: string(paramsJson),
 	}
+	fmt.Println("Request message: ", string(paramsJson))
 	messageContent, _ := json.Marshal(requestMessage)
 
 	response, err := httpRequest.PostRequest(

@@ -16,13 +16,17 @@ const (
 	RootURL = "http://localhost:" + Port
 	prefix  = "/api/" + version
 
-	TriggerServerlessFunction = prefix + "TriggerServerlessFunction"
-	TriggerServerlessWorkflow = prefix + "TriggerServerlessWorkflow"
-	CreateFunction            = prefix + "CreateFunction"
+	TriggerServerlessFunction = prefix + "/TriggerServerlessFunction"
+	TriggerServerlessWorkflow = prefix + "/TriggerServerlessWorkflow"
+	CreateFunction            = prefix + "/CreateFunction"
 )
 
 type Server struct {
 	R *gin.Engine
+}
+
+func NewServer() *Server {
+	return &Server{}
 }
 
 func bind(r *gin.Engine) {

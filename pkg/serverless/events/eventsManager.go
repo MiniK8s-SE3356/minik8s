@@ -43,9 +43,9 @@ func (em *EventsManager) Init() {
 	em.route_table_manager.Init()
 	em.func_request_frequency_manager.Init()
 	//注册函数指针
-	config.GetFuncionPodRequestFrequency=em.getFuncionPodRequestFrequency
-	config.TriggerServerlessFunction=em.triggerServerlessFunction
-	config.TriggerServerlessWorkflow=em.triggerServerlessWorkflow
+	config.GetFuncionPodRequestFrequency = em.getFuncionPodRequestFrequency
+	config.TriggerServerlessFunction = em.triggerServerlessFunction
+	config.TriggerServerlessWorkflow = em.triggerServerlessWorkflow
 }
 
 // func (em *EventsManager) Run() {
@@ -134,16 +134,18 @@ func (em *EventsManager) triggerServerlessFunction(funcName string, params strin
 			requestbody := httpobject.HTTPRequest_callfunc{
 				Params: params,
 			}
+			fmt.Println("params: ", params)
 			var responsebody httpobject.HTTPResponse_callfunc = httpobject.HTTPResponse_callfunc{}
 			url := fmt.Sprintf(config.HTTPURL_callfunc_Template, podIP)
 			status, err := httpRequest.PostRequestByObject(url, requestbody, &responsebody)
+			fmt.Println("url :", url)
 			if status != http.StatusOK || err != nil {
 				// 请求错误
 				failCount += 1
 				fmt.Printf("routine error Post, status %d, return\n", status)
 			} else {
 				// 请求成功，返回数据
-				return responsebody.Data, nil
+				return responsebody.Result, nil
 			}
 		}
 		// 睡眠5s,等待各项数据的更新

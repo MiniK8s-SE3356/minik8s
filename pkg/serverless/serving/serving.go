@@ -6,11 +6,12 @@ import (
 
 	"github.com/MiniK8s-SE3356/minik8s/pkg/apiObject/pod"
 	"github.com/MiniK8s-SE3356/minik8s/pkg/apiserver/url"
+	"github.com/MiniK8s-SE3356/minik8s/pkg/serverless/config"
 	"github.com/MiniK8s-SE3356/minik8s/pkg/utils/httpRequest"
 )
 
 func ScaleFunctionPod() {
-	frequency := make(map[string]float64)
+	frequency := config.GetFuncionPodRequestFrequency()
 
 	for funcName, f := range frequency {
 		if f > 3 {

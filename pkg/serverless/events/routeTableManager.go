@@ -60,7 +60,9 @@ func (rm *RouteTableManager) SyncRoutine() {
 	// 创建new_route_table
 	new_route_table := make(map[string]routeInfo)
 	// 创建Selector
-	func_pod_selector := selector.Selector{}
+	func_pod_selector := selector.Selector{
+		MatchLabels: make(map[string]string),
+	}
 
 	// 为new_route_table填写内容
 	for _, serverless_func_name := range serverless_func_list {

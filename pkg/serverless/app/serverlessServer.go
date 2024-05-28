@@ -18,6 +18,7 @@ func NewServerlessServer() *ServerlessServer {
 	fmt.Printf("New Serverless Server...\n")
 	return &ServerlessServer{
 		events_manager: events.NewEventsManager(minik8s_message.DefaultMQConfig),
+		s:              server.NewServer(),
 	}
 }
 

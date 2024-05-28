@@ -29,11 +29,11 @@ func CreateCmdHandler(cmd *cobra.Command, args []string) {
 
 	var desc struct {
 		FunctionName string `json:"functionName"`
-		ZipContent   string `json:"zipContent"`
+		ZipContent   []byte `json:"zipContent"`
 	}
 
 	desc.FunctionName = functionName
-	desc.ZipContent = string(zipContent)
+	desc.ZipContent = zipContent
 	jsonData, _ := json.Marshal(desc)
 	result, err := httpRequest.PostRequest(ServerlessRootURL+server.CreateFunction, jsonData)
 	if err != nil {
