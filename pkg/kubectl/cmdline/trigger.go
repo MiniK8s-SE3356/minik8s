@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-	"sync"
 
 	"github.com/MiniK8s-SE3356/minik8s/pkg/serverless/server"
 	"github.com/MiniK8s-SE3356/minik8s/pkg/serverless/types/workflow"
@@ -12,7 +11,6 @@ import (
 	"github.com/MiniK8s-SE3356/minik8s/pkg/utils/idgenerate"
 	minik8s_message "github.com/MiniK8s-SE3356/minik8s/pkg/utils/message"
 	"github.com/spf13/cobra"
-	"github.com/streadway/amqp"
 	"gopkg.in/yaml.v3"
 )
 
@@ -113,6 +111,8 @@ func triggerWorkflow(workflowFile string, paramFile string) error {
 		fmt.Println(err)
 		return err
 	}
+	defer ch.Close()
+
 	q, err := ch.QueueDeclare(desc.MqName, true, true, false, false, nil)
 	if err != nil {
 		fmt.Println(err)
@@ -126,24 +126,40 @@ func triggerWorkflow(workflowFile string, paramFile string) error {
 		fmt.Println(err)
 		return err
 	}
-	var wg sync.WaitGroup
-	go MqConn.Subscribe(q.Name, func(d amqp.Delivery) {
-		fmt.Println(string(d.Body))
-		var tmp struct {
-			Isdone        bool   `json:"isdone"`
-			Dataormessage string `json:"dataormessage"`
-		}
-		err := json.Unmarshal(d.Body, &tmp)
-		if err != nil {
-			fmt.Println(err)
-		}
-		if tmp.Isdone {
-			done <- true
-		}
-		// TODO 判断是否停止监听
-	}, done)
-	wg.Wait()
+	/////////////
+	// Consume message
+	msgChannel, err := ch.Consume(desc.MqName, "", true, false, false, false, nil)
+	if err != nil {
+		fmt.Println("Failed to consume message, error message: ", err)
+		return err
+	}
 
+	// Start a goroutine to handle messages
+	go func() {
+		for {
+			msg, ok := <-msgChannel
+			if !ok {
+				fmt.Println("Subscribe message channel closed")
+				return
+			}
+			fmt.Println("Received message")
+			var tmp struct {
+				Isdone        bool   `json:"isdone"`
+				Dataormessage string `json:"dataormessage"`
+			}
+			err := json.Unmarshal(msg.Body, &tmp)
+			if err != nil {
+				fmt.Println(err)
+			}
+			if tmp.Isdone {
+				done <- true
+			}
+		}
+	}()
+
+	<-done
+
+	///////////////
 	ch.QueueDelete(q.Name, false, false, false)
 
 	fmt.Println("result is", result)
