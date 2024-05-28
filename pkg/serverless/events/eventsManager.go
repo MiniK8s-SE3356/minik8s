@@ -108,7 +108,6 @@ func (em *EventsManager) triggerServerlessFunction(funcName string, params strin
 				if failCount < 3 {
 					em.requestNewFuncPod(funcName)
 					podCreateCount = 0
-
 					if mqName != "" {
 						em.publishMessage(mqName, mqObject.MQmessage_Workflow{
 							Isdone:        false,
@@ -142,7 +141,7 @@ func (em *EventsManager) triggerServerlessFunction(funcName string, params strin
 			if status != http.StatusOK || err != nil {
 				// 请求错误
 				failCount += 1
-				fmt.Printf("routine error Post, status %d, return\n", status)
+				fmt.Printf("routine error Post, status %d, request /callfunc, podIP %s, return\n", status,podIP)
 			} else {
 				// 请求成功，返回数据
 				return responsebody.Result, nil
@@ -160,12 +159,13 @@ func (em *EventsManager) triggerServerlessWorkflow(workflowObject workflow.Workf
 }
 
 func (em *EventsManager) requestNewFuncPod(funcName string) {
+	fmt.Printf("requestNewFuncPod 0 to 1, func name %s\n",funcName)
 	requestbody := httpobject.HTTPRequest_AddServerlessFuncPod{
 		FuncName: funcName,
 	}
 	status, err := httpRequest.PostRequestByObject(config.HTTPURL_AddServerlessFuncPod, requestbody, nil)
 	if status != http.StatusOK || err != nil {
-		fmt.Printf("routine error Post, status %d, return\n", status)
+		fmt.Printf("routine error AddServerlessFuncPod Post, func Name %s, status %d, return\n", funcName,status)
 		return
 	}
 }
@@ -201,6 +201,7 @@ func (em *EventsManager) workflowComputeRoutine(workflowObject workflow.Workflow
 					return
 				}
 				num, err := strconv.Atoi(branchResult)
+				fmt.Println("workflow branch num ",num)
 				if err != nil {
 					fmt.Printf("can't branch by Node Return, msg %s\n", err.Error())
 					return
