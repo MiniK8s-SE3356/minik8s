@@ -7,11 +7,13 @@ import (
 	"sync"
 
 	"github.com/MiniK8s-SE3356/minik8s/pkg/serverless/server"
+	"github.com/MiniK8s-SE3356/minik8s/pkg/serverless/types/workflow"
 	"github.com/MiniK8s-SE3356/minik8s/pkg/utils/httpRequest"
 	"github.com/MiniK8s-SE3356/minik8s/pkg/utils/idgenerate"
 	minik8s_message "github.com/MiniK8s-SE3356/minik8s/pkg/utils/message"
 	"github.com/spf13/cobra"
 	"github.com/streadway/amqp"
+	"gopkg.in/yaml.v3"
 )
 
 var MqConn *minik8s_message.MQConnection
@@ -88,24 +90,30 @@ func triggerWorkflow(workflowFile string, paramFile string) error {
 
 	// 构建请求
 	var desc struct {
-		WorkfileFileContent string `json:"workflowFileContent"`
-		ParamFileContent    string `json:"paramFileContent"`
-		QueueName           string `json:"queueName"`
+		Workflow workflow.Workflow `json:"workflow"`
+		MqName   string            `json:"mqName"`
 	}
-	desc.WorkfileFileContent = string(workfileFileContent)
-	desc.ParamFileContent = string(paramFileContent)
+	var wf workflow.Workflow
+	err = yaml.Unmarshal(workfileFileContent, &wf)
+	if err != nil {
+		fmt.Println(err)
+		return err
+	}
+
+	wf.Spec.Params = string(paramFileContent)
+	desc.Workflow = wf
 	jsonData, _ := json.Marshal(desc)
 	// 申请一个queue，一块发过去
 	// 既然是一个临时的就直接UUID前八位作为队列名了
 	uuid, _ := idgenerate.GenerateID()
-	desc.QueueName = uuid[:8]
+	desc.MqName = uuid[:8]
 
 	ch, err := MqConn.Conn.Channel()
 	if err != nil {
 		fmt.Println(err)
 		return err
 	}
-	q, err := ch.QueueDeclare(desc.QueueName, true, true, false, false, nil)
+	q, err := ch.QueueDeclare(desc.MqName, true, true, false, false, nil)
 	if err != nil {
 		fmt.Println(err)
 		return err
@@ -121,6 +129,17 @@ func triggerWorkflow(workflowFile string, paramFile string) error {
 	var wg sync.WaitGroup
 	go MqConn.Subscribe(q.Name, func(d amqp.Delivery) {
 		fmt.Println(string(d.Body))
+		var tmp struct {
+			Isdone        bool   `json:"isdone"`
+			Dataormessage string `json:"dataormessage"`
+		}
+		err := json.Unmarshal(d.Body, &tmp)
+		if err != nil {
+			fmt.Println(err)
+		}
+		if tmp.Isdone {
+			done <- true
+		}
 		// TODO 判断是否停止监听
 	}, done)
 	wg.Wait()

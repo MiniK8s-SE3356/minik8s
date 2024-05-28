@@ -14,6 +14,7 @@ func ScaleFunctionPod() {
 	frequency := config.GetFuncionPodRequestFrequency()
 
 	for funcName, f := range frequency {
+		fmt.Println("function name: ", funcName, " frequency: ", f)
 		if f > 3 {
 			scaleUp(funcName)
 		} else if f < 0.01 {
@@ -28,7 +29,7 @@ func scaleUp(funcName string) {
 	}
 	req.FuncName = funcName
 	jsonData, _ := json.Marshal(req)
-	result, err := httpRequest.PostRequest(url.AddServerlessFuncPod, jsonData)
+	result, err := httpRequest.PostRequest(config.HTTPURL_root+url.AddServerlessFuncPod, jsonData)
 
 	if err != nil {
 		fmt.Println(err)
@@ -41,7 +42,7 @@ func scaleUp(funcName string) {
 func scaleDown(funcName string) {
 	params := make(map[string]string)
 	params["funcName"] = funcName
-	result, err := httpRequest.GetRequestWithParams(url.GetServerlessFuncPod, params)
+	result, err := httpRequest.GetRequestWithParams(config.HTTPURL_root+url.GetServerlessFuncPod, params)
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -60,7 +61,7 @@ func scaleDown(funcName string) {
 
 		jsonData, _ := json.Marshal(req)
 
-		result, err := httpRequest.PostRequest(url.RemovePod, jsonData)
+		result, err := httpRequest.PostRequest(config.HTTPURL_root+url.RemovePod, jsonData)
 		if err != nil {
 			fmt.Println(err)
 		}

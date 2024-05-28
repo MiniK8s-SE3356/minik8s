@@ -17,6 +17,7 @@ func StartServerless() {
 	config.HTTPURL_AddServerlessFuncPod = fmt.Sprintf(config.HTTPURL_AddServerlessFuncPod_Template, *apiServerIP, *apiServerPort)
 	config.HTTPURL_GetAllPod = fmt.Sprintf(config.HTTPURL_GetAllPod_Template, *apiServerIP, *apiServerPort)
 	config.HTTPURL_GetAllServerlessFunction = fmt.Sprintf(config.HTTPURL_GetAllServerlessFunction_Template, *apiServerIP, *apiServerPort)
+	config.HTTPURL_root = fmt.Sprintf(config.HTTPURL_root_Template, *apiServerIP, *apiServerPort)
 
 	server := app.NewServerlessServer()
 	server.Init()
