@@ -66,6 +66,7 @@ func BuildServerlessFunctionImage(function *function.Function) error {
 	srcFile := path.Join(function.Spec.FilePath, "*")
 	dstFile := "/app/"
 	dockerfile.WriteString("COPY " + srcFile + " " + dstFile + "\n")
+	dockerfile.WriteString("RUN pip install --no-cache-dir -r requirements.txt\n")
 	dockerfile.WriteString("EXPOSE 5000\n")
 
 	dockerfile.Close()
