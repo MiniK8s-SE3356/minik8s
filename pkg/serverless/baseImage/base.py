@@ -18,15 +18,15 @@ def callfunc():
     finally:
         params = body["params"]
         # make sure is a string
-        # if not isinstance(params, str):
-        #     return json.dumps({"error": "params must be a string"}), 400
+        if not isinstance(params, str):
+            return json.dumps({"error": "params must be a string"}), 400
         
         print("params: ", params)
         
         res = function.function(params)
         # make sure res is str
-        # if not isinstance(res, str):
-        #     return json.dumps({"error": "function must return a string"}), 500
+        if not isinstance(res, str):
+            return json.dumps({"error": "function must return a string"}), 500
         
         print("res: ", res)
         print("-----------------[A serverless function has been called!]-----------------")
