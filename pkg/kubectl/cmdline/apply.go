@@ -3,11 +3,13 @@ package cmdline
 import (
 	"encoding/json"
 	"fmt"
+	"net/http"
 	"os"
 
 	minik8s_yaml "github.com/MiniK8s-SE3356/minik8s/pkg/apiObject/yaml"
 	"github.com/MiniK8s-SE3356/minik8s/pkg/apiserver/process"
 	"github.com/MiniK8s-SE3356/minik8s/pkg/apiserver/url"
+	httpobject "github.com/MiniK8s-SE3356/minik8s/pkg/types/httpObject"
 	"github.com/MiniK8s-SE3356/minik8s/pkg/utils/httpRequest"
 	"github.com/spf13/cobra"
 
@@ -21,6 +23,8 @@ var applyFuncTable = map[string]func(namespace string, b []byte) error{
 	"Namespace":  applyNamespace,
 	"HPA":        applyHPA,
 	"Dns":        applyDNS,
+	"PersistVolume": applyPersistVolume,
+	"PersistVolumeClaim": applyPersistVolumeClaim,
 }
 
 func ApplyCmdHandler(cmd *cobra.Command, args []string) {
@@ -295,6 +299,38 @@ func applyDNS(namespace string, b []byte) error {
 
 	return nil
 
+}
+
+func applyPersistVolume(namespace string, b []byte) error {
+	requestMsg:=httpobject.HTTPRequest_AddPV{}
+	err := yaml.Unmarshal(b, &requestMsg.Pv)
+	if err != nil {
+		fmt.Println("failed to unmarshal PV yaml ", err.Error())
+		return err
+	}
+
+	status,err:=httpRequest.PostRequestByObject(RootURL+url.AddPV,requestMsg,nil)
+	if status != http.StatusOK || err != nil {
+		fmt.Printf("routine error AddPV, status %d, return\n", status)
+		return err
+	}
+	return nil
+}
+
+func applyPersistVolumeClaim(namespace string, b []byte) error {
+	requestMsg:=httpobject.HTTPRequest_AddPVC{}
+	err := yaml.Unmarshal(b, &requestMsg.Pvc)
+	if err != nil {
+		fmt.Println("failed to unmarshal PVC yaml ", err.Error())
+		return err
+	}
+
+	status,err:=httpRequest.PostRequestByObject(RootURL+url.AddPV,requestMsg,nil)
+	if status != http.StatusOK || err != nil {
+		fmt.Printf("routine error AddPVC, status %d, return\n", status)
+		return err
+	}
+	return nil
 }
 
 func checkFilePath(args []string) bool {

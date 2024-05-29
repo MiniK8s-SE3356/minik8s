@@ -28,3 +28,10 @@ type HTTPRequest_AddPV struct {
 type HTTPRequest_AddPVC struct {
 	Pvc persistVolume.PersistVolumeClaim `json:"pvc" yaml:"pvc"`
 }
+
+type SERVER_HTTPRequest_UpdatePersistVolume struct {
+	/* pv name -> pv */
+	Pv map[string]string `json:"pv" yaml:"pv"`
+	/* pvc name -> pvc */
+	Pvc map[string]string `json:"pvc" yaml:"pvc"`
+}

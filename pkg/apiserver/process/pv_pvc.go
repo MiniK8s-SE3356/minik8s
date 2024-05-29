@@ -92,3 +92,75 @@ func AddPVC(namespace string, pvc *persistVolume.PersistVolumeClaim) (string, er
 
 	return "add pvc to minik8s", nil
 }
+
+func GetAllPersistVolume() (map[string]persistVolume.PersistVolume, error) {
+	mu.RLock()
+	defer mu.RUnlock()
+	result := make(map[string]persistVolume.PersistVolume, 0)
+
+	pairs, err := EtcdCli.GetWithPrefix(pvPrefix)
+	if err != nil {
+		fmt.Println("failed to get pv from etcd")
+		return result, err
+	}
+
+	for _, p := range pairs {
+		var tmp persistVolume.PersistVolume
+		err := json.Unmarshal([]byte(p.Value), &tmp)
+		if err != nil {
+			fmt.Println("failed to translate pv into json")
+		} else {
+			result[p.Key] = tmp
+		}
+	}
+
+	return result, nil
+}
+
+func GetAllPersistVolumeClaim() (map[string]persistVolume.PersistVolumeClaim, error) {
+	mu.RLock()
+	defer mu.RUnlock()
+	result := make(map[string]persistVolume.PersistVolumeClaim, 0)
+
+	pairs, err := EtcdCli.GetWithPrefix(pvcPrefix)
+	if err != nil {
+		fmt.Println("failed to get pvc from etcd")
+		return result, err
+	}
+
+	for _, p := range pairs {
+		var tmp persistVolume.PersistVolumeClaim
+		err := json.Unmarshal([]byte(p.Value), &tmp)
+		if err != nil {
+			fmt.Println("failed to translate pvc into json")
+		} else {
+			result[p.Key] = tmp
+		}
+	}
+
+	return result, nil
+}
+
+func UpdatePersistVolume(namespace string, name string, value string) (string, error) {
+	mu.Lock()
+	defer mu.Unlock()
+	err := EtcdCli.Put(pvPrefix+namespace+"/"+name, value)
+	if err != nil {
+		fmt.Println("failed to update pv in etcd")
+		return "failed to update pv in etcd", err
+	}
+
+	return "update pv successfully", nil
+}
+
+func UpdatePersistVolumeClaim(namespace string, name string, value string) (string, error) {
+	mu.Lock()
+	defer mu.Unlock()
+	err := EtcdCli.Put(pvcPrefix+namespace+"/"+name, value)
+	if err != nil {
+		fmt.Println("failed to update pvc in etcd")
+		return "failed to update pvc in etcd", err
+	}
+
+	return "update pvc successfully", nil
+}

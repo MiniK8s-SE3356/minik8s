@@ -21,6 +21,12 @@ func AddPod(namespace string, desc *yaml.PodDesc) (string, error) {
 		return "failed to generate uuid", err
 	}
 
+	// TODO: pod转的时候需要更改，需要查看ectd中的持久化卷状态
+	// 如果POD需要PVC而PVC不存在，直接error
+	// 如果POD需要PV而PV不存在，直接error
+	// 如果POD需要PVC,PVC存在，而PVC对应的PV不存在，立刻创建PV
+	// 如果POD需要PVC,且PVC下辖所需PV，则正常绑定
+	 
 	// 构建然后转json
 	pod_ := &pod.Pod{}
 	pod_.APIVersion = desc.ApiVersion
