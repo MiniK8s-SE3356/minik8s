@@ -18,7 +18,7 @@ type PersistVolumeClaim struct {
 
 type PersistVolumeClaimMetadata struct {
 	Name string `json:"name" yaml:"name"`
-	Id string `json:"id" yaml:"id"`
+	Id   string `json:"id" yaml:"id"`
 }
 
 type PersistVolumeClaimSpec struct {

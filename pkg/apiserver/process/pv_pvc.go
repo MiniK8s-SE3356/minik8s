@@ -58,13 +58,13 @@ func AddPVC(namespace string, pvc *persistVolume.PersistVolumeClaim) (string, er
 		return "failed to generate pvc uuid", err
 	}
 
-	pvc.Metadata.Id=id
-	if(pvc.Spec.Selector.MatchLabels==nil){
-		pvc.Spec.Selector.MatchLabels=make(map[string]string)
+	pvc.Metadata.Id = id
+	if pvc.Spec.Selector.MatchLabels == nil {
+		pvc.Spec.Selector.MatchLabels = make(map[string]string)
 	}
-	pvc.Status.Phase=persistVolume.PVC_PHASE_AVAILABLE
-	if(pvc.Status.BoundPV==nil){
-		pvc.Status.BoundPV=make([]string, 0)
+	pvc.Status.Phase = persistVolume.PVC_PHASE_AVAILABLE
+	if pvc.Status.BoundPV == nil {
+		pvc.Status.BoundPV = make([]string, 0)
 	}
 
 	value, err := json.Marshal(*pvc)
