@@ -65,6 +65,11 @@ func bind(r *gin.Engine) {
 	r.POST(url.AddorDeleteEndpoint, handler.AddorDeleteEndpoint)
 
 	r.GET(url.GetAllServerlessFunction, handler.GetAllServerlessFunction)
+
+	r.GET(url.GetAllPersistVolume, handler.GetAllPersistVolume)
+	r.POST(url.UpdatePersistVolume, handler.UpdatePersistVolume)
+	r.POST(url.AddPV, handler.AddPV)
+	r.POST(url.AddPVC, handler.AddPVC)
 }
 
 func Start() {

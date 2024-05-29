@@ -51,4 +51,9 @@ const (
 	AddorDeleteEndpoint = prefix + "/AddorDeleteEndpoint"
 
 	GetAllServerlessFunction = prefix + "/GetAllServerlessFunction"
+
+	GetAllPersistVolume = prefix + "/GetAllPersistVolume"
+	UpdatePersistVolume = prefix + "/UpdatePersistVolume"
+	AddPV               = prefix + "/AddPV"
+	AddPVC              = prefix + "/AddPVC"
 )

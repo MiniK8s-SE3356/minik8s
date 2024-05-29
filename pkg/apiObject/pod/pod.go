@@ -58,11 +58,25 @@ type HostPath struct {
 	Type string `json:"type" yaml:"type"`
 }
 
-type Volume struct {
-	Name string `json:"name" yaml:"name"`
+// NOTE: modify for PV/PVC BEGIN
 
+type Volume struct {
+	Name     string   `json:"name" yaml:"name"`
 	HostPath HostPath `json:"hostPath" yaml:"hostPath"`
+
+	PersistentVolume      PodMountPV  `json:"persistentVolume" yaml:"persistentVolume"`
+	PersistentVolumeClaim PodMountPVC `json:"persistentVolumeClaim" yaml:"persistentVolumeClaim"`
 }
+
+type PodMountPV struct {
+	PvName string `json:"pvName" yaml:"pvName"`
+}
+
+type PodMountPVC struct {
+	ClaimName string `json:"claimName" yaml:"claimName"`
+}
+
+// NOTE: modify for PV/PVC END
 
 type PodSpec struct {
 	NodeName string `json:"nodeName" yaml:"nodeName"`

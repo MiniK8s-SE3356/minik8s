@@ -19,6 +19,8 @@ const (
 	hpaPrefix        = prefix + "/hpa/"
 	dnsPrefix        = prefix + "/dns/"
 	functionPrefix   = prefix + "/function/"
+	pvPrefix         = prefix + "/persistVolume/"
+	pvcPrefix        = prefix + "/persistVolumeClaim/"
 )
 
 var EtcdCli *etcdclient.EtcdClient
