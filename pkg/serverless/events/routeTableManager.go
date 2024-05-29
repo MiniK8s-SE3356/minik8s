@@ -91,7 +91,8 @@ func (rm *RouteTableManager) SyncRoutine() {
 	// 如果new_route_table正常，则用于更新
 	rm.routeTableMutex.Lock()
 	rm.routeTable = new_route_table
-	println(rm.routeTable)
+	// println(rm.routeTable)
+	fmt.Println("rm.routeTable: ", rm.routeTable)
 	rm.routeTableMutex.Unlock()
 }
 

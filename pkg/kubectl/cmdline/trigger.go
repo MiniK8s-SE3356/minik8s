@@ -100,11 +100,13 @@ func triggerWorkflow(workflowFile string, paramFile string) error {
 
 	wf.Spec.Params = string(paramFileContent)
 	desc.Workflow = wf
-	jsonData, _ := json.Marshal(desc)
 	// 申请一个queue，一块发过去
 	// 既然是一个临时的就直接UUID前八位作为队列名了
 	uuid, _ := idgenerate.GenerateID()
 	desc.MqName = uuid[:8]
+	jsonData, _ := json.Marshal(desc)
+
+	fmt.Println("desc is", desc.MqName)
 
 	ch, err := MqConn.Conn.Channel()
 	if err != nil {
@@ -113,7 +115,13 @@ func triggerWorkflow(workflowFile string, paramFile string) error {
 	}
 	defer ch.Close()
 
-	q, err := ch.QueueDeclare(desc.MqName, true, true, false, false, nil)
+	q, err := ch.QueueDeclare(desc.MqName, true, false, false, false, nil)
+	if err != nil {
+		fmt.Println(err)
+		return err
+	}
+
+	err = ch.QueueBind(desc.MqName, desc.MqName, "minik8s", false, nil)
 	if err != nil {
 		fmt.Println(err)
 		return err
@@ -151,6 +159,7 @@ func triggerWorkflow(workflowFile string, paramFile string) error {
 			if err != nil {
 				fmt.Println(err)
 			}
+			fmt.Println("data is", tmp.Dataormessage)
 			if tmp.Isdone {
 				done <- true
 			}
