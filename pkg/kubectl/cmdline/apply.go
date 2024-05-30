@@ -17,13 +17,13 @@ import (
 )
 
 var applyFuncTable = map[string]func(namespace string, b []byte) error{
-	"Pod":        applyPod,
-	"Service":    applyService,
-	"Replicaset": applyReplicaSet,
-	"Namespace":  applyNamespace,
-	"HPA":        applyHPA,
-	"Dns":        applyDNS,
-	"PersistentVolume": applyPersistVolume,
+	"Pod":                   applyPod,
+	"Service":               applyService,
+	"Replicaset":            applyReplicaSet,
+	"Namespace":             applyNamespace,
+	"HPA":                   applyHPA,
+	"Dns":                   applyDNS,
+	"PersistentVolume":      applyPersistVolume,
 	"PersistentVolumeClaim": applyPersistVolumeClaim,
 }
 
@@ -57,7 +57,7 @@ func ApplyCmdHandler(cmd *cobra.Command, args []string) {
 	}
 
 	kind := tmp["kind"].(string)
-	fmt.Println("kind:",kind)
+	fmt.Println("kind:", kind)
 	targetFunc, ok := applyFuncTable[kind]
 	if !ok {
 		fmt.Println("kind not supported")
@@ -303,14 +303,14 @@ func applyDNS(namespace string, b []byte) error {
 }
 
 func applyPersistVolume(namespace string, b []byte) error {
-	requestMsg:=httpobject.HTTPRequest_AddPV{}
+	requestMsg := httpobject.HTTPRequest_AddPV{}
 	err := yaml.Unmarshal(b, &requestMsg.Pv)
 	if err != nil {
 		fmt.Println("failed to unmarshal PV yaml ", err.Error())
 		return err
 	}
 
-	status,err:=httpRequest.PostRequestByObject(RootURL+url.AddPV,requestMsg,nil)
+	status, err := httpRequest.PostRequestByObject(RootURL+url.AddPV, requestMsg, nil)
 	if status != http.StatusOK || err != nil {
 		fmt.Printf("routine error AddPV, status %d, return\n", status)
 		return err
@@ -319,14 +319,14 @@ func applyPersistVolume(namespace string, b []byte) error {
 }
 
 func applyPersistVolumeClaim(namespace string, b []byte) error {
-	requestMsg:=httpobject.HTTPRequest_AddPVC{}
+	requestMsg := httpobject.HTTPRequest_AddPVC{}
 	err := yaml.Unmarshal(b, &requestMsg.Pvc)
 	if err != nil {
 		fmt.Println("failed to unmarshal PVC yaml ", err.Error())
 		return err
 	}
 
-	status,err:=httpRequest.PostRequestByObject(RootURL+url.AddPVC,requestMsg,nil)
+	status, err := httpRequest.PostRequestByObject(RootURL+url.AddPVC, requestMsg, nil)
 	if status != http.StatusOK || err != nil {
 		fmt.Printf("routine error AddPVC, status %d, return\n", status)
 		return err

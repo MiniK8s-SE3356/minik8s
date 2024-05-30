@@ -63,7 +63,8 @@ type HostPath struct {
 type Volume struct {
 	Name     string   `json:"name" yaml:"name"`
 	HostPath HostPath `json:"hostPath" yaml:"hostPath"`
-
+// 此处，PV的优先级高于PVC,如果两个都写，以PV的规则为准
+// 这俩的优先级均低于HostPath
 	PersistentVolume      PodMountPV  `json:"persistentVolume" yaml:"persistentVolume"`
 	PersistentVolumeClaim PodMountPVC `json:"persistentVolumeClaim" yaml:"persistentVolumeClaim"`
 }

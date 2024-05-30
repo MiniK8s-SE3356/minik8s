@@ -3,7 +3,7 @@ kind: Pod
 metadata:
   labels:
     app: service
-  name: pod-pv-example
+  name: pod-pvc-example1
   namespace: default
 spec:
   containers:

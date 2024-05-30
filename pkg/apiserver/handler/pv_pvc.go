@@ -37,9 +37,9 @@ func UpdatePersistVolume(c *gin.Context) {
 	}
 	var arr []string
 	for k, v := range requestMsg.Pv {
-		vbyte,err:=json.Marshal(v)
-		if(err!=nil){
-			fmt.Println("UpdatePV marshal error:",err.Error())
+		vbyte, err := json.Marshal(v)
+		if err != nil {
+			fmt.Println("UpdatePV marshal error:", err.Error())
 		}
 		_, err = process.UpdatePersistVolume("Default", k, string(vbyte))
 		if err != nil {
@@ -49,9 +49,9 @@ func UpdatePersistVolume(c *gin.Context) {
 		}
 	}
 	for k, v := range requestMsg.Pvc {
-		vbyte,err:=json.Marshal(v)
-		if(err!=nil){
-			fmt.Println("UpdatePVC marshal error:",err.Error())
+		vbyte, err := json.Marshal(v)
+		if err != nil {
+			fmt.Println("UpdatePVC marshal error:", err.Error())
 		}
 		_, err = process.UpdatePersistVolumeClaim("Default", k, string(vbyte))
 		if err != nil {

@@ -55,7 +55,7 @@ func (pvc *PersistVolumeController) routine() {
 		fmt.Printf("routine error get, status %d, return\n", status)
 		return
 	}
-	fmt.Println("Get PV and PVC:",pv_pvc_list)
+	fmt.Println("Get PV and PVC:", pv_pvc_list)
 	// 分为两部分，一部分将当前请求下的pv中没有创建持久化卷的创建，另一部分负责pod pv pvc三者绑定
 
 	// 持久化卷创建
@@ -118,7 +118,7 @@ func (pvc *PersistVolumeController) routine() {
 		}
 	}
 
-	fmt.Println("Renew PV and PVC:",pv_pvc_renew_list)
+	fmt.Println("Renew PV and PVC:", pv_pvc_renew_list)
 	// 更新pv和pvc
 	status, err = httpRequest.PostRequestByObject(config.HTTPURL_UpdatePersistVolume, pv_pvc_renew_list, nil)
 	if status != http.StatusOK || err != nil {

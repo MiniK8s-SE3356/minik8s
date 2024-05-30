@@ -2,6 +2,7 @@ package process
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 
 	"github.com/MiniK8s-SE3356/minik8s/pkg/apiObject/pod"
@@ -26,7 +27,38 @@ func AddPod(namespace string, desc *yaml.PodDesc) (string, error) {
 	// 如果POD需要PV而PV不存在，直接error
 	// 如果POD需要PVC,PVC存在，而PVC对应的PV不存在，立刻创建PV
 	// 如果POD需要PVC,且PVC下辖所需PV，则正常绑定
-	 
+	for _, volume_item := range desc.Spec.Volumes {
+		// 此处，PV的优先级高于PVC,如果两个都写，以PV的规则为准
+		if(volume_item.HostPath.Path!=""){
+			continue
+		}
+		// 这俩的优先级均低于HostPath
+		if(volume_item.PersistentVolume.PvName!=""){
+			result_str:=IsPVAvailable(DefaultNamespace,volume_item.PersistentVolume.PvName)
+			if(result_str!=IsPVAvailable_Return_OK){
+				// PV不是OK直接爆
+				return result_str,errors.New(result_str)
+			}
+			continue
+		}
+		if(volume_item.PersistentVolumeClaim.ClaimName!=""){
+			result_str,spectype:=IsPVC_PV_exist(DefaultNamespace,volume_item.PersistentVolumeClaim.ClaimName,volume_item.Name)
+			if(result_str==IsPVC_PV_exist_Return_OK){
+				continue
+			}
+			if(result_str==IsPVC_PV_exist_Return_PVMISS){
+				err:=AddPVImmediately(volume_item.Name,spectype)
+				if(err!=nil){
+					// 创建失败，也报错
+					return err.Error(),err
+				}
+				continue
+			}
+			// 除了上述俩，直接爆
+			return result_str,errors.New(result_str)
+		}
+	}
+
 	// 构建然后转json
 	pod_ := &pod.Pod{}
 	pod_.APIVersion = desc.ApiVersion
