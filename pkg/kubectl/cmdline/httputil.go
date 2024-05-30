@@ -10,6 +10,7 @@ import (
 
 var RootURL string = ""
 var ServerlessRootURL string = ""
+var GPUCtlRootURL string = ""
 
 func GetRequest(url string) (string, error) {
 	resp, err := http.Get(url)

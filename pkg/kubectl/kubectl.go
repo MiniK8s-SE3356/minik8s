@@ -53,12 +53,20 @@ var triggerCmd = &cobra.Command{
 	Run:   cmdline.TriggerCmdHandler,
 }
 
+var submitCmd = &cobra.Command{
+	Use:   "submit",
+	Short: "submit",
+	Long:  `submit`,
+	Run:   cmdline.SubmitCmdHandler,
+}
+
 func init() {
 	kubectlCmd.AddCommand(applyCmd)
 	kubectlCmd.AddCommand(getCmd)
 	kubectlCmd.AddCommand(deleteCmd)
 	kubectlCmd.AddCommand(createCmd)
 	kubectlCmd.AddCommand(triggerCmd)
+	kubectlCmd.AddCommand(submitCmd)
 }
 
 func Exec() {
@@ -69,6 +77,10 @@ func Exec() {
 	serverlessIP := flag.String("serverlessip", "127.0.0.1", "serverlessip")
 	serverlessPort := flag.String("serverlessport", "8081", "serverlessip")
 	cmdline.ServerlessRootURL = "http://" + *serverlessIP + ":" + *serverlessPort
+
+	gpuctlIP := flag.String("gpuctlip", "127.0.0.1", "gpuctlip")
+	gpuctlPort := flag.String("gpuctlport", "8082", "gpuctlport")
+	cmdline.GPUCtlRootURL = "http://" + *gpuctlIP + ":" + *gpuctlPort
 
 	mqConfig := minik8s_message.MQConfig{
 		User:       "guest",
