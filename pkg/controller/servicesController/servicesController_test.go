@@ -5,9 +5,9 @@ import (
 	"testing"
 )
 
-func TestMain(m *testing.M){
+func TestMain(m *testing.M) {
 	// pre-test code
-	
+
 	// test func
 	exitCode := m.Run()
 
@@ -18,5 +18,5 @@ func TestMain(m *testing.M){
 }
 
 func TestXxx(t *testing.T) {
-	
+
 }

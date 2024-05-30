@@ -17,7 +17,6 @@ func TestMain(m *testing.M) {
 	os.Exit(exitCode)
 }
 
-
 func TestXxx(t *testing.T) {
-	
+
 }
