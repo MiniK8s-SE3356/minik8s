@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 
@@ -29,14 +30,18 @@ func GetAllPersistVolume(c *gin.Context) {
 }
 
 func UpdatePersistVolume(c *gin.Context) {
-	requestMsg := httpobject.SERVER_HTTPRequest_UpdatePersistVolume{}
+	requestMsg := httpobject.HTTPRequest_UpdatePersistVolume{}
 	if err := c.ShouldBindJSON(&requestMsg); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 	var arr []string
 	for k, v := range requestMsg.Pv {
-		_, err := process.UpdatePersistVolume("Default", k, v)
+		vbyte,err:=json.Marshal(v)
+		if(err!=nil){
+			fmt.Println("UpdatePV marshal error:",err.Error())
+		}
+		_, err = process.UpdatePersistVolume("Default", k, string(vbyte))
 		if err != nil {
 			fmt.Println("failed to update pv", k)
 		} else {
@@ -44,7 +49,11 @@ func UpdatePersistVolume(c *gin.Context) {
 		}
 	}
 	for k, v := range requestMsg.Pvc {
-		_, err := process.UpdatePersistVolumeClaim("Default", k, v)
+		vbyte,err:=json.Marshal(v)
+		if(err!=nil){
+			fmt.Println("UpdatePVC marshal error:",err.Error())
+		}
+		_, err = process.UpdatePersistVolumeClaim("Default", k, string(vbyte))
 		if err != nil {
 			fmt.Println("failed to update pv", k)
 		} else {

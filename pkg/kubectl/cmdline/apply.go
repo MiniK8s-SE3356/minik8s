@@ -23,8 +23,8 @@ var applyFuncTable = map[string]func(namespace string, b []byte) error{
 	"Namespace":  applyNamespace,
 	"HPA":        applyHPA,
 	"Dns":        applyDNS,
-	"PersistVolume": applyPersistVolume,
-	"PersistVolumeClaim": applyPersistVolumeClaim,
+	"PersistentVolume": applyPersistVolume,
+	"PersistentVolumeClaim": applyPersistVolumeClaim,
 }
 
 func ApplyCmdHandler(cmd *cobra.Command, args []string) {
@@ -57,6 +57,7 @@ func ApplyCmdHandler(cmd *cobra.Command, args []string) {
 	}
 
 	kind := tmp["kind"].(string)
+	fmt.Println("kind:",kind)
 	targetFunc, ok := applyFuncTable[kind]
 	if !ok {
 		fmt.Println("kind not supported")
@@ -325,7 +326,7 @@ func applyPersistVolumeClaim(namespace string, b []byte) error {
 		return err
 	}
 
-	status,err:=httpRequest.PostRequestByObject(RootURL+url.AddPV,requestMsg,nil)
+	status,err:=httpRequest.PostRequestByObject(RootURL+url.AddPVC,requestMsg,nil)
 	if status != http.StatusOK || err != nil {
 		fmt.Printf("routine error AddPVC, status %d, return\n", status)
 		return err

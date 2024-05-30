@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: test_pv1
+  labels: 
+    pvcname: test_pvc1
+spec:
+  type: nfs

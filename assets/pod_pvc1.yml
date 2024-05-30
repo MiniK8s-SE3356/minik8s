@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    app: service
+  name: pod-pv-example
+  namespace: default
+spec:
+  containers:
+    - image: docker.io/library/nginx
+      name: pod-nginx
+      volumeMounts:
+        - name: test_pv1
+          mountPath: "/pv/test_pv1"
+  volumes:
+    - name: test_pv1
+      persistentVolumeClaim:
+        claimName: test_pvc1

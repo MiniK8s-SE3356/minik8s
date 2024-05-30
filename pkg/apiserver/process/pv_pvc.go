@@ -3,6 +3,7 @@ package process
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	"github.com/MiniK8s-SE3356/minik8s/pkg/apiObject/persistVolume"
 	"github.com/MiniK8s-SE3356/minik8s/pkg/utils/idgenerate"
@@ -110,7 +111,8 @@ func GetAllPersistVolume() (map[string]persistVolume.PersistVolume, error) {
 		if err != nil {
 			fmt.Println("failed to translate pv into json")
 		} else {
-			result[p.Key] = tmp
+			parts := strings.Split(p.Key, "/")
+			result[parts[len(parts)-1]] = tmp
 		}
 	}
 
@@ -134,7 +136,8 @@ func GetAllPersistVolumeClaim() (map[string]persistVolume.PersistVolumeClaim, er
 		if err != nil {
 			fmt.Println("failed to translate pvc into json")
 		} else {
-			result[p.Key] = tmp
+			parts := strings.Split(p.Key, "/")
+			result[parts[len(parts)-1]] = tmp
 		}
 	}
 
