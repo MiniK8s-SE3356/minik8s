@@ -1,4 +1,4 @@
-package config_test
+package workflow_test
 
 import (
 	"os"
@@ -16,7 +16,6 @@ func TestMain(m *testing.M) {
 	// 返回测试运行的退出码
 	os.Exit(exitCode)
 }
-
 
 func TestXxx(t *testing.T) {
 	
