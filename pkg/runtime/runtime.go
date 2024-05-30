@@ -30,6 +30,10 @@ func NewRuntimeManager() RuntimeManager {
 	}
 }
 
+const(
+	NFSPV_DIR="/var/lib/minik8s/volumes/%s/_data"
+)
+
 func (rm *RuntimeManager) GetVolumeBinds(volumes *[]minik8s_pod.Volume, volumeMounts *[]minik8s_container.VolumeMount) []string {
 	volumes_map := make(map[string]*minik8s_pod.Volume)
 
@@ -49,9 +53,23 @@ func (rm *RuntimeManager) GetVolumeBinds(volumes *[]minik8s_pod.Volume, volumeMo
 
 		volume := volumes_map[volumeMount.Name]
 
-		volumeBind := fmt.Sprintf("%s:%s", volume.HostPath.Path, volumeMount.MountPath)
+		// 如果HostPath存在，优先绑定HostPath
+		if volume.HostPath.Path != "" {
+			volumeBind := fmt.Sprintf("%s:%s", volume.HostPath.Path, volumeMount.MountPath)
+			volumeBinds = append(volumeBinds, volumeBind)
+			continue
+		} else if volume.PersistentVolume.PvName != "" {
+			// 否则，优先PV绑定
+			volumeBind := fmt.Sprintf(NFSPV_DIR+":%s", volume.PersistentVolume.PvName, volumeMount.MountPath)
+			volumeBinds = append(volumeBinds, volumeBind)
+			continue
+		} else if volume.PersistentVolumeClaim.ClaimName != "" {
+			// 再否则，PVC绑定
+			volumeBind := fmt.Sprintf(NFSPV_DIR+":%s", volume.Name, volumeMount.MountPath)
+			volumeBinds = append(volumeBinds, volumeBind)
+			continue
+		}
 
-		volumeBinds = append(volumeBinds, volumeBind)
 	}
 
 	return volumeBinds
