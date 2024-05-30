@@ -151,4 +151,7 @@ docker run -d --hostname my-rabbit --name some-rabbit -p 5672:5672 -p 15672:1567
 rm -rf /usr/local/go
 tar -C /usr/local -xzf ./plugin/go1.22.3/go1.22.3.linux-amd64.tar.gz
 
+# pv卷路径创建
+# 注意，由于只有单机，nfs就不配置了
+mkdir /var/lib/minik8s/volumes -p
 
