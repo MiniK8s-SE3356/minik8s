@@ -4,7 +4,10 @@ PATH=$PATH:/usr/local/go/bin
 go mod tidy
 
 mkdir ./build -p
+# build完成
+sh ./scripts/build_all.sh
 PWD=`pwd`
+echo $PWD
 
 # 创建apiserver系统进程文件apiserver.service
 APISERVER_CONF_FILE="/etc/systemd/system/apiserver.service"
