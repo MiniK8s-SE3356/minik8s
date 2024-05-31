@@ -4,3 +4,4 @@ CGO_ENABLED=0 go build -a -ldflags '-extldflags "-static"' -o ./build/kubectl ./
 CGO_ENABLED=0 go build -a -ldflags '-extldflags "-static"' -o ./build/controller ./cmd/controller
 CGO_ENABLED=0 go build -a -ldflags '-extldflags "-static"' -o ./build/kubelet ./pkg/kubelet/main/
 CGO_ENABLED=0 go build -a -ldflags '-extldflags "-static"' -o ./build/serverless ./cmd/serverless
+CGO_ENABLED=0 go build -a -ldflags '-extldflags "-static"' -o ./build/metric ./cmd/metric

@@ -29,9 +29,9 @@ func bind(r *gin.Engine) {
 	r.POST(url.AddServerlessFuncPod, handler.AddServerlessFuncPod)
 	r.GET(url.GetServerlessFuncPod, handler.GetServerlessFuncPod)
 
-	r.POST(url.AddNamespace, handler.AddNamespace)
-	r.GET(url.GetNamespace, handler.GetNamespace)
-	r.POST(url.RemoveNamespace, handler.RemoveNamespace)
+	// r.POST(url.AddNamespace, handler.AddNamespace)
+	// r.GET(url.GetNamespace, handler.GetNamespace)
+	// r.POST(url.RemoveNamespace, handler.RemoveNamespace)
 
 	r.POST(url.AddNode, handler.AddNode)
 	r.GET(url.GetNode, handler.GetNode)
@@ -65,6 +65,8 @@ func bind(r *gin.Engine) {
 	r.POST(url.AddorDeleteEndpoint, handler.AddorDeleteEndpoint)
 
 	r.GET(url.GetAllServerlessFunction, handler.GetAllServerlessFunction)
+
+	r.GET(url.GetMetricPoint, handler.GetMetricPoint)
 }
 
 func Start() {

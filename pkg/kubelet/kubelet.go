@@ -56,9 +56,9 @@ func (k *Kubelet) Proxy() {
 
 func (k *Kubelet) RegisterNode() error {
 	url := fmt.Sprintf("http://%s:%s/api/v1/AddNode", k.kubeletConfig.APIServerIP, k.kubeletConfig.APIServerPort)
-
+	fmt.Println(len(k.Metadata.Labels))
 	node := minik8s_node.Node{
-		Metadata: minik8s_node.NodeMetadata{},
+		Metadata: k.Metadata,
 		Status: minik8s_node.NodeStatus{
 			Hostname: k.kubeletConfig.NodeHostName,
 			Ip:       k.kubeletConfig.NodeIP,

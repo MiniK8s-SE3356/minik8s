@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    app: service
+    exporter: 9100
+  name: test-prom
+  namespace: Default
+spec:
+  containers:
+    - image: yinghaodeng018/test-image:v1.0
+      name: test
+      ports:
+        - containerPort: 9100
+

@@ -1,7 +1,6 @@
 package main
 
 import (
-	"flag"
 	"fmt"
 	"os"
 	"time"
@@ -21,13 +20,13 @@ func main() {
 	if err != nil {
 		defaultHostname = "node"
 	}
-
 	// Get command line arguments
 	// Command line arguments must include API server address and port
-	apiServerIP := flag.String("apiserverip", "127.0.0.1", "APIServer IP address")
-	apiServerPort := flag.String("apiserverport", "8080", "APIServer port")
-	nodeIP := flag.String("nodeip", defaultNodeIP, "Node IP address")
-	hostName := flag.String("hostname", defaultHostname, "Node hostname")
+	apiServerIP := pflag.String("apiserverip", "127.0.0.1", "APIServer IP address")
+	apiServerPort := pflag.String("apiserverport", "8080", "APIServer port")
+	nodeIP := pflag.String("nodeip", defaultNodeIP, "Node IP address")
+	hostName := pflag.String("hostname", defaultHostname, "Node hostname")
+	exporter := pflag.String("exporter", "", "port of exporter")
 
 	// Get command line arguments about labels
 	var labels []string
@@ -62,6 +61,11 @@ func main() {
 	)
 
 	kubelet := minik8s_kubelet.NewKubelet(&kubeletConfig)
+	kubelet.Metadata.Labels = make(map[string]string)
+	fmt.Println(*exporter)
+	if *exporter != "" {
+		kubelet.Metadata.Labels["metric_port"] = *exporter
+	}
 
 	kubelet.Run()
 }
