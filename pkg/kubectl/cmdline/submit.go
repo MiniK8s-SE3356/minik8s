@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/MiniK8s-SE3356/minik8s/pkg/apiserver/url"
 	gpu_types "github.com/MiniK8s-SE3356/minik8s/pkg/gpu/types"
 	"github.com/MiniK8s-SE3356/minik8s/pkg/utils/httpRequest"
 	"github.com/MiniK8s-SE3356/minik8s/pkg/utils/idgenerate"
@@ -51,6 +52,11 @@ func SubmitGPUJob(args []string) error {
 		return err
 	}
 
+	//!debug//
+	debugJson, _ := json.Marshal(gpuSlurmJobDesc)
+	fmt.Println("gpuSlurmJobDesc is", string(debugJson))
+	//!debug//
+
 	uuid, err := idgenerate.GenerateID()
 	if err != nil {
 		fmt.Println("failed to generate id")
@@ -73,7 +79,7 @@ func SubmitGPUJob(args []string) error {
 	jobRequest.ZipContent = zipContent
 	jsonData, _ := json.Marshal(jobRequest)
 	result, err := httpRequest.PostRequest(
-		GPUCtlRootURL,
+		GPUCtlRootURL+url.SubmitGPUJob,
 		jsonData,
 	)
 	if err != nil {

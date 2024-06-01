@@ -51,4 +51,8 @@ const (
 	AddorDeleteEndpoint = prefix + "/AddorDeleteEndpoint"
 
 	GetAllServerlessFunction = prefix + "/GetAllServerlessFunction"
+
+	// For GPU
+	SubmitGPUJob = prefix + "/SubmitGPUJob"
+	GetGPUJob    = prefix + "/GetGPUJob"
 )

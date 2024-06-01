@@ -13,5 +13,7 @@ const (
 
 	SBATCH_MODULE_LOAD = "module load %s\n"
 
-	SBATCH_SUBMIT = "sbatch %s\n"
+	SBATCH_SUBMIT = "sbatch %s"
+
+	JOBSTATE_CHECK = "sacct -j %s | tail -n +3 | awk '{print $1, $2, $3, $4, $5, $6, $7}'"
 )

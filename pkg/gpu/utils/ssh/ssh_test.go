@@ -1,7 +1,6 @@
 package ssh_test
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/MiniK8s-SE3356/minik8s/pkg/gpu/utils/ssh"
@@ -12,7 +11,7 @@ func TestMain(m *testing.M) {
 		ssh.SSHConfig{
 			Username: "stu1045",
 			Password: "RFVrGtwdKSGl",
-			Hostname: "sylogin.hpc.sjtu.edu.cn",
+			Hostname: "pilogin.hpc.sjtu.edu.cn",
 		},
 	)
 	if err != nil {
@@ -21,20 +20,36 @@ func TestMain(m *testing.M) {
 
 	defer sshclient.Close()
 
-	cmds := []string{
-		"cd",
-		"ls -a -l",
-		"mkdir -p minik8s-test",
-		"cd minik8s-test",
-		"pwd",
-		"echo 'Hello, World!' > hello.txt",
-		"cat hello.txt",
-	}
+	//...Test for batch command...//
+	// cmds := []string{
+	// 	"cd",
+	// 	"ls -a -l",
+	// 	"mkdir -p minik8s-test",
+	// 	"cd minik8s-test",
+	// 	"pwd",
+	// 	"echo 'Hello, World!' > hello.txt",
+	// 	"cat hello.txt",
+	// }
 
-	out, err := sshclient.BatchCmd(cmds)
+	// out, err := sshclient.BatchCmd(cmds)
+	// if err != nil {
+	// 	panic(err)
+	// }
+
+	// fmt.Println(out)
+
+	//...Test for post directory...//
+
+	// cmds := []string{
+	// 	"mkdir -p minik8s-dir-test",
+	// }
+	// _, err = sshclient.BatchCmd(cmds)
+	// if err != nil {
+	// 	panic(err)
+	// }
+
+	err = sshclient.PostDirectory("/home/xubbbb/Code/CloudOS/minik8s/scripts", "minik8s-dir-test")
 	if err != nil {
 		panic(err)
 	}
-
-	fmt.Println(out)
 }

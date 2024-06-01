@@ -79,7 +79,7 @@ func Exec() {
 	cmdline.ServerlessRootURL = "http://" + *serverlessIP + ":" + *serverlessPort
 
 	gpuctlIP := flag.String("gpuctlip", "127.0.0.1", "gpuctlip")
-	gpuctlPort := flag.String("gpuctlport", "8082", "gpuctlport")
+	gpuctlPort := flag.String("gpuctlport", "8083", "gpuctlport")
 	cmdline.GPUCtlRootURL = "http://" + *gpuctlIP + ":" + *gpuctlPort
 
 	mqConfig := minik8s_message.MQConfig{

@@ -2,6 +2,8 @@ package ssh
 
 import (
 	"fmt"
+	"os"
+	"path/filepath"
 
 	"github.com/melbahja/goph"
 )
@@ -26,7 +28,7 @@ func NewSSHClient(config SSHConfig) (*SSHClient, error) {
 	)
 
 	if err != nil {
-		fmt.Println("Failed to create SSH client")
+		fmt.Println("Failed to create SSH client, err: ", err)
 		return nil, err
 	}
 
@@ -48,6 +50,47 @@ func (sc *SSHClient) BatchCmd(cmds []string) (string, error) {
 	}
 	fmt.Println("Command: ", cmd, " executed successfully")
 	return string(out), nil
+}
+
+func (sc *SSHClient) PostDirectory(localPath, remotePath string) error {
+	err := filepath.Walk(localPath, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			fmt.Println("Failed to walk through local path")
+			return err
+		}
+
+		relativePath, err := filepath.Rel(localPath, path)
+		if err != nil {
+			fmt.Println("Failed to get relative path")
+			return err
+		}
+		remoteFilePath := filepath.Join(remotePath, relativePath)
+
+		if info.IsDir() {
+			out, err := sc.Client.Run("mkdir -p " + remoteFilePath)
+			if err != nil {
+				fmt.Println("Failed to create directory")
+				return err
+			}
+			fmt.Println("Directory created successfully: ", string(out))
+		} else {
+			err := sc.Client.Upload(path, remoteFilePath)
+			if err != nil {
+				fmt.Println("Failed to send file")
+				return err
+			}
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		fmt.Println("Failed to send directory")
+		return err
+	}
+
+	fmt.Println("Directory sent successfully")
+	return nil
 }
 
 func (sc *SSHClient) PostFile(localPath, remotePath string) error {
