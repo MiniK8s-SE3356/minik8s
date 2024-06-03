@@ -50,14 +50,14 @@ func GetCmdHandler(cmd *cobra.Command, args []string) {
 		namespace = process.DefaultNamespace
 	}
 
-	_, err := getFunc(namespace, name)
+	result, err := getFunc(namespace, name)
 	if err != nil {
 		fmt.Println("error in GetCmdHandler ", err.Error())
 		return
 	}
 
 	//!debug//
-	// fmt.Println("result is ", result)
+	fmt.Println("result is ", result)
 	//!debug//
 }
 
@@ -86,6 +86,8 @@ func getPod(namespace string, name string) (string, error) {
 		return "", err
 	}
 
+	formatprint.PrintPods(result)
+
 	return result, nil
 }
 
@@ -100,6 +102,7 @@ func getService(namespace string, name string) (string, error) {
 		fmt.Println("error in get service ", err.Error())
 		return "", err
 	}
+	formatprint.PrintService(result)
 
 	return result, nil
 }
@@ -116,6 +119,8 @@ func getReplicaSet(namespace string, name string) (string, error) {
 		return "", err
 	}
 
+	formatprint.PrintReplicaset(result)
+
 	return result, nil
 }
 
@@ -130,6 +135,8 @@ func getHPA(namespace string, name string) (string, error) {
 		fmt.Println("error in get HPA ", err.Error())
 		return "", err
 	}
+
+	formatprint.PrintHPA(result)
 
 	return result, nil
 }

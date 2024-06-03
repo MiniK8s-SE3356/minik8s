@@ -83,12 +83,34 @@ func (p *PodWorker) AddTaskHandler(pod *apiobject_pod.Pod) (string, error) {
 	p.Lock.Lock()
 	defer p.Lock.Unlock()
 
+	//! CreatePod will change pod's 'IP', 'Container ID and Name', 'Status.Phase'
 	_, err := minik8s_runtime.NodeRuntimeMangaer.CreatePod(pod)
 	if err != nil {
 		fmt.Println("Add Task Error!")
+
+		pod.Status.Phase = apiobject_pod.PodFailed
+		request_url := fmt.Sprintf("http://%s:%s/api/v1/UpdatePod", p.APIServer.IP, p.APIServer.Port)
+		requestBody := make(map[string]interface{})
+		requestBody["namespace"] = "default"
+		requestBody["pod"] = pod
+		requestBodyData, _ := json.Marshal(requestBody)
+
+		fmt.Println("Update pod request: ", string(requestBodyData))
+
+		response, err := httpRequest.PostRequest(
+			request_url,
+			requestBodyData,
+		)
+		if err != nil {
+			fmt.Println("Error posting request: ", err)
+			return "", err
+		}
+		fmt.Println("\nUpdate pod response: ", response)
+
 		return "", err
 	}
 
+	// TODO: pod fault tolerance
 	// Set local pod
 	p.LocalPod = *pod
 
