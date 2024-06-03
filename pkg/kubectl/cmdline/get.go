@@ -2,9 +2,14 @@ package cmdline
 
 import (
 	"fmt"
+	"net/http"
+	"os"
+	"text/tabwriter"
 
 	"github.com/MiniK8s-SE3356/minik8s/pkg/apiserver/process"
 	"github.com/MiniK8s-SE3356/minik8s/pkg/apiserver/url"
+	httpobject "github.com/MiniK8s-SE3356/minik8s/pkg/types/httpObject"
+	formatprint "github.com/MiniK8s-SE3356/minik8s/pkg/utils/formatPrint"
 	"github.com/MiniK8s-SE3356/minik8s/pkg/utils/httpRequest"
 	"github.com/spf13/cobra"
 )
@@ -17,6 +22,7 @@ var GetFuncTable = map[string]func(namespace string, name string) (string, error
 	"HPA":        getHPA,
 	"Namespace":  getNamespace,
 	"Dns":        getDNS,
+	"PV":         getPV_PVC,
 }
 
 func GetCmdHandler(cmd *cobra.Command, args []string) {
@@ -58,6 +64,51 @@ func GetCmdHandler(cmd *cobra.Command, args []string) {
 	fmt.Println("result is ", result)
 }
 
+func getPV_PVC(namespace string, name string) (string, error) {
+	// // 实际上无论namespace和name是什么，getNode都会获取所有的node
+	// result, err := httpRequest.GetRequest(RootURL + url.GetNode)
+	// if err != nil {
+	// 	fmt.Println("error in getNode", err.Error())
+	// 	return "", err
+	// }
+
+	// return result, nil
+	// 请求所有的pv/pvc
+	var pv_pvc_list httpobject.HTTPResponse_GetAllPersistVolume
+	status, err := httpRequest.GetRequestByObject(RootURL+url.GetAllPersistVolume, nil, &pv_pvc_list)
+	if status != http.StatusOK || err != nil {
+		fmt.Printf("routine error get, status %d, return\n", status)
+		return "", err
+	}
+	writer:=tabwriter.NewWriter(os.Stdout,0,0,2,' ',tabwriter.Debug)
+	result:="\n"
+	result+="****** PERSISTENT VOLUME ******\n"
+	result+="NAME\tTYPE\tCAPACITY\tMOUNTPOD\n"
+	for _,pv:=range(pv_pvc_list.Pv){
+		mount_str:=""
+		for _,mp:=range(pv.Status.MountPod){
+			mount_str+=fmt.Sprintf("%s ",mp)
+		}
+		result+=fmt.Sprintf("%s\t%s\t%s\t%s\n",pv.Metadata.Name,pv.Spec.Type,pv.Spec.Capacity,mount_str)
+	}
+	fmt.Fprint(writer,result)
+	writer.Flush()
+
+	result=""
+	result+="****** PERSISTENT VOLUME CLAIM ******\n"
+	result+="NAME\tTYPE\tCAPACITY\tBINDPV\n"
+	for _,pvc:=range(pv_pvc_list.Pvc){
+		bindpv_str:=""
+		for _,bpv:=range(pvc.Status.BoundPV){
+			bindpv_str+=fmt.Sprintf("%s ",bpv)
+		}
+		result+=fmt.Sprintf("%s\t%s\t%s\t%s\n",pvc.Metadata.Name,pvc.Spec.Type,pvc.Spec.Capacity,bindpv_str)
+	}
+	fmt.Fprint(writer,result)
+	writer.Flush()
+	return  "finish",nil
+}
+
 func getNode(namespace string, name string) (string, error) {
 	// 实际上无论namespace和name是什么，getNode都会获取所有的node
 	result, err := httpRequest.GetRequest(RootURL + url.GetNode)
@@ -80,8 +131,9 @@ func getPod(namespace string, name string) (string, error) {
 		fmt.Println("error in get pod ", err.Error())
 		return "", err
 	}
+	formatprint.PrintPods(result)
 
-	return result, nil
+	return "finish", nil
 }
 
 func getService(namespace string, name string) (string, error) {

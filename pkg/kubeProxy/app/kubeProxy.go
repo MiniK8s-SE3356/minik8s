@@ -61,17 +61,24 @@ func (kp *KubeProxy) Run() {
 	// 打开一个http服务/api/v1/UpdateNodeNetworkStatus，用于将servicestatus提交给kubelet
 	r := gin.Default()
 	kp.bind(r)
-	r.Run(":9999")
+	err:=r.Run(":9999")
+	if(err!=nil){
+		println("gin err: ",err)
+	}
 }
 
 func (kp *KubeProxy) syncDns() {
 	// 获得所有dns
 	var dns_list httpobject.HTTPResponse_GetAllDns = httpobject.HTTPResponse_GetAllDns{}
+	// var dns_list string
 	status, err := httpRequest.GetRequestByObject(config.HTTPURL_GetAllDNS, nil, &dns_list)
 	if status != http.StatusOK || err != nil {
 		fmt.Printf("EndpointsController routine error get, status %d, return\n", status)
 		return
 	}
+
+	fmt.Println("dns: ",dns_list)
+	// return
 
 	// 更新本地/etc/hosts
 	new_dns_status, err := kp.hosts_controller.SyncEtcHosts(&dns_list)

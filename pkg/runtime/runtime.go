@@ -30,8 +30,8 @@ func NewRuntimeManager() RuntimeManager {
 	}
 }
 
-const(
-	NFSPV_DIR="/var/lib/minik8s/volumes/%s/_data"
+const (
+	NFSPV_DIR = "/var/lib/minik8s/volumes/%s/_data"
 )
 
 func (rm *RuntimeManager) GetVolumeBinds(volumes *[]minik8s_pod.Volume, volumeMounts *[]minik8s_container.VolumeMount) []string {

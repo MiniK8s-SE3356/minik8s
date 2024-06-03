@@ -10,7 +10,6 @@ import (
 	minik8s_runtime "github.com/MiniK8s-SE3356/minik8s/pkg/runtime"
 	minik8s_message "github.com/MiniK8s-SE3356/minik8s/pkg/utils/message"
 	"github.com/MiniK8s-SE3356/minik8s/pkg/utils/nettools"
-	"github.com/spf13/pflag"
 )
 
 func main() {
@@ -28,11 +27,11 @@ func main() {
 	apiServerPort := flag.String("apiserverport", "8080", "APIServer port")
 	nodeIP := flag.String("nodeip", defaultNodeIP, "Node IP address")
 	hostName := flag.String("hostname", defaultHostname, "Node hostname")
-
+	flag.Parse()
 	// Get command line arguments about labels
-	var labels []string
-	pflag.StringArrayVar(&labels, "label", []string{}, "Node labels")
-	pflag.Parse()
+	// var labels []string
+	// pflag.StringArrayVar(&labels, "label", []string{}, "Node labels")
+	// pflag.Parse()
 
 	// run a cAdvisor container to monitor the node and container status
 	minik8s_runtime.NodeRuntimeMangaer.RuncAdvicorContainer()

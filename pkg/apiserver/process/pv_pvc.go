@@ -294,7 +294,8 @@ func AddPVImmediately(pvname string, pvc persistVolume.PersistVolumeClaim) error
 	}
 	new_pv.Metadata.Id = id
 	new_pv.Metadata.Name = pvname
-
+	new_pv.Spec.Type = pvc.Spec.Type
+	new_pv.Spec.Capacity = pvc.Spec.Capacity
 	new_pv.Status.Phase = persistVolume.PV_PHASE_AVAILABLE
 	new_pv.Status.MountPod = []string{}
 

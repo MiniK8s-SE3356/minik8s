@@ -24,7 +24,8 @@ type PersistVolumeMetadata struct {
 }
 
 type PersistVolumeSpec struct {
-	Type string `json:"type" yaml:"type"` /*只允许nfs*/
+	Type     string `json:"type" yaml:"type"` /*只允许nfs*/
+	Capacity string `json:"capacity" yaml:"capacity"`
 }
 
 type PersistVolumeStatus struct {

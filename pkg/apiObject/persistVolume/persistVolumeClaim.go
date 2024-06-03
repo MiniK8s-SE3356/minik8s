@@ -23,6 +23,7 @@ type PersistVolumeClaimMetadata struct {
 
 type PersistVolumeClaimSpec struct {
 	Type     string            `json:"type" yaml:"type"` /*只允许nfs*/
+	Capacity string            `json:"capacity" yaml:"capacity"`
 	Selector selector.Selector `json:"selector" yaml:"selector"`
 }
 

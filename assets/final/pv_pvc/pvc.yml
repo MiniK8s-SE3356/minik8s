@@ -4,6 +4,7 @@ metadata:
   name: test_pvc1
 spec:
   type: nfs
+  capacity: 100MB
   selector:
     matchLabels:
       pvcname: test_pvc1
