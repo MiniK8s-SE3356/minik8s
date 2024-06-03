@@ -3,20 +3,20 @@ package controller_test
 import (
 	"os"
 	"testing"
+
+	"github.com/MiniK8s-SE3356/minik8s/pkg/controller"
 )
 
 func TestMain(m *testing.M) {
 	// pre-test code
-
+	controller.StartController()
 	// test func
 	exitCode := m.Run()
 
 	// post-test code
-
-	// 返回测试运行的退出码
 	os.Exit(exitCode)
 }
 
-func TestXxx(t *testing.T) {
-
+func TestController(t *testing.T) {
+	
 }

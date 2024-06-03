@@ -5,6 +5,11 @@ import (
 	"testing"
 )
 
+/*
+*	NOTE: This package only includes struct definition
+*	and we don not need to test it
+ */
+
 func TestMain(m *testing.M) {
 	// pre-test code
 
@@ -13,10 +18,9 @@ func TestMain(m *testing.M) {
 
 	// post-test code
 
-	// 返回测试运行的退出码
 	os.Exit(exitCode)
 }
 
-func TestXxx(t *testing.T) {
+func TestApiObject(t *testing.T) {
 
 }
