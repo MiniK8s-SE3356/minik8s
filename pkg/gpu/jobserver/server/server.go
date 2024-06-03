@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"strings"
 	"time"
 
 	gpu_types "github.com/MiniK8s-SE3356/minik8s/pkg/gpu/types"
@@ -178,6 +179,20 @@ func (js *JobServer) GetJobState() {
 	if err != nil {
 		fmt.Println("failed to get job state because BatchCmd failed")
 		return
+	}
+
+	outlines := strings.Split(out, "\n")
+
+	// because in this output, it may output all related jobs' state
+	// only the first line is the job's state we want
+
+	if len(outlines) > 0 {
+		stateInfos := strings.Split(outlines[0], " ")
+		if len(stateInfos) < 6 {
+			fmt.Println("failed to get job state because stateInfos is invalid")
+			return
+		}
+		js.Job.State = stateInfos[5]
 	}
 
 	fmt.Println("JobServer get job state result: ", out)
