@@ -5,9 +5,9 @@ metadata:
 spec:
   host: dns.test.com
   paths:
-  - subPath: /cluterip1
+  - subPath: /clusterip1
     svcName: dns-test-clusterip1
     svcPort: 9200
-  - subPath: /cluterip2
+  - subPath: /clusterip2
     svcName: dns-test-clusterip2
     svcPort: 9201
