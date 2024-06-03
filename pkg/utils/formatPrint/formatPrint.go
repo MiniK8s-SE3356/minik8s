@@ -54,7 +54,7 @@ func PrintNodes(str string) {
 }
 
 func PrintPods(str string) {
-	var pods []pod.Pod
+	var pods map[string]pod.Pod
 
 	err := json.Unmarshal([]byte(str), &pods)
 	if err != nil {
