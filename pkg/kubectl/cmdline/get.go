@@ -60,13 +60,7 @@ func GetCmdHandler(cmd *cobra.Command, args []string) {
 		return
 	}
 
-<<<<<<< HEAD
 	fmt.Println("result ", result)
-=======
-	//!debug//
-	fmt.Println("result is ", result)
-	//!debug//
->>>>>>> origin/development/round5
 }
 
 func getNode(namespace string, name string) (string, error) {
@@ -126,7 +120,6 @@ func getService(namespace string, name string) (string, error) {
 		fmt.Printf("routine error get, status %d, return\n", status)
 		return "", err
 	}
-	formatprint.PrintService(result)
 
 	writer := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', tabwriter.Debug)
 
