@@ -41,3 +41,11 @@ type NodeMetadata struct {
 	Name   string            `json:"name" yaml:"name"`
 	Labels map[string]string `json:"labels" yaml:"labels"`
 }
+
+type NodeStartInfo struct {
+	APIServerIP   string            `json:"apiserverip" yaml:"apiserverip"`
+	APIServerPort string            `json:"apiserverport" yaml:"apiserverport"`
+	NodeIP        string            `json:"nodeip" yaml:"nodeip"`
+	NodeHostName  string            `json:"nodehostname" yaml:"nodehostname"`
+	Labels        map[string]string `json:"labels" yaml:"labels"`
+}

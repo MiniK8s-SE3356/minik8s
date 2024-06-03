@@ -71,8 +71,8 @@ func (rm *RuntimeManager) CreatePod(pod *minik8s_pod.Pod) (string, error) {
 	// Create containers for the pod
 	for i, container := range pod.Spec.Containers {
 
-		// Rename the container to pod-uuid-container-name
-		container.Name = pod.Metadata.UUID + "-" + container.Name
+		//// Rename the container to pod-uuid-container-name
+		// container.Name = pod.Metadata.UUID + "-" + container.Name
 
 		// parse environment variables
 		env := []string{}
@@ -86,6 +86,9 @@ func (rm *RuntimeManager) CreatePod(pod *minik8s_pod.Pod) (string, error) {
 		for _, volumeBind := range volumeBinds {
 			fmt.Println("Volume bind: ", volumeBind)
 		}
+
+		//! Used for DNS resolution, bind the '/etc/hosts' file to the container
+		volumeBinds = append(volumeBinds, "/etc/hosts:/etc/hosts:ro")
 
 		// Because all containers in a pod share the same network namespace,
 		// we have set the port bindings in the pause container. No need to set every container's port bindings.
@@ -107,7 +110,7 @@ func (rm *RuntimeManager) CreatePod(pod *minik8s_pod.Pod) (string, error) {
 		}
 		// Change pod's container id and name
 		pod.Spec.Containers[i].Id = containerId
-		pod.Spec.Containers[i].Name = container.Name
+		// pod.Spec.Containers[i].Name = container.Name
 		// Start the container
 		_, err = rm.containerManager.StartContainer(containerId)
 		if err != nil {
@@ -163,28 +166,30 @@ func (rm *RuntimeManager) CreateAndStartPauseContainer(pod *minik8s_pod.Pod) (st
 				// If the container port is not set, skip it
 				continue
 			}
-			if port.HostIP == "" {
-				port.HostIP = "127.0.0.1"
-			}
+			//! If user don't set HostIP, "0.0.0.0" will be used
+			// if port.HostIP == "" {
+			// 	port.HostIP = "127.0.0.1"
+			// }
 			if port.Protocol == "" {
 				port.Protocol = minik8s_container.ProtocolTCP
 			}
-			if port.HostPort == 0 {
-				// Check if the ContainerPort is already used
-				// If not in use, assign it to HostPort.
-				// Otherwise, assign the first available port to HostPort.
-				containerport_available := nettools.CheckPortAvailability(int(port.ContainerPort))
-				if containerport_available {
-					port.HostPort = port.ContainerPort
-				} else {
-					available_port, err := nettools.GetAvailablePort()
-					if err != nil {
-						fmt.Println("Failed to get available port")
-						return "", err
-					}
-					port.HostPort = (int32)(available_port)
-				}
-			}
+			// if port.HostPort == 0 {
+			// Check if the ContainerPort is already used
+			// If not in use, assign it to HostPort.
+			// Otherwise, assign the first available port to HostPort.
+			//! If user don't set HostPort, we don't expose the port to the host
+			// containerport_available := nettools.CheckPortAvailability(int(port.ContainerPort))
+			// if containerport_available {
+			// 	port.HostPort = port.ContainerPort
+			// } else {
+			// 	available_port, err := nettools.GetAvailablePort()
+			// 	if err != nil {
+			// 		fmt.Println("Failed to get available port")
+			// 		return "", err
+			// 	}
+			// 	port.HostPort = (int32)(available_port)
+			// }
+			// }
 
 			// Add port binding
 			BindingKey, err := nat.NewPort((string)(port.Protocol), fmt.Sprintf("%d", port.ContainerPort))
@@ -197,10 +202,16 @@ func (rm *RuntimeManager) CreateAndStartPauseContainer(pod *minik8s_pod.Pod) (st
 				fmt.Println("Port binding already exists")
 			} else {
 				// Bind the port
+				var hostPort string
+				if port.HostPort == 0 {
+					hostPort = ""
+				} else {
+					hostPort = fmt.Sprintf("%d", port.HostPort)
+				}
 				PodPortBindings[BindingKey] = []nat.PortBinding{
 					{
 						HostIP:   port.HostIP,
-						HostPort: fmt.Sprintf("%d", port.HostPort),
+						HostPort: hostPort,
 					},
 				}
 			}
@@ -210,11 +221,15 @@ func (rm *RuntimeManager) CreateAndStartPauseContainer(pod *minik8s_pod.Pod) (st
 		}
 	}
 
+	//! Used for DNS resolution, bind the '/etc/hosts' file to the container
+	volumes := []string{"/etc/hosts:/etc/hosts:ro"}
+
 	pauseContainerId, err := rm.containerManager.CreateContainer(pauseName, &minik8s_container.CreateContainerConfig{
 		Image:        runtime_image.PauseContainerImage,
 		IpcMode:      "shareable",
 		PortBindings: PodPortBindings,
 		ExposedPorts: PodExposedPorts,
+		Binds:        volumes,
 	})
 
 	if err != nil {

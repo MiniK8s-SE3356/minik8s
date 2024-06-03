@@ -10,4 +10,5 @@ type KubeletConfig struct {
 	APIServerPort string
 	NodeIP        string
 	NodeHostName  string
+	Labels        map[string]string
 }

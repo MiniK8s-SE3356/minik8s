@@ -9,6 +9,7 @@ import (
 	"github.com/MiniK8s-SE3356/minik8s/pkg/apiserver/process"
 	"github.com/MiniK8s-SE3356/minik8s/pkg/apiserver/url"
 	httpobject "github.com/MiniK8s-SE3356/minik8s/pkg/types/httpObject"
+	formatprint "github.com/MiniK8s-SE3356/minik8s/pkg/utils/formatPrint"
 	"github.com/MiniK8s-SE3356/minik8s/pkg/utils/httpRequest"
 	"github.com/spf13/cobra"
 )
@@ -59,7 +60,13 @@ func GetCmdHandler(cmd *cobra.Command, args []string) {
 		return
 	}
 
+<<<<<<< HEAD
 	fmt.Println("result ", result)
+=======
+	//!debug//
+	fmt.Println("result is ", result)
+	//!debug//
+>>>>>>> origin/development/round5
 }
 
 func getNode(namespace string, name string) (string, error) {
@@ -69,6 +76,8 @@ func getNode(namespace string, name string) (string, error) {
 		fmt.Println("error in getNode", err.Error())
 		return "", err
 	}
+
+	formatprint.PrintNodes(result)
 
 	return result, nil
 }
@@ -84,6 +93,8 @@ func getPod(namespace string, name string) (string, error) {
 		fmt.Println("error in get pod ", err.Error())
 		return "", err
 	}
+
+	formatprint.PrintPods(result)
 
 	return result, nil
 }
@@ -115,6 +126,7 @@ func getService(namespace string, name string) (string, error) {
 		fmt.Printf("routine error get, status %d, return\n", status)
 		return "", err
 	}
+	formatprint.PrintService(result)
 
 	writer := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', tabwriter.Debug)
 
@@ -182,6 +194,8 @@ func getReplicaSet(namespace string, name string) (string, error) {
 		return "", err
 	}
 
+	formatprint.PrintReplicaset(result)
+
 	return result, nil
 }
 
@@ -196,6 +210,8 @@ func getHPA(namespace string, name string) (string, error) {
 		fmt.Println("error in get HPA ", err.Error())
 		return "", err
 	}
+
+	formatprint.PrintHPA(result)
 
 	return result, nil
 }
