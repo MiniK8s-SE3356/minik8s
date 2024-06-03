@@ -1,4 +1,4 @@
-package main
+package app
 
 import (
 	"flag"
@@ -7,7 +7,7 @@ import (
 	minik8s_message "github.com/MiniK8s-SE3356/minik8s/pkg/utils/message"
 )
 
-func main() {
+func SchedulerExec() {
 	apiServerIP := flag.String("apiserverip", "127.0.0.1", "APIServer IP address")
 	apiServerPort := flag.String("apiserverport", "8080", "APIServer port")
 

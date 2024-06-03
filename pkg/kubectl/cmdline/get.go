@@ -5,6 +5,7 @@ import (
 
 	"github.com/MiniK8s-SE3356/minik8s/pkg/apiserver/process"
 	"github.com/MiniK8s-SE3356/minik8s/pkg/apiserver/url"
+	formatprint "github.com/MiniK8s-SE3356/minik8s/pkg/utils/formatPrint"
 	"github.com/MiniK8s-SE3356/minik8s/pkg/utils/httpRequest"
 	"github.com/spf13/cobra"
 )
@@ -49,13 +50,15 @@ func GetCmdHandler(cmd *cobra.Command, args []string) {
 		namespace = process.DefaultNamespace
 	}
 
-	result, err := getFunc(namespace, name)
+	_, err := getFunc(namespace, name)
 	if err != nil {
 		fmt.Println("error in GetCmdHandler ", err.Error())
 		return
 	}
 
-	fmt.Println("result is ", result)
+	//!debug//
+	// fmt.Println("result is ", result)
+	//!debug//
 }
 
 func getNode(namespace string, name string) (string, error) {
@@ -65,6 +68,8 @@ func getNode(namespace string, name string) (string, error) {
 		fmt.Println("error in getNode", err.Error())
 		return "", err
 	}
+
+	formatprint.PrintNodes(result)
 
 	return result, nil
 }
