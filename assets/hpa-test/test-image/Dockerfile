@@ -13,4 +13,4 @@ ENTRYPOINT ["python"]
 CMD ["main.py"]
 
 # To build the image, run the following command:
-# docker build -t computation-intensive-image1 .
+# docker build -t hpa-test-image .

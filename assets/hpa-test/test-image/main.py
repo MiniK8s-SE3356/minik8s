@@ -19,7 +19,8 @@ def integrate():
     # 计算函数 sin(x) 在区间 [0, π] 上的积分
     lower_bound = request.args.get('lower_bound', default=0, type=float)
     upper_bound = request.args.get('upper_bound', default=math.pi, type=float)
-    result = simpson_rule(math.sin, lower_bound, upper_bound, 100000)
+    for i in range(1000):
+        result = simpson_rule(math.sin, lower_bound, upper_bound, 100000)
     return jsonify({"integral": result})
 
 if __name__ == '__main__':
