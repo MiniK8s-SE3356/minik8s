@@ -54,13 +54,15 @@ func GetCmdHandler(cmd *cobra.Command, args []string) {
 		namespace = process.DefaultNamespace
 	}
 
-	result, err := getFunc(namespace, name)
+	_, err := getFunc(namespace, name)
 	if err != nil {
 		fmt.Println("error in GetCmdHandler ", err.Error())
 		return
 	}
 
-	fmt.Println("result ", result)
+	//!debug//
+	// fmt.Println("result is ", result)
+	//!debug//
 }
 
 func getNode(namespace string, name string) (string, error) {
@@ -162,15 +164,15 @@ func getService(namespace string, name string) (string, error) {
 	result += "NAME\tSELECTOR\tBINDCLUSTERIP\tPORTS\n"
 	for _, np_item := range service_list.NodePort {
 		selector_str := ""
-				// 组装selector字符串
-				for k, v := range np_item.Spec.Selector.MatchLabels {
-					selector_str += fmt.Sprintf("%s:%s ", k, v)
-				}
+		// 组装selector字符串
+		for k, v := range np_item.Spec.Selector.MatchLabels {
+			selector_str += fmt.Sprintf("%s:%s ", k, v)
+		}
 		ports_str := ""
-				// 组装ports字符串
-				for _, v := range np_item.Spec.Ports {
-					ports_str += fmt.Sprintf("%d->%d:%d ",int(v.NodePort), int(v.Port), int(v.TargetPort))
-				}
+		// 组装ports字符串
+		for _, v := range np_item.Spec.Ports {
+			ports_str += fmt.Sprintf("%d->%d:%d ", int(v.NodePort), int(v.Port), int(v.TargetPort))
+		}
 
 		final_str := fmt.Sprintf("%s\t%s\t%s\t%s\n", np_item.Metadata.Name, selector_str, np_item.Status.ClusterIPID, ports_str)
 		result += final_str

@@ -1,0 +1,14 @@
+kind: Service
+apiVersion: v1
+metadata:
+  # Unique key of the Service instance
+  name: replicaset-service
+spec:
+  ports:
+    - name: http
+      port: 10086
+      targetPort: 10086
+      protocol: tcp
+  selector:
+    matchLabels:
+      replicaset: test-replicaset

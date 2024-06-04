@@ -79,7 +79,6 @@ func (rm *RuntimeManager) CreatePod(pod *minik8s_pod.Pod) (string, error) {
 		for _, envVar := range container.Env {
 			env = append(env, fmt.Sprintf("%s=%s", envVar.Name, envVar.Value))
 		}
-		// TODO: parse command
 
 		// parse volume mounts. We should mount the pod's volumes to the container
 		volumeBinds := rm.GetVolumeBinds(&pod.Spec.Volumes, &container.VolumeMounts)
@@ -102,6 +101,7 @@ func (rm *RuntimeManager) CreatePod(pod *minik8s_pod.Pod) (string, error) {
 			Binds:       volumeBinds,
 			CPU:         container.Resources.Limits.CPU,
 			Memory:      container.Resources.Limits.Memory,
+			Cmd:         container.Command,
 		}
 		containerId, err := rm.containerManager.CreateContainer(container.Name, containerConfig)
 		if err != nil {
@@ -335,6 +335,7 @@ func (rm *RuntimeManager) RestartPod(pod *minik8s_pod.Pod) (string, error) {
 				IpcMode:     "container:" + pauseContainerId,
 				PidMode:     "container:" + pauseContainerId,
 				Env:         env,
+				Cmd:         container.Command,
 				Binds:       volumeBinds,
 				CPU:         container.Resources.Limits.CPU,
 				Memory:      container.Resources.Limits.Memory,

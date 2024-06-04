@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: Replicaset
+metadata:
+  name: test-replicaset
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+     replicaset: test-replicaset
+  template:
+    metadata:
+      name: testRep
+      labels:
+        replicaset: test-replicaset
+    spec:
+      containers:
+      - name: test-replicaset-container
+        image: levixubbbb/replicaset-test-image:latest
