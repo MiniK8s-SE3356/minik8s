@@ -50,14 +50,14 @@ func GetCmdHandler(cmd *cobra.Command, args []string) {
 		namespace = process.DefaultNamespace
 	}
 
-	result, err := getFunc(namespace, name)
+	_, err := getFunc(namespace, name)
 	if err != nil {
 		fmt.Println("error in GetCmdHandler ", err.Error())
 		return
 	}
 
 	//!debug//
-	fmt.Println("result is ", result)
+	// fmt.Println("result is ", result)
 	//!debug//
 }
 
