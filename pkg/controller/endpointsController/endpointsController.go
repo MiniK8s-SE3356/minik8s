@@ -74,6 +74,13 @@ func (ec *EndpointsController) routine() {
 		fmt.Printf("routine error get, status %d, return\n", status)
 		return
 	}
+	
+	// PodIP尚未分配的Pod不参加本轮迭代
+	for k,v :=range(pod_list){
+		if(v.Status.PodIP!=""){
+			delete(pod_list,k)
+		}
+	}
 
 	// fmt.Println(service_list.ClusterIP)
 	// fmt.Println(service_list.NodePort)
@@ -101,7 +108,6 @@ func (ec *EndpointsController) routine() {
 		}
 
 		new_c2p := selectorUtils.SelectPodNameList(&clusterIP.Spec.Selector, &pod_list)
-		// TODO 如果new_c2p为空怎么处理？
 
 		if old_c2p, exist := ec.last_service2pod[clusterIP.Metadata.Id]; !exist {
 			if len(new_c2p) <= 0 {
