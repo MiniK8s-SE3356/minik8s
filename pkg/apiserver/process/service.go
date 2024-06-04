@@ -121,6 +121,91 @@ func RemoveService(namespace string, name string) (string, error) {
 		return "service not found", nil
 	}
 
+	content, _ := EtcdCli.Get(servicePrefix + namespace + "/" + name)
+	var tmp map[string]interface{}
+	err = json.Unmarshal(content, &tmp)
+	if err != nil {
+		fmt.Println("failed to unmarshal", err)
+	}
+
+	spec := tmp["spec"].(map[string]interface{})
+	if spec["type"].(string) == "ClusterIP" {
+		return removeClusterIP(namespace, name)
+	} else if spec["type"].(string) == "NodePort" {
+		return removeNodePort(namespace, name)
+	} else {
+		return "invalid service type", errors.New("invalid service type")
+	}
+}
+
+func removeNodePort(namespace string, name string) (string, error) {
+	var err error
+	content, _ := EtcdCli.Get(servicePrefix + namespace + "/" + name)
+	var np service.NodePort
+	err = json.Unmarshal(content, &np)
+	if err != nil {
+		fmt.Println("failed to unmarshal")
+		return "failed to unmarshal", nil
+	}
+	cIPID := np.Status.ClusterIPID
+
+	targetName := ""
+	cIPsContent, _ := EtcdCli.GetWithPrefix(servicePrefix)
+	for _, p := range cIPsContent {
+		var tmp map[string]interface{}
+		err := json.Unmarshal([]byte(p.Value), &tmp)
+		if err != nil {
+			fmt.Println("failed to unmarshal", err)
+		}
+
+		spec := tmp["spec"].(map[string]interface{})
+		if spec["type"].(string) == "ClusterIP" {
+			var tmp service.ClusterIP
+			err := json.Unmarshal([]byte(p.Value), &tmp)
+			if err != nil {
+				fmt.Println("failed to unmarshal")
+				continue
+			}
+
+			if tmp.Metadata.Id == cIPID {
+				targetName = tmp.Metadata.Name
+				break
+			}
+		}
+	}
+
+	err = EtcdCli.Del(servicePrefix + namespace + "/" + name)
+	if err != nil {
+		fmt.Println("failed to del in etcd")
+		return "failed to del in etcd", err
+	}
+	if targetName != "" {
+		result, err := removeClusterIP("Default", targetName)
+		if err != nil {
+			return result, err
+		}
+		// err = EtcdCli.Del(servicePrefix + namespace + "/" + targetName)
+		// if err != nil {
+		// 	fmt.Println("failed to del in etcd")
+		// 	return "failed to del in etcd", err
+		// }
+	}
+
+	return "del successfully", nil
+}
+
+func removeClusterIP(namespace string, name string) (string, error) {
+	var err error
+	content, _ := EtcdCli.Get(servicePrefix + namespace + "/" + name)
+	var cip service.ClusterIP
+	err = json.Unmarshal(content, &cip)
+	if err != nil {
+		fmt.Println("failed to unmarshal")
+		return "failed to unmarshal", nil
+	}
+
+	removeEndpointsWrapper(cip.Status.ServicesStatus)
+
 	err = EtcdCli.Del(servicePrefix + namespace + "/" + name)
 	if err != nil {
 		fmt.Println("failed to del in etcd")
@@ -148,6 +233,26 @@ func UpdateService(namespace string, name string, value string) (string, error) 
 	}
 
 	return "update successfully", nil
+}
+
+func removeEndpointsWrapper(endpointIDList map[uint16][]string) {
+	for _, ids := range endpointIDList {
+		for _, id := range ids {
+
+			existed, err := EtcdCli.Exist(endpointPrefix + id)
+			if err != nil {
+				fmt.Println("failed to check existence in etcd", err)
+			}
+			if !existed {
+				fmt.Println("endpoint not found")
+			}
+
+			err = EtcdCli.Del(endpointPrefix + id)
+			if err != nil {
+				fmt.Println("failed to del in etcd")
+			}
+		}
+	}
 }
 
 func GetService(namespace string, name string) (string, error) {
