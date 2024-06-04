@@ -3,13 +3,11 @@ package controller_test
 import (
 	"os"
 	"testing"
-
-	"github.com/MiniK8s-SE3356/minik8s/pkg/controller"
 )
 
 func TestMain(m *testing.M) {
 	// pre-test code
-	controller.StartController()
+	// controller.StartController()
 	// test func
 	exitCode := m.Run()
 
@@ -18,5 +16,5 @@ func TestMain(m *testing.M) {
 }
 
 func TestController(t *testing.T) {
-	
+
 }
