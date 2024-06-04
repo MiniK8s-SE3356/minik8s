@@ -217,6 +217,6 @@ func (sc *ReplicasetController) Run() {
 	for {
 
 		rscTask()
-		<-time.After(30 * time.Second)
+		<-time.After(15 * time.Second)
 	}
 }
