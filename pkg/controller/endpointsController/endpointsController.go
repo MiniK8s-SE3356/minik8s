@@ -77,10 +77,11 @@ func (ec *EndpointsController) routine() {
 	
 	// PodIP尚未分配的Pod不参加本轮迭代
 	for k,v :=range(pod_list){
-		if(v.Status.PodIP!=""){
+		if(v.Status.PodIP==""){
 			delete(pod_list,k)
 		}
 	}
+	fmt.Println("Sync Service Pod list: ",pod_list)
 
 	// fmt.Println(service_list.ClusterIP)
 	// fmt.Println(service_list.NodePort)
