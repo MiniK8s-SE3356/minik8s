@@ -121,6 +121,85 @@ func RemoveService(namespace string, name string) (string, error) {
 		return "service not found", nil
 	}
 
+	content, _ := EtcdCli.Get(servicePrefix + namespace + "/" + name)
+	var tmp map[string]interface{}
+	err = json.Unmarshal(content, &tmp)
+	if err != nil {
+		fmt.Println("failed to unmarshal", err)
+	}
+
+	spec := tmp["spec"].(map[string]interface{})
+	if spec["type"].(string) == "ClusterIP" {
+		return removeClusterIP(namespace, name)
+	} else if spec["type"].(string) == "NodePort" {
+		return removeNodePort(namespace, name)
+	} else {
+		return "invalid service type", errors.New("invalid service type")
+	}
+}
+
+func removeNodePort(namespace string, name string) (string, error) {
+	var err error
+	content, _ := EtcdCli.Get(servicePrefix + namespace + "/" + name)
+	var np service.NodePort
+	err = json.Unmarshal(content, &np)
+	if err != nil {
+		fmt.Println("failed to unmarshal")
+		return "failed to unmarshal", nil
+	}
+	cIPID := np.Status.ClusterIPID
+
+	targetName := ""
+	cIPsContent, _ := EtcdCli.GetWithPrefix(servicePrefix)
+	for _, p := range cIPsContent {
+		var tmp map[string]interface{}
+		err := json.Unmarshal([]byte(p.Value), &tmp)
+		if err != nil {
+			fmt.Println("failed to unmarshal", err)
+		}
+
+		spec := tmp["spec"].(map[string]interface{})
+		if spec["type"].(string) == "ClusterIP" {
+			var tmp service.ClusterIP
+			err := json.Unmarshal([]byte(p.Value), &tmp)
+			if err != nil {
+				fmt.Println("failed to unmarshal")
+				continue
+			}
+
+			if tmp.Metadata.Id == cIPID {
+				targetName = tmp.Metadata.Name
+				break
+			}
+		}
+	}
+
+	err = EtcdCli.Del(servicePrefix + namespace + "/" + name)
+	if err != nil {
+		fmt.Println("failed to del in etcd")
+		return "failed to del in etcd", err
+	}
+	if targetName != "" {
+		err = EtcdCli.Del(servicePrefix + namespace + "/" + targetName)
+		if err != nil {
+			fmt.Println("failed to del in etcd")
+			return "failed to del in etcd", err
+		}
+	}
+
+	return "del successfully", nil
+}
+
+func removeClusterIP(namespace string, name string) (string, error) {
+	var err error
+	content, _ := EtcdCli.Get(servicePrefix + namespace + "/" + name)
+	var np service.NodePort
+	err = json.Unmarshal(content, &np)
+	if err != nil {
+		fmt.Println("failed to unmarshal")
+		return "failed to unmarshal", nil
+	}
+
 	err = EtcdCli.Del(servicePrefix + namespace + "/" + name)
 	if err != nil {
 		fmt.Println("failed to del in etcd")
