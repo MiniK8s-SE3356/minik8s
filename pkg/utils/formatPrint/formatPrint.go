@@ -11,6 +11,7 @@ import (
 	"github.com/MiniK8s-SE3356/minik8s/pkg/apiObject/pod"
 	"github.com/MiniK8s-SE3356/minik8s/pkg/apiObject/replicaset"
 	"github.com/MiniK8s-SE3356/minik8s/pkg/apiObject/service"
+	"github.com/MiniK8s-SE3356/minik8s/pkg/serverless/types/function"
 )
 
 func PrintNodes(str string) {
@@ -119,7 +120,7 @@ func PrintReplicaset(str string) {
 
 	writer := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', tabwriter.Debug)
 
-	fmt.Fprintln(writer, "ID\tName\rReady\tExpect")
+	fmt.Fprintln(writer, "ID\tName\tReady\tExpect")
 
 	for _, rs := range replicasets {
 		// Join the condition array into a single string
@@ -142,13 +143,36 @@ func PrintHPA(str string) {
 
 	writer := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', tabwriter.Debug)
 
-	fmt.Fprintln(writer, "ID\tName\rReady\tMin\tMax")
+	fmt.Fprintln(writer, "ID\tName\tReady\tMin\tMax")
 
 	for _, h := range hpas {
 		// Join the condition array into a single string
 		fmt.Fprintf(writer, "%s\t%s\t%d\t%d\t%d\n",
 			h.Metadata.UUID, h.Metadata.Name, h.Status.ReadyReplicas,
 			h.Spec.MinReplicas, h.Spec.MaxReplicas)
+	}
+
+	writer.Flush()
+}
+
+func PrintFunction(str string) {
+
+	var funcs []function.Function
+
+	err := json.Unmarshal([]byte(str), &funcs)
+	if err != nil {
+		fmt.Println("failed to unmarshal func")
+		return
+	}
+
+	writer := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', tabwriter.Debug)
+
+	fmt.Fprintln(writer, "ID\tName\tImageName")
+
+	for _, h := range funcs {
+		// Join the condition array into a single string
+		fmt.Fprintf(writer, "%s\t%s\t%s\n",
+			h.Metadata.UUID, h.Metadata.Name, h.Spec.ImageName)
 	}
 
 	writer.Flush()

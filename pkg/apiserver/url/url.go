@@ -51,4 +51,7 @@ const (
 	AddorDeleteEndpoint = prefix + "/AddorDeleteEndpoint"
 
 	GetAllServerlessFunction = prefix + "/GetAllServerlessFunction"
+
+	GetFunction    = prefix + "/GetFunction"
+	RemoveFunction = prefix + "/RemoveFunction"
 )
