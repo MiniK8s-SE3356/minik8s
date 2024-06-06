@@ -232,26 +232,26 @@ func checkNode() {
 		return
 	}
 
-	pairs, err = EtcdCli.GetWithPrefix(podPrefix)
-	if err != nil {
-		fmt.Println("failed to get pods from etcd")
-	}
+	// pairs, err = EtcdCli.GetWithPrefix(podPrefix)
+	// if err != nil {
+	// 	fmt.Println("failed to get pods from etcd")
+	// }
 
-	for _, p := range pairs {
-		var tmp pod.Pod
-		err := json.Unmarshal([]byte(p.Value), &tmp)
-		if err != nil {
-			fmt.Println("failed to unmarshal")
-			continue
-		}
+	// for _, p := range pairs {
+	// 	var tmp pod.Pod
+	// 	err := json.Unmarshal([]byte(p.Value), &tmp)
+	// 	if err != nil {
+	// 		fmt.Println("failed to unmarshal")
+	// 		continue
+	// 	}
 
-		if invalidNodeSet[tmp.Spec.NodeName] {
-			err := EtcdCli.Del(podPrefix + tmp.Metadata.Namespace + "/" + tmp.Metadata.Name)
-			if err != nil {
-				fmt.Println("failed to delete pod in etcd")
-			}
-		}
-	}
+	// 	if invalidNodeSet[tmp.Spec.NodeName] {
+	// 		err := EtcdCli.Del(podPrefix + tmp.Metadata.Namespace + "/" + tmp.Metadata.Name)
+	// 		if err != nil {
+	// 			fmt.Println("failed to delete pod in etcd")
+	// 		}
+	// 	}
+	// }
 
 	for n := range invalidNodeSet {
 		err := EtcdCli.Del(nodePrefix + n)
@@ -264,6 +264,6 @@ func checkNode() {
 func CheckNodeWrapper() {
 	for {
 		checkNode()
-		<-time.After(60 * time.Second)
+		<-time.After(30 * time.Second)
 	}
 }
