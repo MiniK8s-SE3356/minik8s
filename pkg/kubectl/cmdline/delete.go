@@ -17,7 +17,10 @@ var deleteFuncTable = map[string]func(namespace string, name string) (string, er
 	"HPA":        deleteHPA,
 	"Namespace":  deleteNamespace,
 	"Dns":        deleteDNS,
+	"PV":  			deletePV,
+	"PVC":	deletePVC,
 }
+
 
 func DeleteCmdHandler(cmd *cobra.Command, args []string) {
 	// 整体的逻辑先按get移植过来
@@ -62,6 +65,45 @@ func DeleteCmdHandler(cmd *cobra.Command, args []string) {
 	}
 
 	fmt.Println("result is ", result)
+}
+
+
+func deletePV(namespace string, name string) (string, error) {
+	params := map[string]string{
+		"namespace": namespace,
+		"name":      name,
+	}
+	jsonData, err := json.Marshal(params)
+	if err != nil {
+		fmt.Println("failed to translate into json")
+		return "", err
+	}
+	result, err := httpRequest.PostRequest(RootURL+url.DeletePV, jsonData)
+	if err != nil {
+		fmt.Println("error in delete pod ", err.Error())
+		return "", err
+	}
+
+	return result, nil
+}
+
+func deletePVC(namespace string, name string) (string, error) {
+	params := map[string]string{
+		"namespace": namespace,
+		"name":      name,
+	}
+	jsonData, err := json.Marshal(params)
+	if err != nil {
+		fmt.Println("failed to translate into json")
+		return "", err
+	}
+	result, err := httpRequest.PostRequest(RootURL+url.DeletePVC, jsonData)
+	if err != nil {
+		fmt.Println("error in delete pod ", err.Error())
+		return "", err
+	}
+
+	return result, nil
 }
 
 func deletePod(namespace string, name string) (string, error) {

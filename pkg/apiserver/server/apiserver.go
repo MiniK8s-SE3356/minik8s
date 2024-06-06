@@ -70,6 +70,8 @@ func bind(r *gin.Engine) {
 	r.POST(url.UpdatePersistVolume, handler.UpdatePersistVolume)
 	r.POST(url.AddPV, handler.AddPV)
 	r.POST(url.AddPVC, handler.AddPVC)
+	r.POST(url.DeletePV,handler.DeletePV)
+	r.POST(url.DeletePVC,handler.DeletePVC )
 }
 
 func Start() {

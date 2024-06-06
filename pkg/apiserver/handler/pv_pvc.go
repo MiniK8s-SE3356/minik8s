@@ -94,3 +94,35 @@ func AddPVC(c *gin.Context) {
 
 	c.JSON(http.StatusOK, result)
 }
+
+func DeletePV(c *gin.Context) {
+	requestMsg := map[string]string{}
+	if err := c.ShouldBindJSON(&requestMsg); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	// FIXME: Namespace只能为default,这明显需要修改
+	result, err := process.DeletePV(process.DefaultNamespace, requestMsg["name"])
+	if err != nil {
+		fmt.Println("error in process.Delete ", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	}
+
+	c.JSON(http.StatusOK, result)
+}
+
+func DeletePVC(c *gin.Context) {
+	requestMsg := map[string]string{}
+	if err := c.ShouldBindJSON(&requestMsg); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	// FIXME: Namespace只能为default,这明显需要修改
+	result, err := process.DeletePVC(process.DefaultNamespace, requestMsg["name"])
+	if err != nil {
+		fmt.Println("error in process.AddPVC ", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	}
+
+	c.JSON(http.StatusOK, result)
+}

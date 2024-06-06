@@ -2,15 +2,107 @@ package process
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
+	"os/exec"
 	"strings"
 
 	"github.com/MiniK8s-SE3356/minik8s/pkg/apiObject/persistVolume"
+	persistVolumeController "github.com/MiniK8s-SE3356/minik8s/pkg/controller/PersistVolumeController"
 	httpobject "github.com/MiniK8s-SE3356/minik8s/pkg/types/httpObject"
 	"github.com/MiniK8s-SE3356/minik8s/pkg/utils/httpRequest"
 	"github.com/MiniK8s-SE3356/minik8s/pkg/utils/idgenerate"
 )
+
+func DeletePV(namespace string, name string) (string, error) {
+	mu.Lock()
+	defer mu.Unlock()
+	existed, err := EtcdCli.Exist(pvPrefix + namespace + "/" + name)
+	if err != nil {
+		return "failed to check existence in etcd", err
+	}
+	if !existed {
+		return "service not found", nil
+	}
+
+	err = EtcdCli.Del(pvPrefix+ namespace + "/" + name)
+	if err != nil {
+		fmt.Println("failed to del in etcd")
+		return "failed to del in etcd", err
+	}
+
+	pvvalue, err := EtcdCli.Get(pvPrefix + namespace + "/" + name)
+	if err != nil {
+		fmt.Printf("PV does not exist in DeletePV, namespace %s, name %s\n", namespace, name)
+		return IsPVC_PV_exist_Return_PVMISS, err
+	}
+	var pv persistVolume.PersistVolume
+	err = json.Unmarshal(pvvalue, &pv)
+	if err != nil {
+		fmt.Printf("can not unmarshal pvc in DeletePVC,error msg: %s\n", err.Error())
+		return "PV umarsharshal error", err
+	}
+	if(pv.Status.MountPod!=nil&&len(pv.Status.MountPod)!=0){
+		fmt.Println("Can't Delete PV: it still bind Pod!")
+		return "Can't Delete PV: it still bind Pod!",errors.New("Can't Delete PV: it still bind Pod!")
+	}
+
+	cmd := exec.Command("rm","-r", persistVolumeController.MINIK8S_PV_PATH+"/"+name)
+	
+	_, err = cmd.Output()
+	if err != nil {
+		fmt.Println("Error executing command in delNFSVolume:", err)
+		return "Error executing command in delNFSVolume:",err
+	}
+
+	err = EtcdCli.Del(pvPrefix + namespace + "/" + name)
+	if err != nil {
+		fmt.Println("failed to del in etcd")
+		return "failed to del in etcd", err
+	}
+
+
+	return "del successfully", nil
+}
+
+func DeletePVC(namespace string, name string) (string, error) {
+	mu.Lock()
+	defer mu.Unlock()
+	existed, err := EtcdCli.Exist(pvcPrefix + namespace + "/" + name)
+	if err != nil {
+		return "failed to check existence in etcd", err
+	}
+	if !existed {
+		return "service not found", nil
+	}
+
+	pvcvalue, err := EtcdCli.Get(pvcPrefix + namespace + "/" + name)
+	if err != nil {
+		fmt.Printf("PVC does not exist in DeletePVC, namespace %s, name %s\n", namespace, name)
+		return IsPVC_PV_exist_Return_PVCMISS, err
+	}
+	var pvc persistVolume.PersistVolumeClaim
+	err = json.Unmarshal(pvcvalue, &pvc)
+	if err != nil {
+		fmt.Printf("can not unmarshal pvc in DeletePVC,error msg: %s\n", err.Error())
+		return IsPVC_PV_exist_Return_PVCVALUEERROR, err
+	}
+	if(pvc.Status.BoundPV!=nil&&len(pvc.Status.BoundPV)!=0){
+		fmt.Println("Can't Delete PVC: it still bind PV!")
+		return "Can't Delete PVC: it still bind PV!",errors.New("Can't Delete PVC: it still bind PV!")
+	}
+
+	err = EtcdCli.Del(pvcPrefix + namespace + "/" + name)
+	if err != nil {
+		fmt.Println("failed to del in etcd")
+		return "failed to del in etcd", err
+	}
+
+	return "del successfully", nil
+}
+
+
 
 func AddPV(namespace string, pv *persistVolume.PersistVolume) (string, error) {
 	mu.Lock()

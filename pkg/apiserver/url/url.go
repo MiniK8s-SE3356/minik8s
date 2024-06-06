@@ -56,4 +56,6 @@ const (
 	UpdatePersistVolume = prefix + "/UpdatePersistVolume"
 	AddPV               = prefix + "/AddPV"
 	AddPVC              = prefix + "/AddPVC"
+	DeletePV			= prefix+"/DeletePV"
+	DeletePVC			= prefix+"/DeletePVC"
 )
