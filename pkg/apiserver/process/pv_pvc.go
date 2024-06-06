@@ -178,24 +178,24 @@ const (
 	IsPVAvailable_Return_OK          = "OK"
 )
 
-func IsPVAvailable(namespace string, name string) string {
+func IsPVAvailable(namespace string, name string) (string,string) {
 
 	pvvalue, err := EtcdCli.Get(pvPrefix + namespace + "/" + name)
 	if err != nil {
 		fmt.Printf("PV does not exist, namespace %s, name %s\n", namespace, name)
-		return IsPVAvailable_Return_MISS
+		return IsPVAvailable_Return_MISS,""
 	}
 	var pv persistVolume.PersistVolume
 	err = json.Unmarshal(pvvalue, &pv)
 	if err != nil {
 		fmt.Printf("can not unmarshal pv in IsPVAvailable,error msg: %s\n", err.Error())
-		return IsPVAvailable_Return_VALUEERROR
+		return IsPVAvailable_Return_VALUEERROR,""
 	}
 	if pv.Status.Phase != persistVolume.PV_PHASE_AVAILABLE {
 		fmt.Printf("pv not available in IsPVAvailable\n")
-		return IsPVAvailable_Return_UNAVAILABLE
+		return IsPVAvailable_Return_UNAVAILABLE,""
 	}
-	return IsPVAvailable_Return_OK
+	return IsPVAvailable_Return_OK,pv.Spec.Capacity
 }
 
 const (
@@ -238,7 +238,7 @@ func IsPVC_PV_exist(namespace string, pvcname string, pvname string) (string, pe
 	}
 
 	// 检查这个pv是否存在
-	result_str := IsPVAvailable(namespace, pvname)
+	result_str,_ := IsPVAvailable(namespace, pvname)
 	switch result_str {
 	case IsPVAvailable_Return_MISS:
 		{

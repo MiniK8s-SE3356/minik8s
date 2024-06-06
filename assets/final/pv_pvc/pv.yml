@@ -6,4 +6,4 @@ metadata:
     pvcname: test_pvc1
 spec:
   type: nfs
-  capacity: 100MB
+  capacity: readwrite

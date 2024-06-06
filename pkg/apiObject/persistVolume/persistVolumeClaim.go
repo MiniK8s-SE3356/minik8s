@@ -6,6 +6,8 @@ const (
 	PVC_PHASE_AVAILABLE = "Available"
 	PVC_PHASE_FAILED    = "Failed"
 	PVC_NAME_PREFIX     = "MINIK8S-PVC-"
+	PVC_CAPACITY_READONLY="readonly"
+	PVC_CAPACITY_READWRITE="readwrite"
 )
 
 type PersistVolumeClaim struct {

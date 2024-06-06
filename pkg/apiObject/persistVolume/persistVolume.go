@@ -7,6 +7,8 @@ const (
 	PV_PHASE_FAILED    = "Failed"
 	PV_NAME_PREFIX     = "MINIK8S-PV-"
 	PV_TYPE_NFS        = "nfs"
+	PV_CAPACITY_READONLY="readonly"
+	PV_CAPACITY_READWRITE="readwrite"
 )
 
 type PersistVolume struct {
@@ -25,7 +27,7 @@ type PersistVolumeMetadata struct {
 
 type PersistVolumeSpec struct {
 	Type     string `json:"type" yaml:"type"` /*只允许nfs*/
-	Capacity string `json:"capacity" yaml:"capacity"`
+	Capacity string `json:"capacity" yaml:"capacity"` /*只允许readonly和readwrite,其中默认readwrite*/
 }
 
 type PersistVolumeStatus struct {

@@ -61,11 +61,17 @@ func (rm *RuntimeManager) GetVolumeBinds(volumes *[]minik8s_pod.Volume, volumeMo
 		} else if volume.PersistentVolume.PvName != "" {
 			// 否则，优先PV绑定
 			volumeBind := fmt.Sprintf(NFSPV_DIR+":%s", volume.PersistentVolume.PvName, volumeMount.MountPath)
+			if(volumeMount.ReadOnly){
+				volumeBind+=":ro"
+			}
 			volumeBinds = append(volumeBinds, volumeBind)
 			continue
 		} else if volume.PersistentVolumeClaim.ClaimName != "" {
 			// 再否则，PVC绑定
 			volumeBind := fmt.Sprintf(NFSPV_DIR+":%s", volume.Name, volumeMount.MountPath)
+			if(volumeMount.ReadOnly){
+				volumeBind+=":ro"
+			}
 			volumeBinds = append(volumeBinds, volumeBind)
 			continue
 		}

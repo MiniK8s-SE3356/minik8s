@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/MiniK8s-SE3356/minik8s/pkg/apiObject/persistVolume"
 	"github.com/MiniK8s-SE3356/minik8s/pkg/apiObject/pod"
 	"github.com/MiniK8s-SE3356/minik8s/pkg/apiObject/yaml"
 	"github.com/MiniK8s-SE3356/minik8s/pkg/serverless/types/function"
@@ -21,7 +22,7 @@ func AddPod(namespace string, desc *yaml.PodDesc) (string, error) {
 		fmt.Println("failed to generate uuid")
 		return "failed to generate uuid", err
 	}
-
+	pv_readonly_list:=[]string{}
 	// TODO: pod转的时候需要更改，需要查看ectd中的持久化卷状态
 	// 如果POD需要PVC而PVC不存在，直接error
 	// 如果POD需要PV而PV不存在，直接error
@@ -34,16 +35,22 @@ func AddPod(namespace string, desc *yaml.PodDesc) (string, error) {
 		}
 		// 这俩的优先级均低于HostPath
 		if volume_item.PersistentVolume.PvName != "" {
-			result_str := IsPVAvailable(DefaultNamespace, volume_item.PersistentVolume.PvName)
+			result_str,pv_capacity := IsPVAvailable(DefaultNamespace, volume_item.PersistentVolume.PvName)
 			if result_str != IsPVAvailable_Return_OK {
 				// PV不是OK直接爆
 				return result_str, errors.New(result_str)
+			}
+			if(pv_capacity==persistVolume.PV_CAPACITY_READONLY){
+				pv_readonly_list=append(pv_readonly_list, volume_item.PersistentVolume.PvName)
 			}
 			continue
 		}
 		if volume_item.PersistentVolumeClaim.ClaimName != "" {
 			result_str, spectype := IsPVC_PV_exist(DefaultNamespace, volume_item.PersistentVolumeClaim.ClaimName, volume_item.Name)
 			if result_str == IsPVC_PV_exist_Return_OK {
+				if(spectype.Spec.Capacity==persistVolume.PVC_CAPACITY_READONLY){
+					pv_readonly_list=append(pv_readonly_list, volume_item.Name)
+				}
 				continue
 			}
 			if result_str == IsPVC_PV_exist_Return_PVMISS {
@@ -52,12 +59,30 @@ func AddPod(namespace string, desc *yaml.PodDesc) (string, error) {
 					// 创建失败，也报错
 					return err.Error(), err
 				}
+				if(spectype.Spec.Capacity==persistVolume.PVC_CAPACITY_READONLY){
+					pv_readonly_list=append(pv_readonly_list, volume_item.Name)
+				}
 				continue
 			}
 			// 除了上述俩，直接爆
 			return result_str, errors.New(result_str)
 		}
 	}
+
+	// 为PV进行readonly一类的更新
+	for i:=0;i<len(desc.Spec.Containers);i++{
+		for j:=0;j<len(desc.Spec.Containers[i].VolumeMounts);j++{
+			readonly:=false
+			for _,v:=range(pv_readonly_list){
+				if(v==desc.Spec.Containers[i].VolumeMounts[j].Name){
+					readonly=true
+					break
+				}
+			}
+			desc.Spec.Containers[i].VolumeMounts[j].ReadOnly=readonly
+		}
+	}
+
 
 	// 构建然后转json
 	pod_ := &pod.Pod{}
@@ -70,6 +95,10 @@ func AddPod(namespace string, desc *yaml.PodDesc) (string, error) {
 	pod_.Metadata.Labels = desc.Metadata.Labels
 	pod_.Spec = desc.Spec
 	fmt.Println("desc.Spec " ,desc.Spec)
+
+
+	
+
 	// for _, c := range desc.Spec.Containers {
 	// var tmp container.Container
 	// pod.Spec.Containers = append(pod.Spec.Containers, )
