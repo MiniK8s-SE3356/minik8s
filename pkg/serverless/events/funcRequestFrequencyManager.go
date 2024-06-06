@@ -8,7 +8,7 @@ import (
 
 const (
 	ringBufferCapacity = 16
-	timeWindowLength   = 15 // second
+	timeWindowLength   = 60 // second
 )
 
 // FuncRequestFrequencyManager 管理所有函数的最近请求记录，并能够计算最近的请求频率
