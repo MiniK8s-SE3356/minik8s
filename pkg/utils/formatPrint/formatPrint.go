@@ -11,6 +11,7 @@ import (
 	"github.com/MiniK8s-SE3356/minik8s/pkg/apiObject/pod"
 	"github.com/MiniK8s-SE3356/minik8s/pkg/apiObject/replicaset"
 	"github.com/MiniK8s-SE3356/minik8s/pkg/apiObject/service"
+	"github.com/MiniK8s-SE3356/minik8s/pkg/gpu/types"
 	"github.com/MiniK8s-SE3356/minik8s/pkg/serverless/types/function"
 )
 
@@ -72,6 +73,28 @@ func PrintPods(str string) {
 		fmt.Fprintf(writer, "%s\t%s\t%s\t%s\t%s\t%.6f\t%.6f\n",
 			pod.Metadata.UUID, pod.Metadata.Name, pod.Status.Phase,
 			pod.Status.PodIP, pod.Spec.NodeName, pod.Status.CPUUsage*100, pod.Status.MemoryUsage*100)
+	}
+
+	writer.Flush()
+}
+
+func PrintGPUJobs(str string) {
+	var jobs map[string]types.SlurmJob
+
+	err := json.Unmarshal([]byte(str), &jobs)
+	if err != nil {
+		fmt.Println("failed to unmarshal jobs")
+		return
+	}
+
+	writer := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', tabwriter.Debug)
+
+	fmt.Fprintln(writer, "JobID\tName\tPartition\tState\tResult")
+
+	for _, job := range jobs {
+		// Join the condition array into a single string
+		fmt.Fprintf(writer, "%s\t%s\t%s\t%s\t%s\n",
+			job.JobID, job.Metadata.Name, job.Partition, job.State, job.Result)
 	}
 
 	writer.Flush()

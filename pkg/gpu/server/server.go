@@ -22,6 +22,7 @@ const (
 	//! I think the job server in the pod should be stateless.
 	//! Otherwise these job servers will consume a lot of resources to listening.
 	RequireGPUJob = prefix + "/RequireGPUJob"
+	UpdateGPUJob  = prefix + "/UpdateGPUJob"
 )
 
 type Server struct {
@@ -36,6 +37,7 @@ func bind(r *gin.Engine) {
 	r.POST(SubmitGPUJob, SubmitGPUJobHandler)
 	r.GET(GetGPUJob, GetGPUJobHandler)
 	r.GET(RequireGPUJob, RequireGPUJobHandler)
+	r.POST(UpdateGPUJob, UpdateGPUJobHandler)
 }
 
 var EtcdCli *etcdclient.EtcdClient

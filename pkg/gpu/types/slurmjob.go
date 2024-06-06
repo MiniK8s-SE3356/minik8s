@@ -24,5 +24,6 @@ type SlurmJob struct {
 	Username string `json:"username" yaml:"username"`
 	Password string `json:"password" yaml:"password"`
 
-	State string `json:"state" yaml:"state"`
+	State  string `json:"state" yaml:"state"`
+	Result string `json:"result" yaml:"result"`
 }

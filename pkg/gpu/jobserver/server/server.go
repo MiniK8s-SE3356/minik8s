@@ -20,6 +20,7 @@ var JobManagerUrl string
 const (
 	prefix              = "/api/v1"
 	RequireGPUJobSuffix = prefix + "/RequireGPUJob"
+	UpdateGPUJobSuffix  = prefix + "/UpdateGPUJob"
 
 	ZipFileName = "job.zip"
 	// ZipDirName  = "job"
@@ -173,6 +174,21 @@ func (js *JobServer) Run() {
 	)
 }
 
+func (js *JobServer) GetJobOutput() (string, error) {
+	fileDir := filepath.Join(js.Job.Metadata.UUID, js.Job.WorkDir)
+	cmds := []string{
+		fmt.Sprintf("cd %s", fileDir),
+		fmt.Sprintf("cat %s.out", js.Job.JobID),
+	}
+
+	out, err := js.SSHClient.BatchCmd(cmds)
+	if err != nil {
+		fmt.Println("failed to get job output because BatchCmd failed")
+		return "", err
+	}
+	return out, nil
+}
+
 func (js *JobServer) GetJobState() {
 	cmd := fmt.Sprintf(gpu_types.JOBSTATE_CHECK, js.Job.JobID)
 	out, err := js.SSHClient.BatchCmd([]string{cmd})
@@ -192,7 +208,43 @@ func (js *JobServer) GetJobState() {
 			fmt.Println("failed to get job state because stateInfos is invalid")
 			return
 		}
-		js.Job.State = stateInfos[5]
+
+		newState := stateInfos[5]
+		isUpdate := false
+		if newState != js.Job.State {
+			js.Job.State = newState
+			fmt.Println("JobServer job state: ", js.Job.State)
+			isUpdate = true
+		}
+
+		if newState == "COMPLETED" {
+			// TODO: fetch job output files
+			output, err := js.GetJobOutput()
+			if err != nil {
+				fmt.Println("failed to get job output")
+				return
+			}
+			js.Job.Result = output
+			isUpdate = true
+		}
+
+		if isUpdate {
+			var response_str string
+			status_code, err := httpRequest.PostRequestByObject(
+				JobManagerUrl+UpdateGPUJobSuffix,
+				js.Job,
+				&response_str,
+			)
+			if err != nil {
+				fmt.Println("failed to update job state")
+				return
+			}
+			if status_code != 200 {
+				fmt.Println("failed to update job state, status_code: ", status_code)
+				return
+			}
+			fmt.Println("JobServer update job state result: ", response_str)
+		}
 	}
 
 	fmt.Println("JobServer get job state result: ", out)

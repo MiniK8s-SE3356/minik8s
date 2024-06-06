@@ -6,3 +6,4 @@ CGO_ENABLED=0 go build -a -ldflags '-extldflags "-static"' -o ./build/kubelet ./
 CGO_ENABLED=0 go build -a -ldflags '-extldflags "-static"' -o ./build/serverless ./cmd/serverless
 CGO_ENABLED=0 go build -a -ldflags '-extldflags "-static"' -o ./build/kubeProxy ./cmd/kubeProxy
 CGO_ENABLED=0 go build -a -ldflags '-extldflags "-static"' -o ./build/jobmanager ./cmd/jobmanager
+CGO_ENABLED=0 go build -a -ldflags '-extldflags "-static"' -o ./pkg/gpu/jobserver/imagebuilding/jobserver ./pkg/gpu/jobserver/main

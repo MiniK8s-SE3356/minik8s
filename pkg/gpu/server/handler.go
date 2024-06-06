@@ -141,7 +141,49 @@ func SubmitGPUJobProccess(job *gpu_types.SlurmJob, zip_content *[]byte) (string,
 }
 
 func GetGPUJobHandler(c *gin.Context) {
+	jobName := c.Query("name")
 
+	if jobName == "" {
+		pairs, err := EtcdCli.GetWithPrefix(EtcdGpuJobPrefix)
+		if err != nil {
+			fmt.Println("failed to get the jobs from etcd")
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to get the jobs from etcd"})
+			return
+		}
+
+		result := make(map[string]interface{}, 0)
+
+		for _, pair := range pairs {
+			var job gpu_types.SlurmJob
+			err = json.Unmarshal([]byte(pair.Value), &job)
+			if err != nil {
+				fmt.Println("failed to unmarshal the job")
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to unmarshal the job"})
+				return
+			}
+			result[pair.Key] = job
+		}
+
+		c.JSON(http.StatusOK, result)
+	} else {
+		value, err := EtcdCli.Get(EtcdGpuJobPrefix + jobName)
+		if err != nil {
+			fmt.Println("failed to get the job from etcd")
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to get the job from etcd"})
+			return
+		}
+		var job gpu_types.SlurmJob
+		err = json.Unmarshal(value, &job)
+		if err != nil {
+			fmt.Println("failed to unmarshal the job")
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to unmarshal the job"})
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{
+			EtcdGpuJobPrefix + jobName: job,
+		})
+	}
 }
 
 func RequireGPUJobHandler(c *gin.Context) {
@@ -187,4 +229,50 @@ func RequireGPUJobProccess(jobName string) (*gpu_types.SlurmJob, *[]byte, error)
 	}
 
 	return &job, &zipContent, nil
+}
+
+func UpdateGPUJobHandler(c *gin.Context) {
+	var jobRequest gpu_types.SlurmJob
+
+	if err := c.ShouldBindJSON(&jobRequest); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	if jobRequest.State == "COMPLETED" {
+		// Kill this pod
+		req := make(map[string]interface{})
+		req["name"] = GPUJobPodNamePrefix + jobRequest.Metadata.UUID
+		req_url := "http://localhost:" + APIServerPort + "/api/v1/RemovePod"
+
+		var resp_str string
+		statusCode, err := httpRequest.PostRequestByObject(
+			req_url,
+			req,
+			&resp_str,
+		)
+		if err != nil {
+			fmt.Println("failed to remove pod")
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to remove pod"})
+			return
+		}
+		if statusCode != 200 {
+			fmt.Println("failed to remove pod, status_code: ", statusCode)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to remove pod"})
+			return
+		}
+
+		fmt.Println("remove pod result: ", resp_str)
+	}
+
+	value, err := json.Marshal(jobRequest)
+	if err != nil {
+		fmt.Println("failed to translate into json ", err.Error())
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to translate into json"})
+	}
+	err = EtcdCli.Put(EtcdGpuJobPrefix+jobRequest.Metadata.Name, string(value))
+	if err != nil {
+		fmt.Println("failed to write to etcd ", err.Error())
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to write to etcd"})
+	}
 }

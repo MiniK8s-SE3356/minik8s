@@ -1,0 +1,19 @@
+apiVersion: "v1"
+kind: "GPUJob"
+metadata:
+  name: "matrix-add"
+  namespace: "default"
+partition: "a100"
+nodes: "1"
+ntasksPerNode: "1"
+cpuPerTask: "8"
+gpuNum: "1"
+compileCmds:
+  - "nvcc MatrixAdd.cu -o MatrixAdd"
+modules:
+  - "gcc"
+  - "cuda"
+runCmds:
+  - "./MatrixAdd"
+username: "stu1045"
+password: "RFVrGtwdKSGl"

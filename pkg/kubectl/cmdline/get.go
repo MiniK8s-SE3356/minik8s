@@ -270,6 +270,8 @@ func getGPUJob(namespace string, name string) (string, error) {
 		return "", err
 	}
 
+	formatprint.PrintGPUJobs(result)
+
 	return result, nil
 }
 

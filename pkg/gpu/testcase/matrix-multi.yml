@@ -1,0 +1,19 @@
+apiVersion: "v1"
+kind: "GPUJob"
+metadata:
+  name: "matrix-multi"
+  namespace: "default"
+partition: "a100"
+nodes: "1"
+ntasksPerNode: "1"
+cpuPerTask: "8"
+gpuNum: "1"
+compileCmds:
+  - "nvcc MatrixMulti.cu -o MatrixMulti"
+modules:
+  - "gcc"
+  - "cuda"
+runCmds:
+  - "./MatrixMulti"
+username: "stu1045"
+password: "RFVrGtwdKSGl"
