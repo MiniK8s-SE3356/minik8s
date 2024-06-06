@@ -26,12 +26,6 @@ func DeletePV(namespace string, name string) (string, error) {
 		return "service not found", nil
 	}
 
-	err = EtcdCli.Del(pvPrefix+ namespace + "/" + name)
-	if err != nil {
-		fmt.Println("failed to del in etcd")
-		return "failed to del in etcd", err
-	}
-
 	pvvalue, err := EtcdCli.Get(pvPrefix + namespace + "/" + name)
 	if err != nil {
 		fmt.Printf("PV does not exist in DeletePV, namespace %s, name %s\n", namespace, name)
