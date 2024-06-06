@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/MiniK8s-SE3356/minik8s/pkg/apiObject/pod"
 	"github.com/MiniK8s-SE3356/minik8s/pkg/apiserver/url"
 	msgproxy "github.com/MiniK8s-SE3356/minik8s/pkg/kubelet/msg_proxy"
 	kubelet_worker "github.com/MiniK8s-SE3356/minik8s/pkg/kubelet/worker"
@@ -105,6 +106,41 @@ func (k *Kubelet) RegisterNode() error {
 	return nil
 }
 
+// FaultToleranceStart will get Pods from apiserver
+// If there are some pods belong to this node, kubelet will restart this PodWorker
+func (k *Kubelet) FaultToleranceStart() error {
+	getpod_url := fmt.Sprintf("http://%s:%s"+url.GetAllPod, k.kubeletConfig.APIServerIP, k.kubeletConfig.APIServerPort)
+	result, err := httpRequest.GetRequestWithParams(
+		getpod_url,
+		map[string]string{},
+	)
+	if err != nil {
+		fmt.Println("Error getting pods: ", err)
+		return err
+	}
+
+	var pods map[string]pod.Pod
+	err = json.Unmarshal([]byte(result), &pods)
+	if err != nil {
+		fmt.Println("Error unmarshalling pods: ", err)
+		return err
+	}
+
+	podList := make([]pod.Pod, 0)
+	for _, p := range pods {
+		if p.Spec.NodeName == k.Node.Metadata.Name {
+			podList = append(podList, p)
+		}
+	}
+
+	err = k.podManager.FaultToleranceStart(podList)
+	if err != nil {
+		fmt.Println("Error starting fault tolerance: ", err)
+	}
+
+	return nil
+}
+
 func (k *Kubelet) GetNodeStatus() (minik8s_node.NodeStatus, error) {
 	nodeStatus, err := minik8s_runtime.NodeRuntimeMangaer.GetNodeStatus()
 	if err != nil {
@@ -149,6 +185,13 @@ func (k *Kubelet) Run() {
 
 	err := k.RegisterNode()
 	if err != nil {
+		fmt.Println("Error registering node: ", err)
+		return
+	}
+
+	err = k.FaultToleranceStart()
+	if err != nil {
+		fmt.Println("Error starting fault tolerance: ", err)
 		return
 	}
 

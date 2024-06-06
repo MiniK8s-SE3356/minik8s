@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/rand"
+	"sort"
 	"sync"
 	"time"
 
@@ -24,6 +25,7 @@ type Policy string
 const (
 	RoundRobin Policy = "RoundRobin"
 	Random     Policy = "Random"
+	CPUFirst   Policy = "CPUFirst"
 )
 
 type Scheduler struct {
@@ -126,12 +128,30 @@ func RandomSelect(node []*minik8s_node.Node) *minik8s_node.Node {
 	return node[r.Intn(len(node))]
 }
 
+func CPUFirstSelect(node []*minik8s_node.Node) *minik8s_node.Node {
+	lock.Lock()
+	defer lock.Unlock()
+
+	if len(node) == 0 {
+		return nil
+	}
+
+	// Sort nodes by CPU usage from low to high
+	sort.Slice(node, func(i, j int) bool {
+		return node[i].Status.CpuPercent < node[j].Status.CpuPercent
+	})
+
+	return node[0]
+}
+
 func (s *Scheduler) SelectNode(node []*minik8s_node.Node) *minik8s_node.Node {
 	switch s.policy {
 	case RoundRobin:
 		return RoundRobinSelect(node)
 	case Random:
 		return RandomSelect(node)
+	case CPUFirst:
+		return CPUFirstSelect(node)
 	default:
 		return nil
 	}

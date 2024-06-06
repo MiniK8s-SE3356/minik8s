@@ -285,5 +285,6 @@ func getFunction(namespace string, name string) (string, error) {
 		return "", err
 	}
 
+	formatprint.PrintFunction(result)
 	return result, nil
 }

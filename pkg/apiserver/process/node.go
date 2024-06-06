@@ -264,6 +264,6 @@ func checkNode() {
 func CheckNodeWrapper() {
 	for {
 		checkNode()
-		<-time.After(30 * time.Second)
+		<-time.After(60 * time.Second)
 	}
 }
