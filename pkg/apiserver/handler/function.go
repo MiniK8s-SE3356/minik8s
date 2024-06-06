@@ -38,3 +38,30 @@ func GetAllServerlessFunction(c *gin.Context) {
 
 	c.JSON(http.StatusOK, functionNames)
 }
+
+func RemoveFunction(c *gin.Context) {
+	var param map[string]string
+	if err := c.ShouldBindJSON(&param); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	namespace, ok := param["namespace"]
+	if !ok {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "no field 'name'"})
+		return
+	}
+
+	name, ok := param["name"]
+	if !ok {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "no field 'name'"})
+		return
+	}
+
+	result, err := process.RemoveFunction(namespace, name)
+	if err != nil {
+		fmt.Println("error in process.RemoveFunction ", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	}
+
+	c.JSON(http.StatusOK, result)
+}

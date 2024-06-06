@@ -81,3 +81,24 @@ func GetAllServerlessFunction() ([]string, error) {
 
 	return names, nil
 }
+
+func RemoveFunction(namespace string, name string) (string, error) {
+	mu.Lock()
+	defer mu.Unlock()
+	existed, err := EtcdCli.Exist(functionPrefix + name)
+	if err != nil {
+		return "failed to check existence in etcd", err
+	}
+	if !existed {
+		return "function not found", nil
+	}
+
+	err = EtcdCli.Del(functionPrefix + name)
+	if err != nil {
+		fmt.Println("failed to del in etcd")
+		return "failed to del in etcd", err
+	}
+
+	return "del successfully", nil
+
+}

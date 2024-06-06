@@ -52,5 +52,6 @@ const (
 
 	GetAllServerlessFunction = prefix + "/GetAllServerlessFunction"
 
-	GetFunction = prefix + "/GetFunction"
+	GetFunction    = prefix + "/GetFunction"
+	RemoveFunction = prefix + "/RemoveFunction"
 )

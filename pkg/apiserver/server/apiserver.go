@@ -67,6 +67,7 @@ func bind(r *gin.Engine) {
 	r.GET(url.GetAllServerlessFunction, handler.GetAllServerlessFunction)
 
 	r.GET(url.GetFunction, handler.GetFunction)
+	r.POST(url.RemoveFunction, handler.RemoveFunction)
 }
 
 func Start() {
