@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    test: clusterip 
+  name: pod-clusterip
+  namespace: default
+spec:
+  containers:
+    - image:  docker/welcome-to-docker
+      name: welc

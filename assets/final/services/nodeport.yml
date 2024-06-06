@@ -1,0 +1,16 @@
+kind: Service
+apiVersion: v1
+metadata:
+  # Unique key of the Service instance
+  name: nodeport-test
+spec:
+  type: NodePort
+  selector:
+    matchLabels:
+      test: nodeport 
+  ports:
+    # Accept traffic sent to port 80
+    - nodePort: 34000
+      port: 9001
+      targetPort: 80
+      protocol: tcp

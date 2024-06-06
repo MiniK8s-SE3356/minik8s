@@ -1,0 +1,31 @@
+apiVersion: v1
+kind: Workflow
+metadata:
+  name: image-detection-workflow
+spec:
+  entryNodeName: node1
+  workflowNodes:
+    node1:
+      nodeType: calculation
+      functionName: UploadImage
+      branch:
+        - node2
+    node2:
+      nodeType: branch
+      functionName: BranchNode
+      branch:
+        - node3
+        - node4
+    node3:
+      nodeType: calculation
+      functionName: YOLOv5
+      branch:
+        - node5
+    node4:
+      nodeType: calculation
+      functionName: OpenCVHaar
+      branch:
+        - node5
+    node5:
+      nodeType: end
+      functionName: ParseResult

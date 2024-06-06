@@ -16,6 +16,7 @@ type PodManager interface {
 	GetPodByName(namespace, name string) (*apiobject_pod.Pod, error)
 	GetPodNum() int
 	FetchLocalPods() ([]apiobject_pod.Pod, error)
+	FaultToleranceStart([]apiobject_pod.Pod) error
 	RemovePodCallback(arg interface{})
 }
 
@@ -119,6 +120,21 @@ func (pm *podManager) FetchLocalPods() ([]apiobject_pod.Pod, error) {
 		result = append(result, podWorker.LocalPod)
 	}
 	return result, nil
+}
+
+func (pm *podManager) FaultToleranceStart(podList []apiobject_pod.Pod) error {
+	for _, pod := range podList {
+		UID := pod.Metadata.UUID
+		if _, ok := pm.PodWorkers[UID]; ok {
+			fmt.Println("pod worker with UID " + UID + " already exists.")
+			return fmt.Errorf("pod worker with UID %s already exists", UID)
+		}
+
+		podWorker := NewPodWorker(pm.APIServer)
+		podWorker.LocalPod = pod
+		pm.PodWorkers[UID] = podWorker
+	}
+	return nil
 }
 
 func (pm *podManager) RemovePodCallback(arg interface{}) {

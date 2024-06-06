@@ -103,7 +103,11 @@ func (rm *RouteTableManager) FunctionName2PodIP(funcName string) string {
 		if len(va.podIPList) <= 0 {
 			goto return_with_unlock
 		}
-		va.next = (va.next + 1) % (len(va.podIPList))
+		// va.next = (va.next + 1) % (len(va.podIPList))
+		rm.routeTable[funcName] = routeInfo{
+			next:      (va.next + 1) % (len(va.podIPList)),
+			podIPList: va.podIPList,
+		}
 		result = va.podIPList[va.next]
 	}
 return_with_unlock:

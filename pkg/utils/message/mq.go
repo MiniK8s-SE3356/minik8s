@@ -14,7 +14,9 @@ type MQConnection struct {
 
 func NewMQConnection(config *MQConfig) (*MQConnection, error) {
 	conn, err := amqp.Dial("amqp://" + config.User + ":" + config.Password + "@" + config.Host + ":" + config.Port + config.Vhost)
-	fmt.Println(config.User + ":" + config.Password + "@" + config.Host + ":" + config.Port + config.Vhost)
+	//! only for debug
+	// fmt.Println(config.User + ":" + config.Password + "@" + config.Host + ":" + config.Port + config.Vhost)
+	//! only for debug
 
 	if err != nil {
 		fmt.Println("Failed to connect to RabbitMQ")

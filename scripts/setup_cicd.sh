@@ -16,15 +16,15 @@ apt install net-tools -y
 apt install nginx -y
 
 
-# 异步消息队列插件：RabbitMQ
-apt-get install erlang -y
-apt-get install rabbitmq-server -y
-## 启动控制面板
-rabbitmq-plugins enable rabbitmq_management
-## 添加用户并设置权限
-rabbitmqctl add_user admin admin
-rabbitmqctl set_user_tags admin administrator
-rabbitmqctl set_permissions -p / admin ".*" ".*" ".*"
+# # 异步消息队列插件：RabbitMQ
+# apt-get install erlang -y
+# apt-get install rabbitmq-server -y
+# ## 启动控制面板
+# rabbitmq-plugins enable rabbitmq_management
+# ## 添加用户并设置权限
+# rabbitmqctl add_user admin admin
+# rabbitmqctl set_user_tags admin administrator
+# rabbitmqctl set_permissions -p / admin ".*" ".*" ".*"
 
 
 # 分布式一致性持久化存储插件：Etcd
@@ -88,7 +88,7 @@ echo "Alias=etcd.service" >> $ETCD_SERVICE_FILE
 ## 重新加载systemd配置并启动service系统级服务
 systemctl daemon-reload
 systemctl start etcd
-systemctl status etcd
+# systemctl status etcd
 
 # 网络CNI插件：Flannel
 ## 提前配置
@@ -114,11 +114,7 @@ echo "ExecStart=/usr/bin/flanneld " >> $FLANNEL_SERVICE_FILE
 ## 重新加载systemd配置并启动service系统级服务
 systemctl daemon-reload
 systemctl start flannel
-systemctl status flannel
-
-echo SLEEP
-sleep 5
-# ifconfig
+# systemctl status flannel
 
 # 虚拟化容器插件：Docker
 ## 安装
@@ -147,14 +143,15 @@ cat $DOCKER_DAEMON_FILE
 systemctl restart docker
 systemctl status docker
 
-ifconfig
+# 异步消息队列插件：RabbitMQ
+# rabbitmq启动在docker中
+docker run -d --hostname my-rabbit --name some-rabbit -p 5672:5672 -p 15672:15672 rabbitmq:3-management
 
 # 语言运行时：Golang
 rm -rf /usr/local/go
 tar -C /usr/local -xzf ./plugin/go1.22.3/go1.22.3.linux-amd64.tar.gz
-# echo "export PATH=$PATH:/usr/local/go/bin" >> /etc/profile
-# PATH=$PATH:/usr/local/go/bin
-# source /etc/profile
-# go mod tidy
-# go test ./...
+
+# pv卷路径创建
+# 注意，由于只有单机，nfs就不配置了
+mkdir /var/lib/minik8s/volumes -p
 

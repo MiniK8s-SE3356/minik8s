@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: HPA
+metadata:
+  name: test-hpa
+spec:
+  minReplicas: 1
+  maxReplicas: 4
+  selector:
+    matchLabels:
+      hpa: test-hpa
+  template:
+    metadata:
+      labels:
+        hpa: test-hpa
+    spec:
+      containers:
+      - name: test-hpa-container
+        image: levixubbbb/hpa-test-image:latest
+  adjustInterval: 30s
+  metrics:
+    cpuPercent: 0.2
+    memPercent: 0.2

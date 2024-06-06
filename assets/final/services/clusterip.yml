@@ -1,0 +1,15 @@
+kind: Service
+apiVersion: v1
+metadata:
+  # Unique key of the Service instance
+  name: clusterip-test
+spec:
+  selector:
+    matchLabels:
+      test: clusterip 
+  ports:
+    # Accept traffic sent to port 80
+    - port: 9000
+      targetPort: 80
+      protocol: tcp
+

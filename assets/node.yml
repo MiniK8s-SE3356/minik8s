@@ -1,0 +1,6 @@
+apiserverip: "192.168.1.6"
+apiserverport: "8080"
+nodeip: "192.168.1.11"
+nodehostname: "cloudos2"
+labels:
+  node: "cloudos2"

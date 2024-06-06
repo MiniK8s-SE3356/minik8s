@@ -52,6 +52,9 @@ const (
 
 	GetAllServerlessFunction = prefix + "/GetAllServerlessFunction"
 
+	GetFunction    = prefix + "/GetFunction"
+	RemoveFunction = prefix + "/RemoveFunction"
+
 	// For GPU
 	SubmitGPUJob = prefix + "/SubmitGPUJob"
 	GetGPUJob    = prefix + "/GetGPUJob"

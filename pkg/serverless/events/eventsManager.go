@@ -96,8 +96,8 @@ func (em *EventsManager) triggerServerlessFunction(funcName string, params strin
 
 	for {
 		// 如果发生三次失败，则认为请求失败
-		if failCount >= 3 {
-			return "", errors.New("failCount reach three")
+		if failCount >= 6 {
+			return "", errors.New("failCount reach 180s")
 		}
 
 		podIP := em.route_table_manager.FunctionName2PodIP(funcName)
@@ -106,7 +106,8 @@ func (em *EventsManager) triggerServerlessFunction(funcName string, params strin
 				// 如果路由表中没有可用podIP,需要请求启动pod
 				failCount += 1
 				if failCount < 3 {
-					em.requestNewFuncPod(funcName)
+					//! for test display we don't request new pod
+					// em.requestNewFuncPod(funcName)
 					podCreateCount = 0
 					if mqName != "" {
 						em.publishMessage(mqName, mqObject.MQmessage_Workflow{
@@ -148,7 +149,7 @@ func (em *EventsManager) triggerServerlessFunction(funcName string, params strin
 			}
 		}
 		// 睡眠5s,等待各项数据的更新
-		time.Sleep(5 * time.Second)
+		time.Sleep(10 * time.Second)
 	}
 }
 

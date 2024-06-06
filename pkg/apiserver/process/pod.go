@@ -31,6 +31,12 @@ func AddPod(namespace string, desc *yaml.PodDesc) (string, error) {
 	pod_.Metadata.UUID = id
 	pod_.Metadata.Labels = desc.Metadata.Labels
 	pod_.Spec = desc.Spec
+
+	//! Avoid the same container name between different pods
+	for i, c := range pod_.Spec.Containers {
+		pod_.Spec.Containers[i].Name = pod_.Metadata.UUID + "-" + c.Name
+	}
+
 	// for _, c := range desc.Spec.Containers {
 	// var tmp container.Container
 	// pod.Spec.Containers = append(pod.Spec.Containers, )

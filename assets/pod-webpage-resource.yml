@@ -1,0 +1,39 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: static-webpage-pod
+  labels:
+    app: static-webpage
+spec:
+  containers:
+    - name: nginx-container
+      image: nginx:latest
+      ports:
+        - containerPort: 80
+          hostPort: 12345
+      volumeMounts:
+        - mountPath: /usr/share/nginx/html
+          name: web-content
+        - mountPath: /tmp/pod-volume-test
+          name: pod-volume-test
+      resources:
+        limits:
+          memory: 536870912
+          cpu: 1000000000
+    - name: sidecar-container
+      image: ubuntu:latest
+      command: ["/bin/sh", "-c", "while true; do echo '<html><head><title>Welcome</title></head><body><h1>Hello, World!</h1><p>This is a dynamic web page served from a Kubernetes Pod.</p><ul><li>Time checked every hour</li><li>Refresh the page to see updates</li></ul><img src=\"https://xubbbb-chartbed.oss-cn-shanghai.aliyuncs.com/img/book-oasis/book3.png\" alt=\"Sample Image\"></body></html>' > /usr/share/data/index.html; sleep 3600; done"]
+      volumeMounts:
+        - mountPath: /usr/share/data
+          name: web-content
+        - mountPath: /tmp/pod-volume-test
+          name: pod-volume-test
+  volumes:
+    - name: web-content
+      hostPath:
+        path: /root/static-webpage
+        type: DirectoryOrCreate
+    - name: pod-volume-test
+      hostPath:
+        path: /root/pod-volume-test
+        type: DirectoryOrCreate

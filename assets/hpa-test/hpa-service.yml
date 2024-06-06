@@ -1,0 +1,14 @@
+kind: Service
+apiVersion: v1
+metadata:
+  # Unique key of the Service instance
+  name: hpa-service
+spec:
+  ports:
+    - name: http
+      port: 5000
+      targetPort: 5000
+      protocol: tcp
+  selector:
+    matchLabels:
+      hpa: test-hpa

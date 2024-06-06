@@ -382,14 +382,11 @@ func (ic *IptablesController) SyncIptables() error {
 		ic.ipt.NewChain("nat", KUBE_SVC+sid)
 		// 填入endpoints规则
 		// 注意：第一条规则需要指明负载均衡配置
+		length:=len(eid_list)
 		for index, eid_item := range eid_list {
-			if index == 0 {
-				var pro float32 = 1.0 / float32(len(eid_list))
+				var pro float32 = 1.0 / float32(length-index)
 				pro_string := fmt.Sprintf("%.2f", pro)
 				ic.ipt.Append("nat", KUBE_SVC+sid, "-m", "statistic", "--mode", "random", "--probability", pro_string, "-j", KUBE_SEP+eid_item)
-			} else {
-				ic.ipt.Append("nat", KUBE_SVC+sid, "-j", KUBE_SEP+eid_item)
-			}
 		}
 	}
 

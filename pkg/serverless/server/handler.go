@@ -107,6 +107,9 @@ func createFunctionProcess(f function.Function) (string, error) {
 		return result, err
 	}
 
+	// avoid the file content to be stored in etcd
+	f.Spec.FileContent = nil
+
 	value, err := json.Marshal(f)
 	if err != nil {
 		fmt.Println("failed to translate into json ", err.Error())

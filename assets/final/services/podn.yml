@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    test: nodeport
+  name: pod-nodeport
+  namespace: default
+spec:
+  containers:
+    - image:  docker/welcome-to-docker
+      name: weln
