@@ -120,7 +120,7 @@ func PrintReplicaset(str string) {
 
 	writer := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', tabwriter.Debug)
 
-	fmt.Fprintln(writer, "ID\tName\rReady\tExpect")
+	fmt.Fprintln(writer, "ID\tName\tReady\tExpect")
 
 	for _, rs := range replicasets {
 		// Join the condition array into a single string
@@ -143,7 +143,7 @@ func PrintHPA(str string) {
 
 	writer := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', tabwriter.Debug)
 
-	fmt.Fprintln(writer, "ID\tName\rReady\tMin\tMax")
+	fmt.Fprintln(writer, "ID\tName\tReady\tMin\tMax")
 
 	for _, h := range hpas {
 		// Join the condition array into a single string
@@ -167,7 +167,7 @@ func PrintFunction(str string) {
 
 	writer := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', tabwriter.Debug)
 
-	fmt.Fprintln(writer, "ID\tName\rImageName")
+	fmt.Fprintln(writer, "ID\tName\tImageName")
 
 	for _, h := range funcs {
 		// Join the condition array into a single string
