@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    test:  dns-clusterip1 
+  name: pod-clusterip1
+  namespace: default
+spec:
+  containers:
+    - image:  levixubbbb/replicaset-test-image
+      name: welc1
