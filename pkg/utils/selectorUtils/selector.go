@@ -22,7 +22,7 @@ func canSelect(pod_labels *map[string]string, selector_labels *map[string]string
 }
 
 func SelectPodNameList(sel *selectordef.Selector, pods *httpobject.HTTPResponse_GetAllPod) []string {
-	if (sel.MatchLabels==nil||len(sel.MatchLabels)==0){
+	if sel.MatchLabels == nil || len(sel.MatchLabels) == 0 {
 		return []string{}
 	}
 	result := []string{}

@@ -74,14 +74,14 @@ func (ec *EndpointsController) routine() {
 		fmt.Printf("routine error get, status %d, return\n", status)
 		return
 	}
-	
+
 	// PodIP尚未分配的Pod不参加本轮迭代
-	for k,v :=range(pod_list){
-		if(v.Status.PodIP==""){
-			delete(pod_list,k)
+	for k, v := range pod_list {
+		if v.Status.PodIP == "" {
+			delete(pod_list, k)
 		}
 	}
-	fmt.Println("Sync Service Pod list: ",pod_list)
+	fmt.Println("Sync Service Pod list: ", pod_list)
 
 	// fmt.Println(service_list.ClusterIP)
 	// fmt.Println(service_list.NodePort)
