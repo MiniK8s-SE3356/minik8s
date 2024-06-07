@@ -1,7 +1,7 @@
 # NFS配置
 
 > author: 王浩丞  
-> version: 1.0  
+> version: 1.0   
 
 ## 节点信息
 

@@ -1,7 +1,7 @@
 # Nginx插件配置
 
-> author: Haocheng Wang  
-> Version: 0.1
+> author: 王浩丞
+> Version: 1.0  
 
 
 ## 作用
