@@ -16,7 +16,7 @@ func TestMain(m *testing.M) {
 	// test func
 	exitCode := m.Run()
 
-	// post-test code
+	// post-test codek
 
 	os.Exit(exitCode)
 }

@@ -1,0 +1,28 @@
+kind: Workflow
+metadata:
+  name: test-workflow
+spec:
+  params: test
+  entryNodeName: node1
+  workflowNodes:
+    node1:
+      nodeType: calculation
+      functionName: func1
+      branch: 
+        - node2
+    node2:
+      nodeType: branch
+      functionName: func2
+      branch: 
+        - node3
+        - node4
+        - node5
+    node3:
+      nodeType: end
+      functionName: func3
+    node4:
+      nodeType: end
+      functionName: func4
+    node5:
+      nodeType: end
+      functionName: func5
